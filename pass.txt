@@ -4,8 +4,82 @@ name: gbeos
 password: "PW5KfijmsiGokeYD4b5ink9ReT4c6cukeWsMtYVJ8F2fHxmVBxRec"
 command: `cleos wallet unlock -n gbeos --password PW5KfijmsiGokeYD4b5ink9ReT4c6cukeWsMtYVJ8F2fHxmVBxRec`
 ########################################################################
-Jungle Testnet
-*********************************************************************************************************
+WAX Mainnet
+************************************************************************************
+
+GPKBattles Contracts
+====================
+gpkbattlesco
+Owner:
+Private key: 5JtYkkZ5en7Tik3hMEYQYir9oUjKNsze3KVmMXB56cbtmEwQPjA
+Public key: EOS7vv3fQ149mLZuwch2gGqGA45VPSEvAu1XJyBZCLiJLWPJ5AmzF
+
+Active:
+Private key: 5JnFX7QbqDVjYUvBH6QZaEzSe32xXKnjpx6x9GMucvPb1ohnCqD
+Public key: EOS8UeLoein2CgmS8TC1YRDQeRhSpkgYKGiXPNFNWpVH5SfDpJevq
+-------------------------------------------------------------
+gpkbatescrow
+Owner:
+Private key: 5HtpjEwCerobMx19rYksGtbLkSHk7ngwTTrxGzM2qqe7DpkKbwM
+Public key: EOS8f2Tcsi1XWGLPywEWxiHdhcvBy7vhWgvp73KpFinX8DSzFKrav
+
+
+Active:
+Private key: 5JzkR2vHT9So1ZLyrD5193A5CDMh1ZJjGeqrRUVMj39Vi7TbGAs
+Public key: EOS4xAM3CntMpBsKq1oLTDgmEvcXEMre4eNFT6cjZYoWEEDLoFHH6
+-------------------------------------------------------------
+
+GPKBattles Admin
+==================
+gpkbattlsadm
+Owner:
+Private key: 5JHB2hnCbwyEH9pDQZ5X3j8BP4hRxxfMqDM7DKu3gzUjTEqqF66
+Public key: EOS7snfoek9o8aTc4VFiCfg9eUFsDdcVSbSrocoCV1vW4NS4VY8yM
+
+Active:
+Private key: 5J1bptWPBMNBjhE1hrSkc1CfgYkG5bMm7pKTUTQMZ3Y1JNcufzC
+Public key: EOS58KpC6REWbD8YUmWNijyKhMhPydUykvruLXyWufDGncZz7pFrv
+-------------------------------------------------------------
+
+GPKBattles Players
+==================
+gbuser111111
+Private key: 5KEqMDEMRdjyYrML8XN7cwUHSxQ1LSApezc61drjMCnu5Cx3Kce
+Public key: EOS5AKUVP7HBw9EFrQxzo9cPPeC8owWJRTG2sHKBh7rTZGGthHNME
+-------------------------------------------------------------
+gbuser111112
+Private key: 5K52scae2r4CJRGhCcVD5qWBxhKJtSYoW9kK8GpnuyZRtrjtVav
+Public key: EOS7r6ZWR4wCD1biPGekaKkju5NjEKmMX3U49ccmZScmZKHRtbTfa
+-------------------------------------------------------------
+gbuser111113
+Private key: 5J8xYBg7cH41zaqeHJh6NMuBG1gCthUcGk9CoH42MpVNdT4rQY8
+Public key: EOS62SXCutNBmYUMhLfGpbiRifzb4jqnLrEfDprYc1ddV68pLH28L
+-------------------------------------------------------------
+gbuser111114
+Private key: 5JC9jundgtjFhpK8AM7HktDqhDcfr6duXqsHsKyTB2CxjMTT8BG
+Public key: EOS75E2msec3ViqJ8Ai8xbWYQYT7k5uZj8yG81U3LhziHkQLAjnrd
+-------------------------------------------------------------
+gbuser111115
+Private key: 5JZQqGiPvGpPi4JvRi3QknAMCzgpfM6ngn7tGYUa2wVYVfQiCDt
+Public key: EOS65e8c8bTShJqLeyRxWT9sRdAGJ33v6oxN33JmZMyyRrorX78zZ
+-------------------------------------------------------------
+gbuser111121
+Private key: 5JnAbi2XALcBAjp78hcnRqZMqgWgtAwa2prrpT3SAKr2n8JgFJD
+Public key: EOS6eP58enqGrKAo93Sbyhmz6tnpo7usYCX3doC9sHsF8LHsE1uZg
+-------------------------------------------------------------
+gbuser111122
+Private key: 5KXroEzQHdBZEMnVr836fj9qbvgWmAv3FPm7uinEQ19aATaz4jn
+Public key: EOS7ZbGaD8CBc9oDFbYRWW287yXSBnvuXvmkPyyacHapCS2Sw7Uuq
+-------------------------------------------------------------
+gbuser111123
+Private key: 5K6uWUMfAXDZYHbzPNb9khcW8YWtnjWC5CDtR81yCqiyFk59SmJ
+Public key: EOS5oLcmL22dy5m7m8DQtRoigHoH3LcrVx3kcgVi9DpXQ1PVaC6Pd
+-------------------------------------------------------------
+
+
+########################################################################
+WAX Testnet
+************************************************************************************
 
 GPKBattles Contracts
 ====================
