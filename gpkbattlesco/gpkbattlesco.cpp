@@ -21,6 +21,9 @@ void gpkbattlesco::match2player(const name& asset_contract_ac) {
 	auto p1 = players_it->players_list[0]; 
 	auto p2 = players_it->players_list[1]; 
 
+	// check players matched are not identical
+	check(p1 != p2, "the matched players are identical by name. Please, ensure there is no duplicate players name in the list.");
+
 	// check each p1, p2 contain min. 3 cards
 	check_3cards(p1, "simpleassets"_n);
 	check_3cards(p2, "simpleassets"_n);
@@ -162,14 +165,99 @@ void gpkbattlesco::sel3card( const name& player,
 		).send();
 	}
 
-	
-	// TODO: modify `ongamestat` table with cards for respective players
 
+	// modify `ongamestat` table with cards for respective players
+	ongamestat_index ongamestat_table(get_self(), get_self().value);
+	auto player1_idx = ongamestat_table.get_index<"byplayer1">();
+	auto player2_idx = ongamestat_table.get_index<"byplayer2">();
 
-	
+	// check if the player is present in either of `player_1` or `player_2` columns 
+	auto player1_it = player1_idx.find(player.value);
+	auto player2_it = player2_idx.find(player.value);
+	check((player1_it != player1_idx.end())
+		|| (player2_it != player2_idx.end()), 
+		"the player is present in neither of the \'player_1\' or \'player_2\' columns.")
+
+	if(player1_it != player1_idx.end()) {
+		check(player1_it->player1_cards.empty(), "cards are already present for this player. So, can't select cards again.");
+		
+		player1_idx.modify(player1_it, get_self(), [&](auto& row){
+			row.player1_cards = card_ids;
+		});
+	}
+	else if(player2_it != player2_idx.end()) {
+		check(player2_it->player2_cards.empty(), "cards are already present for this player. So, can't select cards again.");
+		
+		player2_idx.modify(player2_it, get_self(), [&](auto& row){
+			row.player2_cards = card_ids;
+		});
+	}
 
 }
 
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::sel3cardauto( const name& player,
+								const name& asset_contract_ac ) {
+	require_auth(get_self());
+
+
+	// check if the cards have been transferred to the escrow's cardwallet
+	cardwallet_index cardwallet_table(escrow_contract_ac, player.value);
+
+	// vector<uint64_t> card_ids{card1_id, card2_id, card3_id};
+	
+	// for(auto&& card_id : card_ids) {
+	// 	auto card_it = cardwallet_table.find(card_id);
+
+	// 	// check if either of the cards exist in the contract's table
+	// 	check(card_it != cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " has not been transferred to the escrow contract.");
+		
+	// 	// check if the card's status is "available"
+	// 	check(card_it->usage_status == "available"_n, "card with id:" + std::to_string(card_id) + " is already selected. Please choose some other card.");
+	// }
+
+
+	// // modify card's status as "selected" in `cardwallet` table of escrow contract
+	// for(auto&& card_id : card_ids) {
+	// 	action(
+	// 		permission_level{get_self(), "active"_n},
+	// 		escrow_contract_ac,
+	// 		"setgstatus"_n,
+	// 		std::make_tuple(player, card_id, "selected"_n)
+	// 	).send();
+	// }
+
+	// TODO: choose cards from `cards_list` in `cards` table
+
+
+	// modify `ongamestat` table with cards for respective players
+	ongamestat_index ongamestat_table(get_self(), get_self().value);
+	auto player1_idx = ongamestat_table.get_index<"byplayer1">();
+	auto player2_idx = ongamestat_table.get_index<"byplayer2">();
+
+	// check if the player is present in either of `player_1` or `player_2` columns 
+	auto player1_it = player1_idx.find(player.value);
+	auto player2_it = player2_idx.find(player.value);
+	check((player1_it != player1_idx.end())
+		|| (player2_it != player2_idx.end()), 
+		"the player is present in neither of the \'player_1\' or \'player_2\' columns.")
+
+	if(player1_it != player1_idx.end()) {
+		check(player1_it->player1_cards.empty(), "cards are already present for this player. So, can't select cards again.");
+		
+		player1_idx.modify(player1_it, get_self(), [&](auto& row){
+			row.player1_cards = card_ids;
+		});
+	}
+	else if(player2_it != player2_idx.end()) {
+		check(player2_it->player2_cards.empty(), "cards are already present for this player. So, can't select cards again.");
+		
+		player2_idx.modify(player2_it, get_self(), [&](auto& row){
+			row.player2_cards = card_ids;
+		});
+	}
+
+}
 // --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::empifyplayer(const name& asset_contract_ac, 
 								const name& player) {
