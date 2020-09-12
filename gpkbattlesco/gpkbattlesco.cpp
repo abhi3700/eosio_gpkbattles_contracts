@@ -136,11 +136,121 @@ void gpkbattlesco::sel3card( const name& player,
 
 
 	// check if the cards have been transferred to the escrow's cardwallet
+	cardwallet_index cardwallet_table(escrow_contract_ac, player.value);
 
-	// check if the card's status is not "selected"
+	vector<uint64_t> card_ids{card1_id, card2_id, card3_id};
+	
+	for(auto&& card_id : card_ids) {
+		auto card_it = cardwallet_table.find(card_id);
 
-	// modify card's status as "selected"
+		// check if either of the cards exist in the contract's table
+		check(card_it != cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " has not been transferred to the escrow contract.");
+		
+		// check if the card's status is not "selected"
+		check(card_it->usage_status == "available"_n);
+	}
+
+
+	// modify card's status as "selected" in `cardwallet` table of escrow contract
+
+	// modify `ongamestat` table with cards for respective players
+
 
 	
+
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::empifyplayer(const name& asset_contract_ac, 
+								const name& player) {
+	require_auth(escrow_contract_ac);
+
+	// add player to the players_list, if not added
+	players_index players_table(get_self(), get_self().value);
+	auto players_it = players_table.find(asset_contract_ac.value);
+
+	if(players_it == players_table.end()) {
+		players_table.emplace(get_self(), [&](auto& row){
+			row.players_list = vector{player};
+		});
+	} else {
+		auto vec_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), player);
+		if(vec_it == players_it->players_list.end()) {
+			players_table.modify(players_it, get_self(), [&](auto& row) {
+				row.players_list.emplace_back(player);
+			});
+		}
+	}
+
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::remplayer(const name& asset_contract_ac, 
+								const name& player) {
+	require_auth(escrow_contract_ac);
+
+	// add player to the players_list, if not added
+	players_index players_table(get_self(), get_self().value);
+	auto players_it = players_table.find(asset_contract_ac.value);
+
+	if (players_it != players_table.end())
+	{
+		auto vec_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), player);
+		if(vec_it != players_it->players_list.end()) {
+			players_table.modify(players_it, get_self(), [&](auto& row) {
+				row.players_list.erase(vec_it);
+			});
+		}
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::empifycards(const name& asset_contract_ac, 
+								const name& player, 
+								const vector<uint64_t> cards) {
+	require_auth(escrow_contract_ac);
+
+	// add card(s) to the cards_list, if not added
+	cards_index cards_table(get_self(), player.value);
+	auto cards_it = cards_table.find(asset_contract_ac.value);
+
+	if(cards_it == cards_table.end()) {
+		cards_table.emplace(get_self(), [&](auto& row){
+			row.cards_list = cards;
+		});
+	} else {
+		for(auto&& card : cards) {
+			auto vec_it = std::find(cards_it->cards_list.begin(), cards_it->cards_list.end(), card);
+			if(vec_it == cards_it->cards_list.end()) {
+				cards_table.modify(cards_it, get_self(), [&](auto& row) {
+					row.cards_list.emplace_back(card);
+				});
+			}
+		}
+	}
+
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::remcards(const name& asset_contract_ac, 
+							const name& player, 
+							const vector<uint64_t> cards) {
+	require_auth(escrow_contract_ac);
+
+	// add card(s) to the cards_list, if not added
+	cards_index cards_table(get_self(), player.value);
+	auto cards_it = cards_table.find(asset_contract_ac.value);
+
+	if(cards_it != cards_table.end()) {
+		for(auto&& card : cards) {
+			auto vec_it = std::find(cards_it->cards_list.begin(), cards_it->cards_list.end(), card);
+			if(vec_it != cards_it->cards_list.end()) {
+				cards_table.modify(cards_it, get_self(), [&](auto& row) {
+					row.cards_list.erase(cards_it);
+				});
+			}
+		}
+	}
+
 
 }

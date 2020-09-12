@@ -33,6 +33,7 @@ void gpkbatescrow::transferbypl( const name& player,
 		cardwallet_table.emplace(player, [&](auto& row) {
 			row.card_id = card_id;
 			row.contract_ac = asset_contract_ac;
+			row.usage_status = "available"_n;
 		});
 	}
 

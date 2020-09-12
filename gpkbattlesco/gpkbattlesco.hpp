@@ -34,6 +34,7 @@ CONTRACT gpkbattlesco : public contract
 private:
 	const symbol gamefee_token_symbol;
 	const name asset_contract_ac;
+	const name escrow_contract_ac;
 
 public:
 	using contract::contract;
@@ -41,7 +42,8 @@ public:
 	gpkbattlesco(name receiver, name code, datastream<const char*> ds) : 
 				contract(receiver, code, ds), 
 				gamefee_token_symbol("WAX", 4),
-				asset_contract_ac("simpleassets"_n) {}
+				asset_contract_ac("simpleassets"_n),
+				escrow_contract_ac("gpkbatescrow"_n) {}
 
 	
 
@@ -133,6 +135,67 @@ public:
 	 * @param game_id - game id
 	 */
 	ACTION movedb(uint64_t game_id);
+
+	/**
+	 * @brief - empify player
+	 * @details - empify player
+	 * 			- No checks on this, as it has to be used as an inline action here.
+	 * 			- If checks are applied & fails then the main action (previous to this) will also fail.
+	 * 			- add player. if fails then the transfer asset won't happen due to this.
+	 * 
+	 * @param asset_contract_ac - simpleassets, atomicassets
+	 * @param player - player name
+	 * 
+	 */
+	ACTION empifyplayer(const name& asset_contract_ac, const name& player);
+
+	/**
+	 * @brief - remove player
+	 * @details - remove player
+	 * 			- No checks on this, as it has to be used as an inline action here.
+	 * 			- If checks are applied & fails then the main action (previous to this) will also fail.
+	 * 			- remove player. if fails then the transfer asset won't happen due to this.
+	 * 
+	 * @param asset_contract_ac - simpleassets, atomicassets
+	 * @param player - player name
+	 * 
+	 */
+	ACTION remplayer(const name& asset_contract_ac, const name& player);
+
+	/**
+	 * @brief - empify card
+	 * @details - empify card
+	 * 			- No checks on this, as it has to be used as an inline action here.
+	 * 			- If checks are applied & fails then the main action (previous to this) will also fail.
+	 * 			- add card(s). if fails then the transfer asset won't happen due to this.
+	 * 
+	 * @param asset_contract_ac - simpleassets, atomicassets
+	 * @param player - player name
+	 * @param cards - 1 or more cards
+	 * 
+	 */
+	ACTION empifycards(const name& asset_contract_ac, const name& player, const vector<uint64_t> cards);
+
+
+	/**
+	 * @brief - remove card
+	 * @details - remove card
+	 * 			- No checks on this, as it has to be used as an inline action here.
+	 * 			- If checks are applied & fails then the main action (previous to this) will also fail.
+	 * 			- remove card(s). if fails then the transfer asset won't happen due to this.
+	 * 
+	 * @param asset_contract_ac - simpleassets, atomicassets
+	 * @param player - player name
+	 * @param cards - 1 or more cards
+	 * 
+	 */
+	ACTION remcards(const name& asset_contract_ac, const name& player, const vector<uint64_t> cards);
+
+
+	using empifyplayer_action  = action_wrapper<"empifyplayer"_n, &gpkbatescrow::empifyplayer>;
+	using remplayer_action  = action_wrapper<"remplayer"_n, &gpkbatescrow::remplayer>;
+	using empifycards_action  = action_wrapper<"empifycards"_n, &gpkbatescrow::empifycards>;
+	using remcards_action  = action_wrapper<"remcards"_n, &gpkbatescrow::remcards>;
 
 	// -----------------------------------------------------------------------------------------------------------------------
 	static void check_cards_type( const string& cardtype_1,
@@ -240,35 +303,56 @@ private:
 	using gamewallet_index = multi_index<"gamewallet"_n, gamewallet>;
 
 	// -----------------------------------------------------------------------------------------------------------------------
-	// scope - owner
-	struct sasset {
-		uint64_t		id;
-		name			owner;
-		name			author;
-		name			category;
-		string			idata;
-		string			mdata;
-		std::vector<sasset>	container;
-		std::vector<account>	containerf;
+	// // scope - owner
+	// struct sasset {
+	// 	uint64_t		id;
+	// 	name			owner;
+	// 	name			author;
+	// 	name			category;
+	// 	string			idata;
+	// 	string			mdata;
+	// 	std::vector<sasset>	container;
+	// 	std::vector<account>	containerf;
 
 				
-		auto primary_key() const {
-			return id;
-		}
+	// 	auto primary_key() const {
+	// 		return id;
+	// 	}
 
-		uint64_t by_author() const {
-			return author.value;
-		}
+	// 	uint64_t by_author() const {
+	// 		return author.value;
+	// 	}
+	// };
+
+	// typedef eosio::multi_index< "sassets"_n, sasset, 		
+	// 		eosio::indexed_by< "author"_n, eosio::const_mem_fun<sasset, uint64_t, &sasset::by_author> >
+	// > sassets;
+
+	// -----------------------------------------------------------------------------------------------------------------------
+	// scope - player
+	struct cardwallet {
+		uint64_t card_id;
+		// name quality;		// e.g. a, b
+		// string variant;		// e.g. base
+		// string category;		// e.g. exotic
+		name contract_ac;		// simpleassets, atomicassets
+		name usage_status;		// selected/available
+
+		auto primary_key() const { return card_id; }
 	};
 
-	typedef eosio::multi_index< "sassets"_n, sasset, 		
-			eosio::indexed_by< "author"_n, eosio::const_mem_fun<sasset, uint64_t, &sasset::by_author> >
-	> sassets;
+	using cardwallet_index = multi_index<"cardwallet"_n, cardwallet>;
 
 	// -----------------------------------------------------------------------------------------------------------------------
 	// get the current timestamp
 	inline uint32_t now() const {
 		return current_time_point().sec_since_epoch();
 	}
+
+	// Adding inline action for `setgstatus` action in the ridex contract   
+	void set_gstatus( const name& player, 
+						uint64_t card_id,
+						const name& status );
+
 
 };
