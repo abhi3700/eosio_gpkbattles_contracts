@@ -10,6 +10,11 @@ void gpkbatescrow::transferbypl( const name& player,
 
 	check(memo.size() <= 256, "memo has more than 256 bytes");
 
+	// check cards quantity (either a or b), variant (base), category (exotic)
+	for(auto&& c : card_ids) {
+		check_card_cqv(asset_contract_ac, player, c, "exotic"_n, "base");
+	}
+
 	action(
 		permission_level{player, "active"_n},
 		asset_contract_ac,
@@ -27,8 +32,13 @@ void gpkbatescrow::transferbypl( const name& player,
 		check(card_it == cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " already exists in the table.");
 		cardwallet_table.emplace(player, [&](auto& row) {
 			row.card_id = card_id;
+			row.contract_ac = asset_contract_ac;
 		});
 	}
+
+	// TODO: add cards into `cards` table if not already added
+
+	// TODO: add player name into `players` table, if not already added
 
 }
 
@@ -37,6 +47,8 @@ void gpkbatescrow::setgstatus( const name& player,
 								uint64_t card_id,
 								const name& status ) {
 	require_auth(game_contract_ac);
+
+	// TODO: check status could be "selected"
 
 	cardwallet_index cardwallet_table(get_self(), player.value);
 	auto card_it = cardwallet_table.find(card_id);
@@ -72,4 +84,6 @@ void gpkbatescrow::withdrawbypl( const name& player,
 
 	// erase the card from cardwallet table
 	cardwallet_table.erase(card_it);
+
+	// TODO: erase card_id from the cards_list in `cards` table
 }

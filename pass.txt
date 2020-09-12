@@ -91,6 +91,9 @@ gpkbatescrow
 Private key: 5Hrh8ngXKBmcxdRjkgcVGodrigHa68tskBGtRXGnubFrWJjP6mr
 Public key: EOS6dGLaKmnR2GZgfuMNYMe2d7Z6a7e2v9cWdALr4qh2BDvv6zKo8
 -------------------------------------------------------------
+randomtestco
+Private key: 5KVVa88d3rGYDEJ3ZAPEgg7CtnLsCq5NtjzR2RWe9bQFFXXNsJY
+Public key: EOS6qKcGDJWYNKuxcCYnPnCKpoHPYq97KpVGoY7tgsfKPbJQcAbVZ
 
 GPKBattles Players
 ==================

@@ -3,10 +3,6 @@
 * It is a escrow contract where:
 	- [x] players transfer asset temporarily 
 	- [x] contract transfers the card to winner.
-	- [x] retire tokens from supply
-	- [x] transfer tokens from one account to another
-	- [x] open account with even zero balance
-	- [x] close account with zero balance
 
 ## About
 * contract name - `toetoken`
