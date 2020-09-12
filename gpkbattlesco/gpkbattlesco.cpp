@@ -1,4 +1,5 @@
 #include "gpkbattlesco.hpp"
+// #include "../gpkbatescrow/gpkbatescrow.hpp"
 #include <random>
 
 using std::default_random_engine;
@@ -146,14 +147,23 @@ void gpkbattlesco::sel3card( const name& player,
 		// check if either of the cards exist in the contract's table
 		check(card_it != cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " has not been transferred to the escrow contract.");
 		
-		// check if the card's status is not "selected"
-		check(card_it->usage_status == "available"_n);
+		// check if the card's status is "available"
+		check(card_it->usage_status == "available"_n, "card with id:" + std::to_string(card_id) + " is already selected. Please choose some other card.");
 	}
 
 
 	// modify card's status as "selected" in `cardwallet` table of escrow contract
+	for(auto&& card_id : card_ids) {
+		action(
+			permission_level{get_self(), "active"_n},
+			escrow_contract_ac,
+			"setgstatus"_n,
+			std::make_tuple(player, card_id, "selected"_n)
+		).send();
+	}
 
-	// modify `ongamestat` table with cards for respective players
+	
+	// TODO: modify `ongamestat` table with cards for respective players
 
 
 	
@@ -254,3 +264,11 @@ void gpkbattlesco::remcards(const name& asset_contract_ac,
 
 
 }
+
+// --------------------------------------------------------------------------------------------------------------------
+// void gpkbattlesco::set_gstatus( const name& player, 
+// 								uint64_t card_id,
+// 								const name& status ) {
+// 	gpkbatescrow::setgstatus_action setgstatus(escrow_contract_ac, {get_self(), "active"_n});
+// 	setgstatus.send(player, card_id, status);
+// }

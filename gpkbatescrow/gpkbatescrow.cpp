@@ -37,9 +37,23 @@ void gpkbatescrow::transferbypl( const name& player,
 		});
 	}
 
-	// TODO: add cards into `cards` table if not already added
+	// add player name into `players` table, if not already added
+	action(
+		permission_level{get_self(), "active"_n},
+		game_contract_ac,
+		"empifyplayer"_n,
+		std::make_tuple(get_self(), player)
+	).send();
 
-	// TODO: add player name into `players` table, if not already added
+
+	// add cards into `cards` table if not already added
+	action(
+		permission_level{get_self(), "active"_n},
+		game_contract_ac,
+		"empifycards"_n,
+		std::make_tuple(get_self(), player, card_ids)
+	).send();
+
 
 }
 
@@ -72,8 +86,8 @@ void gpkbatescrow::withdrawbypl( const name& player,
 
 	check(card_it != cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " doesn't exist in the table.");
 
-	// the card should not be in playing status
-	check(card_it->usage_status == "playing"_n, "card with id:" + std::to_string(card_id) + " can't be withdrawn as it is in queue for playing.");
+	// the card should not be in "selected" status
+	check(card_it->usage_status != "selected"_n, "card with id:" + std::to_string(card_id) + " can't be withdrawn as it is \'selected\' for playing.");
 
 	action(
 		permission_level{get_self(), "active"_n},
@@ -86,5 +100,17 @@ void gpkbatescrow::withdrawbypl( const name& player,
 	// erase the card from cardwallet table
 	cardwallet_table.erase(card_it);
 
-	// TODO: erase card_id from the cards_list in `cards` table
+	// TODO: remove the player from the players_list in `players` table of game contract
+	// determine the size of multi-index table
+	// if (size == 0) then, use `remplayer` action to remove the player from `players_list` in the `players` table.
+	// if (cardwallet_table.begin() == cardwallet_table.end()) ===> size is zero.
+
+
+	// erase card_id from the `cards_list` in `cards` table of game contract
+	action(
+		permission_level{get_self(), "active"_n},
+		game_contract_ac,
+		"remcards"_n,
+		std::make_tuple(get_self(), player, vector<uint64_t>{card_id})
+	).send();
 }
