@@ -24,6 +24,7 @@ void gpkbatescrow::transferbypl( const name& player,
 							"Transfer card(s) to " + get_self().to_string() + " for purpose: " + memo)
 	).send();
 
+	// instantiate the `cardwallet` table
 	cardwallet_index cardwallet_table(get_self(), player.value);
 
 	for(auto&& card_id : card_ids) {
@@ -66,6 +67,7 @@ void gpkbatescrow::setgstatus( const name& player,
 
 	// TODO: check status could be "selected"
 
+	// instantiate the `cardwallet` table
 	cardwallet_index cardwallet_table(get_self(), player.value);
 	auto card_it = cardwallet_table.find(card_id);
 
@@ -82,6 +84,7 @@ void gpkbatescrow::withdrawbypl( const name& player,
 								uint64_t card_id ) {
 	require_auth(player);
 
+	// instantiate the `cardwallet` table
 	cardwallet_index cardwallet_table(get_self(), player.value);
 	auto card_it = cardwallet_table.find(card_id);
 
@@ -114,4 +117,68 @@ void gpkbatescrow::withdrawbypl( const name& player,
 	// 	"remcards"_n,
 	// 	std::make_tuple(get_self(), player, vector<uint64_t>{card_id})
 	// ).send();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbatescrow::disburse( const name& winner,
+								const name& loser,
+								const name& asset_contract_ac,
+								vector<uint64_t> winner_card_ids,	// 4
+								vector<uint64_t> loser_card_ids, 	// 2
+								) {
+	require_auth(game_contract_ac);
+
+	check(memo.size() <= 256, "memo has more than 256 bytes");
+
+	// instantiate the `cardwallet` table
+	cardwallet_index cardwallet_table(get_self(), winner.value);
+
+	auto check_card_ids_winner = winner_card_ids;
+	check_card_ids_winner.erase(check_card_ids_winner.end());		// remove the last one which belongs to the loser
+	auto check_card_ids_loser = loser_card_ids;
+	check_card_ids_loser.emplace_back(winner_card_ids[-1]);		// add the last one of winner which belongs to the loser
+
+	// check for winner if 3 cards are marked "selected"
+	for(auto&& card_id : check_card_ids_winner) {
+		auto winner_card_it = cardwallet_table.find(card_id);
+
+		check(winner_card_it != cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " doesn\'t exist in the table.");
+
+		// the card should be in "selected" status
+		check(winner_card_it->usage_status == "selected"_n, "card with id:" + std::to_string(card_id) + " can\'t be disbursed as it was not \'selected\' for playing.");
+
+		// erase the card from cardwallet table
+		cardwallet_table.erase(winner_card_it);
+	}
+
+	// check for loser if 3 cards are marked "selected"
+	for(auto&& card_id : check_card_ids_loser) {
+		auto loser_card_it = cardwallet_table.find(card_id);
+
+		check(loser_card_it != cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " doesn\'t exist in the table.");
+
+		// the card should be in "selected" status
+		check(loser_card_it->usage_status == "selected"_n, "card with id:" + std::to_string(card_id) + " can\'t be disbursed as it was not \'selected\' for playing.");
+
+		// erase the card from cardwallet table
+		cardwallet_table.erase(loser_card_it);
+	}
+
+
+
+	// escrow contract transfers all cards to winner at a time
+	action(
+		permission_level{get_self(), "active"_n},
+		asset_contract_ac,
+		"transfer"_n,
+		std::make_tuple(get_self(), winner, winner_card_ids, "disburses " + std::to_string(winner_card_ids.size()) + " cards for winning.")
+	).send();
+
+	// escrow contract transfers all cards to loser at a time
+	action(
+		permission_level{get_self(), "active"_n},
+		asset_contract_ac,
+		"transfer"_n,
+		std::make_tuple(get_self(), loser, loser_card_ids, "disburses " + std::to_string(loser_card_ids.size()) + " cards for losing.")
+	).send();
 }

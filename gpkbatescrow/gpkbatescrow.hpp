@@ -63,7 +63,15 @@ public:
 							const name& asset_contract_ac,
 							uint64_t card_id );
 
+	ACTION disburse( const name& winner,
+						const name& loser,
+						const name& asset_contract_ac,
+						vector<uint64_t> winner_card_ids,	// 4
+						vector<uint64_t> loser_card_ids, 	// 2
+						)
+
 	using setgstatus_action  = action_wrapper<"setgstatus"_n, &gpkbatescrow::setgstatus>;
+	using disburse_action  = action_wrapper<"disburse"_n, &gpkbatescrow::disburse>;
 
 	// -----------------------------------------------------------------------------------------------------------------------
 	// check card's category, quality, variant & 2A,1B or 1A,2B before/after the transfer to the contract

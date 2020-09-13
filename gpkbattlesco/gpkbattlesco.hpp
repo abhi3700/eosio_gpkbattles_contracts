@@ -36,6 +36,7 @@ CONTRACT gpkbattlesco : public contract
 {
 private:
 	const symbol gamefee_token_symbol;
+	// const symbol gamefee_value;
 	const name asset_contract_ac;
 	static const name escrow_contract_ac;
 
@@ -45,6 +46,7 @@ public:
 	gpkbattlesco(name receiver, name code, datastream<const char*> ds) : 
 				contract(receiver, code, ds), 
 				gamefee_token_symbol("WAX", 4),
+				// gamefee_value(asset(50000, symbol("WAX", 4))),		// "5.0000 WAX"
 				asset_contract_ac("simpleassets"_n),
 				escrow_contract_ac("gpkbatescrow"_n) {}
 
@@ -71,7 +73,7 @@ public:
 	 * @param memo - memo
 	 */
 	[[eosio::on_notify("eosio.token::transfer")]]
-	ACTION deposit( const name& player,
+	ACTION depositgfee( const name& player,
 					const name& contract_ac,
 					const asset& game_fee,
 					const string& memo );
@@ -222,6 +224,18 @@ public:
 	using remcards_action  = action_wrapper<"remcards"_n, &gpkbatescrow::remcards>;
 
 	// -----------------------------------------------------------------------------------------------------------------------
+	// check if min. gfeewallet's balance is gamefee_value
+	static void check_gfee_balance(const name& player, const asset& game_fee) {
+		// instantiate the `gfeewallet` table
+		gfeewallet_index gfeewallet_table(get_self(), player.value);
+		auto gfeewallet_it = gfeewallet_table.find(game_fee.symbol.raw());
+
+		check(gfeewallet_it != gfeewallet_table.end(), "the player is not in the wallet table.");
+		check(gfeewallet_it->balance.amount >= game_fee.amount, "The player has no min. balance i.e. \'" + 
+												game_fee.to_string + "\' in the game wallet.");
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------------
 	// check card's category, quality, variant & 2A,1B or 1A,2B before/after the transfer to the contract
 	static name checkget_cards_type( const name& asset_contract_ac,
 								const name& owner,
@@ -323,12 +337,14 @@ public:
 	}
 
 private:
-	// ==================================================================================
+	// ======================================================================================================================
 	// scope - self
 	TABLE ongamestat {
 		uint64_t game_id;
 		name player_1;
 		name player_2;
+		asset game_fee;
+		name asset_contract_ac;
 		vector<uint64_t> player1_cards;
 		vector<uint64_t> player2_cards;
 		name player1_cards_combo;
@@ -344,7 +360,6 @@ private:
 		uint8_t draw_count;				// param to monitor the no. of draws
 		uint8_t nodraw_count;				// param to ensure that the game is not played again if the count = 1.
 		uint8_t total_play_count;			// total play count including - 2 draws, 1 draw >> 1nodraw, 1 nodraw, . Max. is 2. 
-		name move_info_status;				// to check it is not moved.
 
 		auto primary_key() const { return game_id; }
 		uint64_t by_player1() const { return player_1.value; }
@@ -356,31 +371,47 @@ private:
 								indexed_by< "byplayer2"_n, const_mem_fun<ongamestat, uint64_t, &ongamestat::by_player2> >	
 								>;
 	// -----------------------------------------------------------------------------------------------------------------------
+	// scope - player name
+	TABLE usergamestat {
+		name asset_contract_ac;
+		vector<uint64_t> game_ids;
+		uint32_t wins;
+		uint32_t loses;
+		uint32_t draws;
+		uint32_t games;
+		vector<uint64_t> cards_won;
+
+		auto primary_key() const { return contract_type.value; }
+	};
+
+	using usergamestat_index = multi_index<"usergamestat"_n, usergamestat>;
+
+	// -----------------------------------------------------------------------------------------------------------------------
 	/*
 		This table gets updated post the game. 
 		Basically moved from "ongamestat" to here.
 	*/
 	// scope - player name
-	TABLE usergamestat {
-		uint64_t game_id;				// game_id generated
-		vector<uint64_t> played_cards;	// list of played cards
-		name played_cards_combo;
-		uint32_t start_timestamp;			// for draw, start_timestamp & end_timestamp is same.
-		uint32_t end_timestamp;				// for no-draw, start timestamp & end_timestamp are different, as there is a wait for RNG service involved of around 1-2 secs.
-		name result;
-		name winner;
-		name loser;
-		uint64_t card_won;
-		checksum256 random_value;				// generated from WAX RNG service, if no-draw
-		uint8_t draw_count;				// param to monitor the no. of draws
-		uint8_t nodraw_count;				// param to ensure that the game is not played again if the count = 1.
-		uint8_t total_play_count;			// total play count including - 2 draws, 1 draw >> 1nodraw, 1 nodraw, . Max. is 2. 
+	// TABLE usergamestat {
+	// 	uint64_t game_id;				// game_id generated
+	// 	vector<uint64_t> played_cards;	// list of played cards
+	// 	name played_cards_combo;
+	// 	uint32_t start_timestamp;			// for draw, start_timestamp & end_timestamp is same.
+	// 	uint32_t end_timestamp;				// for no-draw, start timestamp & end_timestamp are different, as there is a wait for RNG service involved of around 1-2 secs.
+	// 	name result;
+	// 	name winner;
+	// 	name loser;
+	// 	uint64_t card_won;
+	// 	checksum256 random_value;				// generated from WAX RNG service, if no-draw
+	// 	uint8_t draw_count;				// param to monitor the no. of draws
+	// 	uint8_t nodraw_count;				// param to ensure that the game is not played again if the count = 1.
+	// 	uint8_t total_play_count;			// total play count including - 2 draws, 1 draw >> 1nodraw, 1 nodraw, . Max. is 2. 
 
 
-		auto primary_key() const { return game_id; }
-	};
+	// 	auto primary_key() const { return game_id; }
+	// };
 
-	using usergamestat_index = multi_index<"usergamestat"_n, usergamestat,>;
+	// using usergamestat_index = multi_index<"usergamestat"_n, usergamestat,>;
 	// -----------------------------------------------------------------------------------------------------------------------
 	// scope - self
 	TABLE players {
@@ -391,27 +422,17 @@ private:
 	}
 
 	using players_index = multi_index<"players"_n, players>;
+	
 	// -----------------------------------------------------------------------------------------------------------------------
 	// scope - player name
-	// TABLE cards {
-	// 	name contract_ac;
-	// 	vector<uint64_t> cards_list;
-
-	// 	auto primary_key() const { return contract_ac.value; }
-	// };
-
-	// using cards_index = multi_index<"cards"_n, cards>;
-
-	// -----------------------------------------------------------------------------------------------------------------------
-	// scope - player name
-	TABLE gamewallet
+	TABLE gfeewallet
 	{
 		asset balance;
 
 		auto primary_key() const { return balance.symbol.raw(); }
 	};
 
-	using gamewallet_index = multi_index<"gamewallet"_n, gamewallet>;
+	using gfeewallet_index = multi_index<"gfeewallet"_n, gfeewallet>;
 
 	// -----------------------------------------------------------------------------------------------------------------------
 	// scope - owner
@@ -536,6 +557,7 @@ private:
 
 		return res;
 	}
+
 
 	// ==================================================================================
 	// Adding inline action for `setgstatus` action in the ridex contract   
