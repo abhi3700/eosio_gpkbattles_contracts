@@ -50,20 +50,71 @@ public:
 				// asset_contract_ac("simpleassets"_n) 
 				{}
 
+	/**
+	 * @brief - transfer assets by player
+	 * @details - transfer assets by player
+	 * 
+	 * @param player - player who transfers
+	 * @param asset_contract_ac - simpleassets, atomicassets
+	 * @param card_ids - 1 or more cards
+	 * @param memo - a note
+	 * 
+	 * @pre - checked if the cards transferred are of "2a1b" or "1a2b" combo
+	 */
 	ACTION transferbypl( const name& player,
 						const name& asset_contract_ac,
 						const vector<uint64_t> card_ids,
 						const string& memo );
 
+	/**
+	 * @brief - an inline action for battle contract
+	 * @details - battle contract calls this action externally
+	 * 
+	 * @param player - whose card's status will be transferred
+	 * @param card_id - card id
+	 * @param status - available/selected
+	 * 
+	 * @pre - status should be either "available" or "selected"
+	 * @pre - card should have been transferred by the player
+	 */
 	ACTION setgstatus( const name& player, 
 						uint64_t card_id,
 						const name& status );
 
+	/**
+	 * @brief - player withdraws the card, if not selected for game i.e. "available" status
+	 * @details - player withdraws the card, if not selected for game i.e. "available" status
+	 * 
+	 * @param player - player who withdraws
+	 * @param asset_contract_ac - simpleassets, atomicassets
+	 * @param card_id - card id
+	 * 
+	 * @pre - the card_id should not be "selected" status
+	 */
 	ACTION withdrawbypl( const name& player,
 							const name& asset_contract_ac,
 							uint64_t card_id );
 
-	ACTION disburse( const name& winner,
+	/**
+	 * @brief - an inline action for battle contract usage externally
+	 * @details - disburses winner cards (4 qty.) to winner
+	 * 			- disburses loser cards (2 qty.) to loser
+	 * 			- alerts the user with win/lose status with game_id	 
+	 * 
+	 * @param game_id - for adding into memo note
+	 * @param winner - player who wins 
+	 * @param loser - player who loses 
+	 * @param asset_contract_ac - simpleassets, atomicassets
+	 * @param winner_card_ids - cards won i.e. 4 no.s
+	 * @param loser_card_ids - cards losen i.e. 2 no.s
+	 * 
+	 * @pre - a new list create for winner, loser with equal in qty.
+	 * @pre - all the cards' owners are checked correspondingly with parsed winner, loser
+	 * @pre - erase all cards from the cardwallet table
+	 * @pre - then transfers the parsed cards to players respectively i.e 4 to winner & 2 to loser
+	 */
+	ACTION disburse( uint64_t game_id,
+						const name& winner,
 						const name& loser,
 						const name& asset_contract_ac,
 						vector<uint64_t> winner_card_ids,	// 4

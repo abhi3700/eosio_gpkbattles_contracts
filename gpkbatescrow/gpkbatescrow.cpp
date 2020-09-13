@@ -13,6 +13,7 @@ void gpkbatescrow::transferbypl( const name& player,
 	check(memo.size() <= 256, "memo has more than 256 bytes");
 
 	// check cards quantity (either a or b), variant (base), category (exotic)
+	// check "2a1b" or "1a2b" card combo
 	// here check is done before the transfer to the escrow contract
 	check_cards_type(asset_contract_ac, player, card_ids, "exotic"_n, "base");
 
@@ -47,16 +48,6 @@ void gpkbatescrow::transferbypl( const name& player,
 		std::make_tuple(get_self(), player)
 	).send();
 
-
-	// // add cards into `cards` table if not already added
-	// action(
-	// 	permission_level{get_self(), "active"_n},
-	// 	game_contract_ac,
-	// 	"empifycards"_n,
-	// 	std::make_tuple(get_self(), player, card_ids)
-	// ).send();
-
-
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -65,7 +56,8 @@ void gpkbatescrow::setgstatus( const name& player,
 								const name& status ) {
 	require_auth(game_contract_ac);
 
-	// TODO: check status could be "selected"
+	// check status can be "selected"/"available"
+	check( (status == "available"_n) || (status == "selected"_n), "status must be either \'available\' or \'selected\'" );
 
 	// instantiate the `cardwallet` table
 	cardwallet_index cardwallet_table(get_self(), player.value);
@@ -104,23 +96,22 @@ void gpkbatescrow::withdrawbypl( const name& player,
 	// erase the card from cardwallet table
 	cardwallet_table.erase(card_it);
 
-	// TODO: remove the player from the players_list in `players` table of game contract
-	// determine the size of multi-index table
+	// remove the player from the players_list in `players` table of game contract
 	// if (size == 0) then, use `remplayer` action to remove the player from `players_list` in the `players` table.
-	// if (cardwallet_table.begin() == cardwallet_table.end()) ===> size is zero.
+	if (cardwallet_table.begin() == cardwallet_table.end()) { 			// size is zero
+		action(
+			permission_level{get_self(), "active"_n},
+			game_contract_ac,
+			"remplayer"_n,
+			std::make_tuple(get_self(), player)
+		).send();
+	}
 
-
-	// erase card_id from the `cards_list` in `cards` table of game contract
-	// action(
-	// 	permission_level{get_self(), "active"_n},
-	// 	game_contract_ac,
-	// 	"remcards"_n,
-	// 	std::make_tuple(get_self(), player, vector<uint64_t>{card_id})
-	// ).send();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbatescrow::disburse( const name& winner,
+void gpkbatescrow::disburse( uint64_t game_id,
+								const name& winner,
 								const name& loser,
 								const name& asset_contract_ac,
 								vector<uint64_t> winner_card_ids,	// 4
@@ -165,13 +156,13 @@ void gpkbatescrow::disburse( const name& winner,
 	}
 
 
-
 	// escrow contract transfers all cards to winner at a time
 	action(
 		permission_level{get_self(), "active"_n},
 		asset_contract_ac,
 		"transfer"_n,
-		std::make_tuple(get_self(), winner, winner_card_ids, "disburses " + std::to_string(winner_card_ids.size()) + " cards for winning.")
+		std::make_tuple(get_self(), winner, winner_card_ids, "disburses " + std::to_string(winner_card_ids.size()) 
+			+ " cards for winning the game with id: \'" + std::to_string(game_id) + "\'.")
 	).send();
 
 	// escrow contract transfers all cards to loser at a time
@@ -179,6 +170,7 @@ void gpkbatescrow::disburse( const name& winner,
 		permission_level{get_self(), "active"_n},
 		asset_contract_ac,
 		"transfer"_n,
-		std::make_tuple(get_self(), loser, loser_card_ids, "disburses " + std::to_string(loser_card_ids.size()) + " cards for losing.")
+		std::make_tuple(get_self(), loser, loser_card_ids, "disburses " + std::to_string(loser_card_ids.size())
+			+ " cards for losing the game with id: \'" + std::to_string(game_id) + "\'.")
 	).send();
 }

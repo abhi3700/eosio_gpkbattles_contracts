@@ -220,8 +220,8 @@ public:
 
 	using empifyplayer_action  = action_wrapper<"empifyplayer"_n, &gpkbatescrow::empifyplayer>;
 	using remplayer_action  = action_wrapper<"remplayer"_n, &gpkbatescrow::remplayer>;
-	using empifycards_action  = action_wrapper<"empifycards"_n, &gpkbatescrow::empifycards>;
-	using remcards_action  = action_wrapper<"remcards"_n, &gpkbatescrow::remcards>;
+	// using empifycards_action  = action_wrapper<"empifycards"_n, &gpkbatescrow::empifycards>;
+	// using remcards_action  = action_wrapper<"remcards"_n, &gpkbatescrow::remcards>;
 
 	// -----------------------------------------------------------------------------------------------------------------------
 	// check if min. gfeewallet's balance is gamefee_value

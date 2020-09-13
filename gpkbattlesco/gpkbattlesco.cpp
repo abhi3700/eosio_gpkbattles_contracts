@@ -318,7 +318,7 @@ void gpkbattlesco::play(uint64_t game_id) {
 */
 		if (ongamestat_it->draw_count == 1) {
 			// 1. mark the cards as "available" for both players in `cardwallet` table of escrow contract
-			// modify card's status as "selected" in `cardwallet` table of escrow contract
+			// modify card's status as "available" in `cardwallet` table of escrow contract
 			// For player_1
 			for(auto&& card_id : ongamestat_it->player1_cards) {
 				action(
@@ -366,15 +366,46 @@ void gpkbattlesco::play(uint64_t game_id) {
 
 /*		Instructions for 2 times draw:
 		=============================
-		1. move info to `usergamestat` table for both players
-		2. erase the row
+		1. mark the cards as "available" for both players in `cardwallet` table of escrow contract
+		2. Alert the players that the game_id is draw.
+		3. move info to `usergamestat` table for both players
+		4. add back the players into the players_list
+		5. erase the row
 
 		if 2 times draw, then dump the row & the add the players back to `players_list` in `players` table, 
 		& mark the cards as "available" for both players in `cardwallet` table of escrow contract
 */
 		else if (ongamestat_it->draw_count == 2) {
+			// 1. mark the cards as "available" for both players in `cardwallet` table of escrow contract
+			// modify card's status as "available" in `cardwallet` table of escrow contract
+			// For player_1
+			for(auto&& card_id : ongamestat_it->player1_cards) {
+				action(
+					permission_level{get_self(), "active"_n},
+					escrow_contract_ac,
+					"setgstatus"_n,
+					std::make_tuple(ongamestat_it->player_1, card_id, "available"_n)
+				).send();
+			}
+			// For player_2
+			for(auto&& card_id : ongamestat_it->player2_cards) {
+				action(
+					permission_level{get_self(), "active"_n},
+					escrow_contract_ac,
+					"setgstatus"_n,
+					std::make_tuple(ongamestat_it->player_2, card_id, "available"_n)
+				).send();
+			}
 
-			// move info to `usergamestat` table before erasing this row from `ongamestat` table
+			// 2. Send alerts
+			// send alert to player_1
+			send_alert(ongamestat_it->player_1, " The game with id: \'" + std::to_string(ongamestat_it->game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " times.");
+
+			// send alert to player_2
+			send_alert(ongamestat_it->player_2, " The game with id: \'" + std::to_string(ongamestat_it->game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " times.");
+
+
+			// 3. move info to `usergamestat` table before erasing this row from `ongamestat` table
 			// For player-1
 			move_game_info(ongamestat_it->game_id, ongamestat_it->player_1, "your game with id: \'" + 
 				std::to_string(ongamestat_it->game_id) + "\' is moved to \'usergamestat\' table.");
@@ -383,7 +414,34 @@ void gpkbattlesco::play(uint64_t game_id) {
 			move_game_info(ongamestat_it->game_id, ongamestat_it->player_2, "your game with id: \'" + 
 				std::to_string(ongamestat_it->game_id) + "\' is moved to \'usergamestat\' table.");
 
-			// lastly erase the row, as all the info has been moved.
+			
+			// 4. add back the players into the players_list
+			// instantiate the `players` table
+			players_index players_table(get_self(), get_self().value);
+			auto players_it = players_table.find(ongamestat_it->asset_contract_ac.value);
+
+			check(players_it != players_table.end(), "players_list is not set.");
+
+			players_table.modify(players_it, get_self(), [&](auto& row){
+				auto search1_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), ongamestat_it->player_1);
+
+				// add player_1 if not added
+				if (search1_it == players_it->players_list) {
+					row.players_list.emplace_back(ongamestat_it->player_1);
+				} 
+
+
+				auto search2_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), ongamestat_it->player_2);
+
+				// add player_2 if not added
+				if (search2_it == players_it->players_list) {
+					row.players_list.emplace_back(ongamestat_it->player_2);					
+				}
+
+			});
+
+			
+			// 5. lastly erase the row, as all the info has been moved.
 			ongamestat_table.erase(ongamestat_it);
 		}
 
@@ -454,7 +512,7 @@ void gpkbattlesco::receiverand(uint64_t game_id, const eosio::checksum256& rando
 					permission_level{get_self(), "active"_n},
 					escrow_contract_ac,
 					"disburse"_n,
-					std::make_tuple(ongamestat_it->player1, ongamestat_it->player2, asset_contract_ac, winner_transfer_cards, loser_transfer_cards)
+					std::make_tuple(ongamestat_it->game_id, ongamestat_it->player1, ongamestat_it->player2, asset_contract_ac, winner_transfer_cards, loser_transfer_cards)
 				).send();
 
 			} else if (ongamestat_it->player1_cards_combo == "1a2b"_n) {
@@ -473,7 +531,7 @@ void gpkbattlesco::receiverand(uint64_t game_id, const eosio::checksum256& rando
 					permission_level{get_self(), "active"_n},
 					escrow_contract_ac,
 					"disburse"_n,
-					std::make_tuple(ongamestat_it->player2, ongamestat_it->player1, asset_contract_ac, winner_transfer_cards, loser_transfer_cards)
+					std::make_tuple(ongamestat_it->game_id, ongamestat_it->player2, ongamestat_it->player1, asset_contract_ac, winner_transfer_cards, loser_transfer_cards)
 				).send();
 			}
 		}
@@ -494,7 +552,7 @@ void gpkbattlesco::receiverand(uint64_t game_id, const eosio::checksum256& rando
 					permission_level{get_self(), "active"_n},
 					escrow_contract_ac,
 					"disburse"_n,
-					std::make_tuple(ongamestat_it->player1, ongamestat_it->player2, asset_contract_ac, winner_transfer_cards, loser_transfer_cards)
+					std::make_tuple(ongamestat_it->game_id, ongamestat_it->player1, ongamestat_it->player2, asset_contract_ac, winner_transfer_cards, loser_transfer_cards)
 				).send();
 
 			} else if (ongamestat_it->player1_cards_combo == "2a1b"_n) {
@@ -513,7 +571,7 @@ void gpkbattlesco::receiverand(uint64_t game_id, const eosio::checksum256& rando
 					permission_level{get_self(), "active"_n},
 					escrow_contract_ac,
 					"disburse"_n,
-					std::make_tuple(ongamestat_it->player2, ongamestat_it->player1, asset_contract_ac, winner_transfer_cards, loser_transfer_cards)
+					std::make_tuple(ongamestat_it->game_id, ongamestat_it->player2, ongamestat_it->player1, asset_contract_ac, winner_transfer_cards, loser_transfer_cards)
 				).send();
 
 			}
