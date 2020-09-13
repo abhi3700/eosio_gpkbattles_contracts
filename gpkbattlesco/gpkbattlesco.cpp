@@ -25,8 +25,10 @@ void gpkbattlesco::match2player(const name& asset_contract_ac) {
 	check(p1 != p2, "the matched players are identical by name. Please, ensure there is no duplicate players name in the list.");
 
 	// check each p1, p2 contain min. 3 cards
-	check_3cards(p1, "simpleassets"_n);
-	check_3cards(p2, "simpleassets"_n);
+	check(checkget_3_available_cards(p1, asset_contract_ac).size() == 3, 
+		"player " + p1.to_string() + " has no 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
+	check(checkget_3_available_cards(p2, asset_contract_ac).size() == 3, 
+		"player " + p2.to_string() + " has no 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
 
 	// check that the players - p1, p2 are not present in the player_1 column & player_2 column of the table
 	ongamestat_index ongamestat_table(get_self(), get_self().value);
@@ -154,6 +156,11 @@ void gpkbattlesco::sel3card( const name& player,
 		check(card_it->usage_status == "available"_n, "card with id:" + std::to_string(card_id) + " is already selected. Please choose some other card.");
 	}
 
+	// check if the card types are either (2A,1B) or (1A,2B) with escrow contract as owner.
+	// here check is done after the transfer to the escrow contract
+	auto card_ids_type = checkget_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
+	// here, no use of this card_ids_type var
+
 
 	// modify card's status as "selected" in `cardwallet` table of escrow contract
 	for(auto&& card_id : card_ids) {
@@ -165,8 +172,7 @@ void gpkbattlesco::sel3card( const name& player,
 		).send();
 	}
 
-
-	// modify `ongamestat` table with cards for respective players
+	// modify `ongamestat` table with selected cards for respective players
 	ongamestat_index ongamestat_table(get_self(), get_self().value);
 	auto player1_idx = ongamestat_table.get_index<"byplayer1">();
 	auto player2_idx = ongamestat_table.get_index<"byplayer2">();
@@ -200,37 +206,25 @@ void gpkbattlesco::sel3cardauto( const name& player,
 								const name& asset_contract_ac ) {
 	require_auth(get_self());
 
+	vector<uint64_t> card_ids{};
+	card_ids = checkget_3_available_cards(player, asset_contract_ac);
 
-	// check if the cards have been transferred to the escrow's cardwallet
-	cardwallet_index cardwallet_table(escrow_contract_ac, player.value);
+	// check if the card types are either (2A,1B) or (1A,2B) with escrow contract as owner.
+	// here check is done after the transfer to the escrow contract
+	auto card_ids_type = checkget_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
+	// here, no use of this card_ids_type var
 
-	// vector<uint64_t> card_ids{card1_id, card2_id, card3_id};
-	
-	// for(auto&& card_id : card_ids) {
-	// 	auto card_it = cardwallet_table.find(card_id);
+	// modify card's status as "selected" in `cardwallet` table of escrow contract
+	for(auto&& card_id : card_ids) {
+		action(
+			permission_level{get_self(), "active"_n},
+			escrow_contract_ac,
+			"setgstatus"_n,
+			std::make_tuple(player, card_id, "selected"_n)
+		).send();
+	}
 
-	// 	// check if either of the cards exist in the contract's table
-	// 	check(card_it != cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " has not been transferred to the escrow contract.");
-		
-	// 	// check if the card's status is "available"
-	// 	check(card_it->usage_status == "available"_n, "card with id:" + std::to_string(card_id) + " is already selected. Please choose some other card.");
-	// }
-
-
-	// // modify card's status as "selected" in `cardwallet` table of escrow contract
-	// for(auto&& card_id : card_ids) {
-	// 	action(
-	// 		permission_level{get_self(), "active"_n},
-	// 		escrow_contract_ac,
-	// 		"setgstatus"_n,
-	// 		std::make_tuple(player, card_id, "selected"_n)
-	// 	).send();
-	// }
-
-	// TODO: choose cards from `cards_list` in `cards` table
-
-
-	// modify `ongamestat` table with cards for respective players
+	// modify `ongamestat` table with selected cards for respective players
 	ongamestat_index ongamestat_table(get_self(), get_self().value);
 	auto player1_idx = ongamestat_table.get_index<"byplayer1">();
 	auto player2_idx = ongamestat_table.get_index<"byplayer2">();
@@ -256,6 +250,91 @@ void gpkbattlesco::sel3cardauto( const name& player,
 			row.player2_cards = card_ids;
 		});
 	}
+
+}
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::play(uint64_t game_id) {
+	require_auth(get_self());
+
+	// instantiate the `ongamestat` table
+	ongamestat_index ongamestat_table(get_self(), get_self().value);
+	auto ongamestat_it = ongamestat_table.find(game_id);
+
+	check(ongamestat_it != ongamestat_table.end(), "the parsed game_id \'" + std::to_string(game_id) + "\' doesn't exist.");
+
+	check(ongamestat_it->player_1 != ongamestat_it->player_2, "Both the players should be different.");
+	// check if the card types are either (2A,1B) or (1A,2B) with escrow contract as owner.
+	// here check is done after the transfer to the escrow contract
+	auto card_ids_1_type = checkget_cards_type(asset_contract_ac, escrow_contract_ac, ongamestat_it->player1_cards, "exotic"_n, "base");
+	auto card_ids_2_type = checkget_cards_type(asset_contract_ac, escrow_contract_ac, ongamestat_it->player2_cards, "exotic"_n, "base");
+
+	// check if draw or not
+	if(card_ids_1_type == card_ids_2_type) {			// Draw
+		ongamestat_table.modify(ongamestat_it, get_self(), [&](auto& row){
+			row.start_timestamp = now();
+			row.player1_cards_combo = card_ids_1_type;
+			row.player2_cards_combo = card_ids_2_type;
+			row.result = "draw"_n;
+			row.status = "over"_n;
+			row.end_timestamp = now();
+		});
+	}
+	else {												// No Draw
+		ongamestat_table.modify(ongamestat_it, get_self(), [&](auto& row){
+			row.start_timestamp = now();
+			row.player1_cards_combo = card_ids_1_type;
+			row.player2_cards_combo = card_ids_2_type;
+			row.result = "nodraw"_n;
+			row.status = "waitforrng"_n;
+		});
+	
+		// any fixed/variable no. let's say game_id
+		uint64_t assoc_id = game_id;
+
+		// hash(txn_id, current_timestamp), & then convert hash to uint64_t
+		uint64_t signing_value = checksum256_to_uint64_t(hash_digest_256(get_trxid(), now())); 
+
+		// generate the random no.
+		//call orng.wax
+	    action(
+	        { get_self(), "active"_n },
+	        "orng.wax"_n,
+	        "requestrand"_n,
+	        std::tuple{ assoc_id, signing_value, get_self() })
+	        .send();
+		}
+
+}
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::receiverand(uint64_t game_id, const eosio::checksum256& random_value) {
+	name res = find_game_result(random_value);
+
+	// instantiate the `ongamestat` table
+	ongamestat_index ongamestat_table(get_self(), get_self().value);
+	auto ongamestat_it = ongamestat_table.find(game_id);
+
+	check(ongamestat_it != ongamestat_table.end(), "the parsed game_id \'" + std::to_string(game_id) + "\' doesn't exist.");
+	check(ongamestat_it->result == "nodraw", "the parsed game_id \'" + std::to_string(game_id) + "\' has result other than \'nodraw\'");
+	check(ongamestat_it->status == "waitforrng"_n, "this parsed game_id \'" + std::to_string(game_id) + "\' is not waiting for RNG.");
+
+	// set the remaining params after receiving the random_value
+	ongamestat_table.modify(ongamestat_it, get_self(), [&](auto& row){
+		if(res == "a"_n) {
+			if (ongamestat_it->player1_cards_combo == "2a1b"_n) {
+				row.winner = ongamestat_it->player1;
+				row.loser = ongamestat_it->player2;
+			} else if (ongamestat_it->player1_cards_combo == "1a2b"_n)
+			row.winner = ;
+			row.loser = ;
+		}
+		else if(res == "b"_n) {
+			row.winner = ;
+			row.loser = ;
+		}
+		row.random_value = random_value;
+		row.status = "over"_n;
+		row.end_timestamp = now();
+	});
 
 }
 // --------------------------------------------------------------------------------------------------------------------
@@ -303,55 +382,55 @@ void gpkbattlesco::remplayer(const name& asset_contract_ac,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbattlesco::empifycards(const name& asset_contract_ac, 
-								const name& player, 
-								const vector<uint64_t> cards) {
-	require_auth(escrow_contract_ac);
+// void gpkbattlesco::empifycards(const name& asset_contract_ac, 
+// 								const name& player, 
+// 								const vector<uint64_t> cards) {
+// 	require_auth(escrow_contract_ac);
 
-	// add card(s) to the cards_list, if not added
-	cards_index cards_table(get_self(), player.value);
-	auto cards_it = cards_table.find(asset_contract_ac.value);
+// 	// add card(s) to the cards_list, if not added
+// 	cards_index cards_table(get_self(), player.value);
+// 	auto cards_it = cards_table.find(asset_contract_ac.value);
 
-	if(cards_it == cards_table.end()) {
-		cards_table.emplace(get_self(), [&](auto& row){
-			row.cards_list = cards;
-		});
-	} else {
-		for(auto&& card : cards) {
-			auto vec_it = std::find(cards_it->cards_list.begin(), cards_it->cards_list.end(), card);
-			if(vec_it == cards_it->cards_list.end()) {
-				cards_table.modify(cards_it, get_self(), [&](auto& row) {
-					row.cards_list.emplace_back(card);
-				});
-			}
-		}
-	}
+// 	if(cards_it == cards_table.end()) {
+// 		cards_table.emplace(get_self(), [&](auto& row){
+// 			row.cards_list = cards;
+// 		});
+// 	} else {
+// 		for(auto&& card : cards) {
+// 			auto vec_it = std::find(cards_it->cards_list.begin(), cards_it->cards_list.end(), card);
+// 			if(vec_it == cards_it->cards_list.end()) {
+// 				cards_table.modify(cards_it, get_self(), [&](auto& row) {
+// 					row.cards_list.emplace_back(card);
+// 				});
+// 			}
+// 		}
+// 	}
 
-}
+// }
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbattlesco::remcards(const name& asset_contract_ac, 
-							const name& player, 
-							const vector<uint64_t> cards) {
-	require_auth(escrow_contract_ac);
+// void gpkbattlesco::remcards(const name& asset_contract_ac, 
+// 							const name& player, 
+// 							const vector<uint64_t> cards) {
+// 	require_auth(escrow_contract_ac);
 
-	// add card(s) to the cards_list, if not added
-	cards_index cards_table(get_self(), player.value);
-	auto cards_it = cards_table.find(asset_contract_ac.value);
+// 	// add card(s) to the cards_list, if not added
+// 	cards_index cards_table(get_self(), player.value);
+// 	auto cards_it = cards_table.find(asset_contract_ac.value);
 
-	if(cards_it != cards_table.end()) {
-		for(auto&& card : cards) {
-			auto vec_it = std::find(cards_it->cards_list.begin(), cards_it->cards_list.end(), card);
-			if(vec_it != cards_it->cards_list.end()) {
-				cards_table.modify(cards_it, get_self(), [&](auto& row) {
-					row.cards_list.erase(cards_it);
-				});
-			}
-		}
-	}
+// 	if(cards_it != cards_table.end()) {
+// 		for(auto&& card : cards) {
+// 			auto vec_it = std::find(cards_it->cards_list.begin(), cards_it->cards_list.end(), card);
+// 			if(vec_it != cards_it->cards_list.end()) {
+// 				cards_table.modify(cards_it, get_self(), [&](auto& row) {
+// 					row.cards_list.erase(cards_it);
+// 				});
+// 			}
+// 		}
+// 	}
 
 
-}
+// }
 
 // --------------------------------------------------------------------------------------------------------------------
 // void gpkbattlesco::set_gstatus( const name& player, 

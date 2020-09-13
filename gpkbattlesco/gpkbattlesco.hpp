@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <string>
 
+#include "../nlohmann/json.hpp"
+
 using eosio::contract;
 using eosio::print;
 using eosio::name;
@@ -28,13 +30,14 @@ using eosio::action_wrapper;
 using std::string;
 using std::vector;
 
+using json = nlohmann::json;
 
 CONTRACT gpkbattlesco : public contract
 {
 private:
 	const symbol gamefee_token_symbol;
 	const name asset_contract_ac;
-	const name escrow_contract_ac;
+	static const name escrow_contract_ac;
 
 public:
 	using contract::contract;
@@ -129,6 +132,17 @@ public:
 	ACTION play(uint64_t game_id);
 
 	/**
+	 * @brief - For WAX RNG Service from Oracle
+	 * @details - To receive your random number from the WAX RNG service, your smart contract must include the receiverand
+	 * 
+	 * @param assoc_id - any no. (not necessarily random), 3700 here.
+	 * @param random_value - get transaction from 
+	 * 
+	 * @return [description]
+	 */
+	ACTION receiverand(uint64_t assoc_id, const eosio::checksum256& random_value);
+
+	/**
 	 * @brief - move the game data
 	 * @details - move the info from "ongamestat" to respective players' table in "usergamestat"
 	 * 
@@ -174,7 +188,7 @@ public:
 	 * @param cards - 1 or more cards
 	 * 
 	 */
-	ACTION empifycards(const name& asset_contract_ac, const name& player, const vector<uint64_t> cards);
+	// ACTION empifycards(const name& asset_contract_ac, const name& player, const vector<uint64_t> cards);
 
 
 	/**
@@ -189,7 +203,7 @@ public:
 	 * @param cards - 1 or more cards
 	 * 
 	 */
-	ACTION remcards(const name& asset_contract_ac, const name& player, const vector<uint64_t> cards);
+	// ACTION remcards(const name& asset_contract_ac, const name& player, const vector<uint64_t> cards);
 
 
 	using empifyplayer_action  = action_wrapper<"empifyplayer"_n, &gpkbatescrow::empifyplayer>;
@@ -198,10 +212,40 @@ public:
 	using remcards_action  = action_wrapper<"remcards"_n, &gpkbatescrow::remcards>;
 
 	// -----------------------------------------------------------------------------------------------------------------------
-	static void check_cards_type( const string& cardtype_1,
-								const string& cardtype_2,
-								const string& cardtype_3 ) 
+	// check card's category, quality, variant & 2A,1B or 1A,2B before/after the transfer to the contract
+	static name checkget_cards_type( const name& asset_contract_ac,
+								const name& owner,
+								const vector<uint64_t> card_ids,
+								const name& category,
+								const string& variant ) 
 	{
+		// create an empty card_ids_type of eosio::name type
+		name card_ids_type = ""_n;
+
+		check(card_ids.size() == 3, "the card_ids list chosen must be of size 3");
+		vector<string> cardtypes{};
+
+		sassets assets(asset_contract_ac, owner.value);
+
+		for(auto&& card_id : card_ids) {
+			auto idx = assets.find(card_id);
+
+			check(idx != assets.end(), "Asset with id " + std::to_string(card_id) + " not found or not yours");
+			check (idx->author == "gpk.topps"_n, "Asset is not from this author");
+			check(idx->category == category, "The asset id\'s category must be exotic.");
+
+			auto mdata_1 = json::parse(idx->mdata);
+			check((mdata["quality"] == "a") || (mdata["quality"] == "b"), "The asset id\'s quality must be either \'a\' or \'b\'."); 
+			check(mdata["variant"] == variant, "The asset id\'s variant must be \'base\'.");
+
+			cardtypes.emplace_back(mdata["quality"]);
+		}
+
+		// get the respective card types of the given cards
+		auto cardtype_1 = cardtypes[0];
+		auto cardtype_2 = cardtypes[1];
+		auto cardtype_3 = cardtypes[2];
+
 		check(
 			// 2A, 1B
 			((cardtype_1 == "a") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
@@ -211,20 +255,57 @@ public:
 			 // 1A, 2B
 			((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "b")) || 
 			((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
-			((cardtype_1 == "b") && (cardtype_2 == "b") && (cardtype_3 == "a")) || 
+			((cardtype_1 == "b") && (cardtype_2 == "b") && (cardtype_3 == "a")) 
 			
-			, "the cards chosen are of different combination than (2A,1B) OR (1A,2B)."
+			, "the cards chosen are of different combination than (2A,1B) OR (1A,2B). Please, select again."
 			);
+
+		if(	// 2A, 1B
+			((cardtype_1 == "a") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
+			((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "a")) || 
+			((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "a"))
+			) {
+			card_ids_type = "2a1b"_n;
+		}
+		else if (	// 1A, 2B
+			((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "b")) || 
+			((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
+			((cardtype_1 == "b") && (cardtype_2 == "b") && (cardtype_3 == "a")) 
+			){
+			card_ids_type = "1a2b"_n;
+		}
 	}
 
-	static void check_3cards(const name& player, const name& contract_ac) {
-		cards_index cards_table(get_self(), player.value);
-		auto cards_it = cards_table.find(contract_ac.value);
+	// -----------------------------------------------------------------------------------------------------------------------
+	static vector<uint64_t> checkget_3_available_cards(const name& player, const name& asset_contract_ac) {
+		// create an empty vector of card
+		vector<uint64_t> card_ids{};
 
-		check(cards_it != cards_table.end(), "no cards available in the wallet.");
-		check(cards_it->cards_list.size() >= 3, "cards_list size is less than 3. Please try to maintain min. 3 cards");
+		// read the `cardwallet` table & collect 3 available cards of `asset_contract_ac`
+		cardwallet_index cardwallet_table(escrow_contract_ac, player.value);
+		auto usagstatus_idx = cardwallet_table.get_index<"byusagstatus">();
+		auto cardwallet_it = usagstatus_idx.find("available"_n);
+
+		check( (cardwallet_it != usagstatus_idx.end()) &&
+				(cardwallet_it->contract_ac == asset_contract_ac)
+				, "player has no cards of asset contract: \'" + asset_contract_ac.to_string() + "\' available for selection.");
+		
+		// capture the 1st card 
+		card_ids.emplace_back(cardwallet_it->card_id);	
+		
+		// capture the 2 more cards 
+		while(card_ids.size() < 3) {
+			++cardwallet_it;
+			check( (cardwallet_it != usagstatus_idx.end()) && 
+				(cardwallet_it->contract_ac == asset_contract_ac)
+				, "player has less than 3 available cards. Please ensure min. 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
+			card_ids.emplace_back(cardwallet_it->card_id);	
+		}
+
+		return card_ids;
 	}
 
+	// -----------------------------------------------------------------------------------------------------------------------
 	static void check_quantity( const asset& quantity ) {
 		check(quantity.is_valid(), "invalid quantity");
 		check(quantity.amount > 0, "must withdraw positive quantity");
@@ -240,11 +321,16 @@ private:
 		name player_2;
 		vector<uint64_t> player1_cards;
 		vector<uint64_t> player2_cards;
-		uint32_t play_timestamp;
+		name player1_cards_combo;
+		name player2_cards_combo;
+		uint32_t start_timestamp;			// for draw start_timestamp & end_timestamp is same.
+		uint32_t end_timestamp;				// for no-draw, start timestamp & end_timestamp are different, as there is a wait for RNG service involved of around 1-2 secs.
+		name result;
 		name winner;
 		name loser;
 		uint64_t card_won;
-		// name status;				//	playing
+		name status;			// over/waitforrng: over (i.e. game over) & waitforrng (i.e. waiting for rng)
+		checksum256 random_value;				// generated from WAX RNG service, if no-draw
 
 		auto primary_key() const { return game_id; }
 		uint64_t by_player1() const { return player_1.value; }
@@ -282,14 +368,14 @@ private:
 	using players_index = multi_index<"players"_n, players>;
 	// -----------------------------------------------------------------------------------------------------------------------
 	// scope - player name
-	TABLE cards {
-		name contract_ac;
-		vector<uint64_t> cards_list;
+	// TABLE cards {
+	// 	name contract_ac;
+	// 	vector<uint64_t> cards_list;
 
-		auto primary_key() const { return contract_ac.value; }
-	};
+	// 	auto primary_key() const { return contract_ac.value; }
+	// };
 
-	using cards_index = multi_index<"cards"_n, cards>;
+	// using cards_index = multi_index<"cards"_n, cards>;
 
 	// -----------------------------------------------------------------------------------------------------------------------
 	// scope - player name
@@ -303,30 +389,30 @@ private:
 	using gamewallet_index = multi_index<"gamewallet"_n, gamewallet>;
 
 	// -----------------------------------------------------------------------------------------------------------------------
-	// // scope - owner
-	// struct sasset {
-	// 	uint64_t		id;
-	// 	name			owner;
-	// 	name			author;
-	// 	name			category;
-	// 	string			idata;
-	// 	string			mdata;
-	// 	std::vector<sasset>	container;
-	// 	std::vector<account>	containerf;
+	// scope - owner
+	struct sasset {
+		uint64_t		id;
+		name			owner;
+		name			author;
+		name			category;
+		string			idata;
+		string			mdata;
+		std::vector<sasset>	container;
+		std::vector<account>	containerf;
 
 				
-	// 	auto primary_key() const {
-	// 		return id;
-	// 	}
+		auto primary_key() const {
+			return id;
+		}
 
-	// 	uint64_t by_author() const {
-	// 		return author.value;
-	// 	}
-	// };
+		uint64_t by_author() const {
+			return author.value;
+		}
+	};
 
-	// typedef eosio::multi_index< "sassets"_n, sasset, 		
-	// 		eosio::indexed_by< "author"_n, eosio::const_mem_fun<sasset, uint64_t, &sasset::by_author> >
-	// > sassets;
+	typedef eosio::multi_index< "sassets"_n, sasset, 		
+			eosio::indexed_by< "author"_n, eosio::const_mem_fun<sasset, uint64_t, &sasset::by_author> >
+	> sassets;
 
 	// -----------------------------------------------------------------------------------------------------------------------
 	// scope - player
@@ -339,9 +425,12 @@ private:
 		name usage_status;		// selected/available
 
 		auto primary_key() const { return card_id; }
+		uint64_t by_usagstatus() const { return usage_status.value; }		
 	};
 
-	using cardwallet_index = multi_index<"cardwallet"_n, cardwallet>;
+	using cardwallet_index = multi_index<"cardwallet"_n, cardwallet,
+							eosio::indexed_by< "byusagstatus"_n, eosio::const_mem_fun<cardwallet, uint64_t, &cardwallet::by_usagstatus> >
+	>;
 
 	// -----------------------------------------------------------------------------------------------------------------------
 	// get the current timestamp
@@ -349,10 +438,77 @@ private:
 		return current_time_point().sec_since_epoch();
 	}
 
+	template<typename CharT>
+	static std::string to_hex(const CharT* d, uint32_t s) {
+	  std::string r;
+	  const char* to_hex="0123456789abcdef";
+	  uint8_t* c = (uint8_t*)d;
+	  for( uint32_t i = 0; i < s; ++i ) {
+	    (r += to_hex[(c[i] >> 4)]) += to_hex[(c[i] & 0x0f)];
+	  }
+	  return r;
+	}
+
+	// get the transaction id
+	inline checksum256 get_trxid()
+	{
+	  auto trxsize = transaction_size();
+	  char trxbuf[trxsize];
+	  uint32_t trxread = read_transaction( trxbuf, trxsize );
+	  check( trxsize == trxread, "read_transaction failed");
+	  return sha256(trxbuf, trxsize);
+	}
+
+	// get the sha256 hash digest/checksum from (txn_id, timestamp)
+	inline checksum256 hash_digest_256(const checksum256& txn_id,
+										uint32_t timestamp) const {
+		string data_str_cpp = to_hex(&txn_id, sizeof(txn_id)) + std::to_string(timestamp);
+		const char * data_str_c = data_str_cpp.c_str(); 
+
+		auto hash_digest = sha256(data_str_c, strlen(data_str_c));
+
+		return hash_digest;
+	}
+
+
+	// convert checksum256 to uint64_t
+	inline uint64_t checksum256_to_uint64_t(const checksum256& num) {
+		//cast the num to a smaller number
+	    uint64_t max_value = 18'446'744'073'709'551'615;		// 2^64 - 1
+	    auto byte_array = num.extract_as_byte_array();
+
+	    uint64_t random_int = 0;
+	    for (int i = 0; i < 8; i++) {
+	        random_int <<= 8;
+	        random_int |= (uint64_t)byte_array[i];
+	    }
+
+	    uint64_t res = random_int % max_value;
+
+	    return res;
+	}
+
+	inline name find_game_result(const checksum256& random_val) {
+		string s = to_hex(&random_val, sizeof(random_val));
+
+		size_t found_a = s.find("a");
+		size_t found_b = s.find("b");
+
+		name res = ""_n;
+		if(found_a < found_b) {
+			res = "a"_n;
+		}
+		else if (found_a > found_b) {
+			res = "b"_n;
+		}
+
+		return res;
+	}
+
 	// Adding inline action for `setgstatus` action in the ridex contract   
-	void set_gstatus( const name& player, 
-						uint64_t card_id,
-						const name& status );
+	// void set_gstatus( const name& player, 
+	// 					uint64_t card_id,
+	// 					const name& status );
 
 
 };

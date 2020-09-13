@@ -8,12 +8,13 @@ void gpkbatescrow::transferbypl( const name& player,
 {
 	require_auth(permission_level(player, "active"_n));
 
+	check(card_ids.size() == 3, "the card_ids list chosen must be of size 3");
+
 	check(memo.size() <= 256, "memo has more than 256 bytes");
 
 	// check cards quantity (either a or b), variant (base), category (exotic)
-	for(auto&& c : card_ids) {
-		check_card_cqv(asset_contract_ac, player, c, "exotic"_n, "base");
-	}
+	// here check is done before the transfer to the escrow contract
+	check_cards_type(asset_contract_ac, player, card_ids, "exotic"_n, "base");
 
 	action(
 		permission_level{player, "active"_n},
@@ -46,13 +47,13 @@ void gpkbatescrow::transferbypl( const name& player,
 	).send();
 
 
-	// add cards into `cards` table if not already added
-	action(
-		permission_level{get_self(), "active"_n},
-		game_contract_ac,
-		"empifycards"_n,
-		std::make_tuple(get_self(), player, card_ids)
-	).send();
+	// // add cards into `cards` table if not already added
+	// action(
+	// 	permission_level{get_self(), "active"_n},
+	// 	game_contract_ac,
+	// 	"empifycards"_n,
+	// 	std::make_tuple(get_self(), player, card_ids)
+	// ).send();
 
 
 }
@@ -107,10 +108,10 @@ void gpkbatescrow::withdrawbypl( const name& player,
 
 
 	// erase card_id from the `cards_list` in `cards` table of game contract
-	action(
-		permission_level{get_self(), "active"_n},
-		game_contract_ac,
-		"remcards"_n,
-		std::make_tuple(get_self(), player, vector<uint64_t>{card_id})
-	).send();
+	// action(
+	// 	permission_level{get_self(), "active"_n},
+	// 	game_contract_ac,
+	// 	"remcards"_n,
+	// 	std::make_tuple(get_self(), player, vector<uint64_t>{card_id})
+	// ).send();
 }
