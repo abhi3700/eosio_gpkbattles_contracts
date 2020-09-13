@@ -270,22 +270,117 @@ void gpkbattlesco::play(uint64_t game_id) {
 
 	// check if draw or not
 	if(card_ids_1_type == card_ids_2_type) {			// Draw
+		check((ongamestat_it->draw_count < 2), "this game can't be proceeded further, as this game is draw & already played for min. 2 times.");
+
 		ongamestat_table.modify(ongamestat_it, get_self(), [&](auto& row){
 			row.start_timestamp = now();
 			row.player1_cards_combo = card_ids_1_type;
 			row.player2_cards_combo = card_ids_2_type;
 			row.result = "draw"_n;
-			row.status = "over"_n;
 			row.end_timestamp = now();
+			row.draw_count += 1;
+			row.total_play_count += 1;
+
+			if(ongamestat_it->draw_count == 1)
+				row.status = "waitdue1draw";
+			else if(ongamestat_it->draw_count == 2)
+				row.status = "over";
 		});
+
+/*		
+		Instructions for 1 time draw:
+		=============================
+		1. mark the cards as "available" for both players in `cardwallet` table of escrow contract
+		2. Alert the players to select cards again.
+		3. clear the required row fields.
+		if 1 time draw, then re-select the cards again
+		clear the all params except 
+		-- game_id, player_1, player_2, result, draw_count, nodraw_count, total_play_count, random_value (as not generated), 
+		card_won (as not won any), winner, loser, status
+*/
+		if (ongamestat_it->draw_count == 1) {
+			// 1. mark the cards as "available" for both players in `cardwallet` table of escrow contract
+			// modify card's status as "selected" in `cardwallet` table of escrow contract
+			// For player_1
+			for(auto&& card_id : ongamestat_it->player1_cards) {
+				action(
+					permission_level{get_self(), "active"_n},
+					escrow_contract_ac,
+					"setgstatus"_n,
+					std::make_tuple(ongamestat_it->player_1, card_id, "available"_n)
+				).send();
+			}
+			// For player_2
+			for(auto&& card_id : ongamestat_it->player2_cards) {
+				action(
+					permission_level{get_self(), "active"_n},
+					escrow_contract_ac,
+					"setgstatus"_n,
+					std::make_tuple(ongamestat_it->player_2, card_id, "available"_n)
+				).send();
+			}
+
+
+			// 2. Send alerts
+			// send alert to player_1
+			send_alert(ongamestat_it->player_1, 
+				ongamestat_it->player_1.to_string() + " has one more chance to select card, as game with id: \'" + 
+				std::to_string(ongamestat_it->game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " time.");
+
+			// send alert to player_2
+			send_alert(ongamestat_it->player_2, 
+				ongamestat_it->player_2.to_string() + " has one more chance to select card, as game with id: \'" + 
+				std::to_string(ongamestat_it->game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " time.");
+
+
+			// 3. Clear required row fields
+			ongamestat_table.modify(ongamestat_it, get_self(), [&](auto& row){
+				row.player1_cards = vector<uint64_t>{};
+				row.player2_cards = vector<uint64_t>{};
+				row.player1_cards_combo = ""_n;
+				row.player2_cards_combo = ""_n;
+				row.start_timestamp = 0;
+				row.end_timestamp = 0;
+			});
+
+
+		}
+
+/*		Instructions for 2 times draw:
+		=============================
+		1. move info to `usergamestat` table for both players
+		2. erase the row
+
+		if 2 times draw, then dump the row & the add the players back to `players_list` in `players` table, 
+		& mark the cards as "available" for both players in `cardwallet` table of escrow contract
+*/
+		else if (ongamestat_it->draw_count == 2) {
+
+			// move info to `usergamestat` table before erasing this row from `ongamestat` table
+			// For player-1
+			move_game_info(ongamestat_it->game_id, ongamestat_it->player_1, "your game with id: \'" + 
+				std::to_string(ongamestat_it->game_id) + "\' is moved to \'usergamestat\' table.");
+
+			// For player-2
+			move_game_info(ongamestat_it->game_id, ongamestat_it->player_2, "your game with id: \'" + 
+				std::to_string(ongamestat_it->game_id) + "\' is moved to \'usergamestat\' table.");
+
+			// lastly erase the row, as all the info has been moved.
+			ongamestat_table.erase(ongamestat_it);
+		}
+
+		// NOTE: in case of draw (1 or 2 times), the cards are intact with escrow contract for respective players
+
 	}
 	else {												// No Draw
+		check(ongamestat_it->nodraw_count == 0, "This nodraw game can be played only once.");
 		ongamestat_table.modify(ongamestat_it, get_self(), [&](auto& row){
 			row.start_timestamp = now();
 			row.player1_cards_combo = card_ids_1_type;
 			row.player2_cards_combo = card_ids_2_type;
 			row.result = "nodraw"_n;
 			row.status = "waitforrng"_n;
+			row.total_play_count += 1;
 		});
 	
 		// any fixed/variable no. let's say game_id
@@ -314,6 +409,8 @@ void gpkbattlesco::receiverand(uint64_t game_id, const eosio::checksum256& rando
 	auto ongamestat_it = ongamestat_table.find(game_id);
 
 	check(ongamestat_it != ongamestat_table.end(), "the parsed game_id \'" + std::to_string(game_id) + "\' doesn't exist.");
+	
+	// this action will further go ahead only if the game is marked as "nodraw" 
 	check(ongamestat_it->result == "nodraw", "the parsed game_id \'" + std::to_string(game_id) + "\' has result other than \'nodraw\'");
 	check(ongamestat_it->status == "waitforrng"_n, "this parsed game_id \'" + std::to_string(game_id) + "\' is not waiting for RNG.");
 
@@ -336,6 +433,65 @@ void gpkbattlesco::receiverand(uint64_t game_id, const eosio::checksum256& rando
 		row.end_timestamp = now();
 	});
 
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::movegameinfo(uint64_t game_id, 
+								const name& player, 
+								const string& message) {
+	require_auth(get_self());
+
+	require_recipient(user);
+
+	check(message.size() <= 256, "message has more than 256 bytes");
+
+	// instantiate the `ongamestat` table
+	ongamestat_index ongamestat_table(get_self(), get_self().value);
+	auto ongamestat_it = ongamestat_table.find(game_id);
+
+	check(ongamestat_it != ongamestat_table.end(), "the parsed game_id \'" + std::to_string(game_id) + "\' doesn't exist.");
+
+	// Instantiate the `usergamestat` table
+	usergamestat_index usergamestat_table(get_self(), ongamestat_it->player.value);
+	auto usergamestat_player1_it = usergamestat_table.find(ongamestat_it->game_id);
+
+	check(usergamestat_player1_it == usergamestat_table.end(), "usergamestat for player: \'" + 
+		ongamestat_it->player.to_string() + "\' is already present.");
+
+	// TODO: who is `ram_payer` player or contract
+	usergamestat_table.emplace( get_self(), [&](auto& row) {
+		row.game_id = ongamestat_it->game_id;
+		row.player_cards = ongamestat_it->player1_cards;
+		row.played_cards_combo = ongamestat_it->player1_cards_combo;
+		row.start_timestamp = ongamestat_it->start_timestamp;
+		row.end_timestamp = ongamestat_it->end_timestamp;
+		row.result = ongamestat_it->result;
+		row.winner = ongamestat_it->winner;
+		row.loser = ongamestat_it->loser;
+		row.card_won = ongamestat_it->card_won;
+		row.random_value = ongamestat_it->random_value;
+		row.draw_count = ongamestat_it->draw_count;
+		row.nodraw_count = ongamestat_it->nodraw_count;
+		row.total_play_count = ongamestat_it->total_play_count;
+
+	});
+
+	// send alert to player that their game info is moved to `usergamestat`table
+	send_alert(player, message);
+
+
+}
+
+void gpkbattlesco::move_game_info(uint64_t game_id, 
+								const name& player, 
+								const string& message) {
+	
+	action(
+		permission_level(get_self(), "active"_n),
+		get_self(),
+		"movegameinfo"_n,
+		std::make_tuple(game_id, player, message)
+	).send();
 }
 // --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::empifyplayer(const name& asset_contract_ac, 
@@ -439,3 +595,24 @@ void gpkbattlesco::remplayer(const name& asset_contract_ac,
 // 	gpkbatescrow::setgstatus_action setgstatus(escrow_contract_ac, {get_self(), "active"_n});
 // 	setgstatus.send(player, card_id, status);
 // }
+
+
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::sendalert(const name& user,
+							const string& message) {
+	require_auth(get_self());
+
+	require_recipient(user);
+}
+
+void gpkbattlesco::send_alert(const name& user, 
+							const string& message) {
+	check(message.size() <= 256, "message has more than 256 bytes");
+	
+	action(
+		permission_level(get_self(), "active"_n),
+		get_self(),
+		"sendalert"_n,
+		std::make_tuple(user, message)
+	).send();
+}

@@ -148,7 +148,7 @@ public:
 	 * 
 	 * @param game_id - game id
 	 */
-	ACTION movedb(uint64_t game_id);
+	ACTION movegameinfo(uint64_t game_id, const name& player, const string& message);
 
 	/**
 	 * @brief - empify player
@@ -204,6 +204,16 @@ public:
 	 * 
 	 */
 	// ACTION remcards(const name& asset_contract_ac, const name& player, const vector<uint64_t> cards);
+
+	/**
+	 * @brief - send alert
+	 * @details - send alert after the action is successfully done
+	 * 
+	 * @param user - user
+	 * @param message - note depending on the action
+	 */
+	ACTION sendalert( const name& user,
+						const string& message);
 
 
 	using empifyplayer_action  = action_wrapper<"empifyplayer"_n, &gpkbatescrow::empifyplayer>;
@@ -313,7 +323,7 @@ public:
 	}
 
 private:
-	// -----------------------------------------------------------------------------------------------------------------------
+	// ==================================================================================
 	// scope - self
 	TABLE ongamestat {
 		uint64_t game_id;
@@ -323,14 +333,18 @@ private:
 		vector<uint64_t> player2_cards;
 		name player1_cards_combo;
 		name player2_cards_combo;
-		uint32_t start_timestamp;			// for draw start_timestamp & end_timestamp is same.
+		uint32_t start_timestamp;			// for draw, start_timestamp & end_timestamp is same.
 		uint32_t end_timestamp;				// for no-draw, start timestamp & end_timestamp are different, as there is a wait for RNG service involved of around 1-2 secs.
-		name result;
+		name result;						// draw/nodraw
 		name winner;
 		name loser;
 		uint64_t card_won;
-		name status;			// over/waitforrng: over (i.e. game over) & waitforrng (i.e. waiting for rng)
+		name status;						// /waitdue1draw/over/waitforrng: waitdue1draw(i.e. wait due to 1 draw), over (i.e. game over) & waitforrng (i.e. waiting for rng)
 		checksum256 random_value;				// generated from WAX RNG service, if no-draw
+		uint8_t draw_count;				// param to monitor the no. of draws
+		uint8_t nodraw_count;				// param to ensure that the game is not played again if the count = 1.
+		uint8_t total_play_count;			// total play count including - 2 draws, 1 draw >> 1nodraw, 1 nodraw, . Max. is 2. 
+		name move_info_status;				// to check it is not moved.
 
 		auto primary_key() const { return game_id; }
 		uint64_t by_player1() const { return player_1.value; }
@@ -350,7 +364,18 @@ private:
 	TABLE usergamestat {
 		uint64_t game_id;				// game_id generated
 		vector<uint64_t> played_cards;	// list of played cards
-		name win_status;				// y or n
+		name played_cards_combo;
+		uint32_t start_timestamp;			// for draw, start_timestamp & end_timestamp is same.
+		uint32_t end_timestamp;				// for no-draw, start timestamp & end_timestamp are different, as there is a wait for RNG service involved of around 1-2 secs.
+		name result;
+		name winner;
+		name loser;
+		uint64_t card_won;
+		checksum256 random_value;				// generated from WAX RNG service, if no-draw
+		uint8_t draw_count;				// param to monitor the no. of draws
+		uint8_t nodraw_count;				// param to ensure that the game is not played again if the count = 1.
+		uint8_t total_play_count;			// total play count including - 2 draws, 1 draw >> 1nodraw, 1 nodraw, . Max. is 2. 
+
 
 		auto primary_key() const { return game_id; }
 	};
@@ -432,12 +457,14 @@ private:
 							eosio::indexed_by< "byusagstatus"_n, eosio::const_mem_fun<cardwallet, uint64_t, &cardwallet::by_usagstatus> >
 	>;
 
-	// -----------------------------------------------------------------------------------------------------------------------
+	// ==================================================================================
 	// get the current timestamp
 	inline uint32_t now() const {
 		return current_time_point().sec_since_epoch();
 	}
 
+	// -----------------------------------------------------------------------------------------------------------------------
+	// hex to string
 	template<typename CharT>
 	static std::string to_hex(const CharT* d, uint32_t s) {
 	  std::string r;
@@ -449,6 +476,7 @@ private:
 	  return r;
 	}
 
+	// -----------------------------------------------------------------------------------------------------------------------
 	// get the transaction id
 	inline checksum256 get_trxid()
 	{
@@ -459,6 +487,7 @@ private:
 	  return sha256(trxbuf, trxsize);
 	}
 
+	// -----------------------------------------------------------------------------------------------------------------------
 	// get the sha256 hash digest/checksum from (txn_id, timestamp)
 	inline checksum256 hash_digest_256(const checksum256& txn_id,
 										uint32_t timestamp) const {
@@ -471,6 +500,7 @@ private:
 	}
 
 
+	// -----------------------------------------------------------------------------------------------------------------------
 	// convert checksum256 to uint64_t
 	inline uint64_t checksum256_to_uint64_t(const checksum256& num) {
 		//cast the num to a smaller number
@@ -488,6 +518,8 @@ private:
 	    return res;
 	}
 
+	// -----------------------------------------------------------------------------------------------------------------------
+	// find game result in "a" or "b"
 	inline name find_game_result(const checksum256& random_val) {
 		string s = to_hex(&random_val, sizeof(random_val));
 
@@ -505,10 +537,18 @@ private:
 		return res;
 	}
 
+	// ==================================================================================
 	// Adding inline action for `setgstatus` action in the ridex contract   
 	// void set_gstatus( const name& player, 
 	// 					uint64_t card_id,
 	// 					const name& status );
+
+	// -----------------------------------------------------------------------------------------------------------------------
+	// Adding inline action for `sendalert` action in the same contract 
+	void send_alert(const name& user, const string& message);
+	// -----------------------------------------------------------------------------------------------------------------------
+	// Adding inline action for `movegameinfo` action in the same contract 
+	void movegameinfo(uint64_t game_id, const name& player, const string& message);
 
 
 };
