@@ -33,6 +33,7 @@ using eosio::read_transaction;
 
 using std::string;
 using std::vector;
+using std::pair;
 
 using json = nlohmann::json;
 
@@ -43,6 +44,7 @@ private:
 	// const symbol gamefee_value;
 	const name asset_contract_ac;
 	const name escrow_contract_ac;
+	const vector<pair<name, uint64_t>> vector_assetcontracts_associds;						// a list of pair of asset contract account names & assoc_ids
 
 public:
 	using contract::contract;
@@ -52,7 +54,9 @@ public:
 				gamefee_token_symbol("WAX", 4),
 				// gamefee_value(asset(50000, symbol("WAX", 4))),		// "5.0000 WAX"
 				asset_contract_ac("simpleassets"_n),
-				escrow_contract_ac("gpkbatescrow"_n) {}
+				escrow_contract_ac("gpkbatescrow"_n),
+				vector_assetcontracts_associds({{"simpleassets"_n, 370015336}, {"atomicassets"_n, 370015337}})
+				{}
 
 	
 
@@ -392,6 +396,7 @@ private:
 	// scope - self
 	TABLE players {
 		name contract_ac;
+		uint64_t assoc_id;		// 370015336 for "simpleassets", 370015337 for "atomicassets"
 		vector<name> players_list;
 
 		auto primary_key() const { return contract_ac.value; }
@@ -551,6 +556,24 @@ private:
 		return res;
 	}
 
+	// -----------------------------------------------------------------------------------------------------------------------
+	// get random index from list (of players, of cards)
+	template<typename T>
+	inline uint64_t get_random_indexfrmlist(const checksum256& random_value, vector<T> list) {
+		//cast the random_value to a smaller number
+	    uint64_t max_value = list.size() - 1;			// set max index no. i.e. N-1 as the max_value		
+	    auto byte_array = random_value.extract_as_byte_array();
+
+	    uint64_t random_int = 0;
+	    for (int i = 0; i < 8; i++) {
+	        random_int <<= 8;
+	        random_int |= (uint64_t)byte_array[i];
+	    }
+
+	    uint64_t num1 = random_int % max_value;
+
+	    return num1;
+	}
 
 	// ==================================================================================
 	// Adding inline action for `setgstatus` action in the ridex contract   

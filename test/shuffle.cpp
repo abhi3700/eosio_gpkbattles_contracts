@@ -1,4 +1,6 @@
-#include <iostream>
+
+// Case-2
+/*#include <iostream>
 #include <algorithm>
 #include <vector>
 #include "../effolkronium/random.hpp"
@@ -16,7 +18,7 @@ int main()
 	for (auto &&a : A)
 	std::cout << a << " " <<std::endl;
 	return 0;
-}
+}*/
 
 
 
@@ -24,7 +26,7 @@ int main()
 
 
 
-
+// Case-1
 /*#include <iostream>
 #include <algorithm>
 #include <random>

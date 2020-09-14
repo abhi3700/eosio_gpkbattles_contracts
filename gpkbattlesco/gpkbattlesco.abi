@@ -1,0 +1,414 @@
+{
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
+    "version": "eosio::abi/1.1",
+    "types": [],
+    "structs": [
+        {
+            "name": "depositgfee",
+            "base": "",
+            "fields": [
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "game_fee",
+                    "type": "asset"
+                },
+                {
+                    "name": "memo",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "empifyplayer",
+            "base": "",
+            "fields": [
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "player",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "gfeewallet",
+            "base": "",
+            "fields": [
+                {
+                    "name": "balance",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
+            "name": "match2player",
+            "base": "",
+            "fields": [
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "movegameinfo",
+            "base": "",
+            "fields": [
+                {
+                    "name": "game_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "message",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "ongamestat",
+            "base": "",
+            "fields": [
+                {
+                    "name": "game_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "player_1",
+                    "type": "name"
+                },
+                {
+                    "name": "player_2",
+                    "type": "name"
+                },
+                {
+                    "name": "game_fee",
+                    "type": "asset"
+                },
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "player1_cards",
+                    "type": "uint64[]"
+                },
+                {
+                    "name": "player2_cards",
+                    "type": "uint64[]"
+                },
+                {
+                    "name": "player1_cards_combo",
+                    "type": "name"
+                },
+                {
+                    "name": "player2_cards_combo",
+                    "type": "name"
+                },
+                {
+                    "name": "start_timestamp",
+                    "type": "uint32"
+                },
+                {
+                    "name": "end_timestamp",
+                    "type": "uint32"
+                },
+                {
+                    "name": "result",
+                    "type": "name"
+                },
+                {
+                    "name": "winner",
+                    "type": "name"
+                },
+                {
+                    "name": "loser",
+                    "type": "name"
+                },
+                {
+                    "name": "card_won",
+                    "type": "uint64"
+                },
+                {
+                    "name": "status",
+                    "type": "name"
+                },
+                {
+                    "name": "random_value",
+                    "type": "checksum256"
+                },
+                {
+                    "name": "draw_count",
+                    "type": "uint8"
+                },
+                {
+                    "name": "nodraw_count",
+                    "type": "uint8"
+                },
+                {
+                    "name": "total_play_count",
+                    "type": "uint8"
+                }
+            ]
+        },
+        {
+            "name": "play",
+            "base": "",
+            "fields": [
+                {
+                    "name": "game_id",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "players",
+            "base": "",
+            "fields": [
+                {
+                    "name": "contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "assoc_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "players_list",
+                    "type": "name[]"
+                }
+            ]
+        },
+        {
+            "name": "receiverand",
+            "base": "",
+            "fields": [
+                {
+                    "name": "assoc_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "random_value",
+                    "type": "checksum256"
+                }
+            ]
+        },
+        {
+            "name": "remplayer",
+            "base": "",
+            "fields": [
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "player",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "sel3card",
+            "base": "",
+            "fields": [
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "card1_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "card2_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "card3_id",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "sel3cardauto",
+            "base": "",
+            "fields": [
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "sendalert",
+            "base": "",
+            "fields": [
+                {
+                    "name": "user",
+                    "type": "name"
+                },
+                {
+                    "name": "message",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "usergamestat",
+            "base": "",
+            "fields": [
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "game_ids",
+                    "type": "uint64[]"
+                },
+                {
+                    "name": "wins",
+                    "type": "uint32"
+                },
+                {
+                    "name": "loses",
+                    "type": "uint32"
+                },
+                {
+                    "name": "draws",
+                    "type": "uint32"
+                },
+                {
+                    "name": "games",
+                    "type": "uint32"
+                },
+                {
+                    "name": "cards_won",
+                    "type": "uint64[]"
+                }
+            ]
+        },
+        {
+            "name": "withdrawgfee",
+            "base": "",
+            "fields": [
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "qty",
+                    "type": "asset"
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "name": "depositgfee",
+            "type": "depositgfee",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "empifyplayer",
+            "type": "empifyplayer",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "match2player",
+            "type": "match2player",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "movegameinfo",
+            "type": "movegameinfo",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "play",
+            "type": "play",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "receiverand",
+            "type": "receiverand",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "remplayer",
+            "type": "remplayer",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "sel3card",
+            "type": "sel3card",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "sel3cardauto",
+            "type": "sel3cardauto",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "sendalert",
+            "type": "sendalert",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "withdrawgfee",
+            "type": "withdrawgfee",
+            "ricardian_contract": ""
+        }
+    ],
+    "tables": [
+        {
+            "name": "gfeewallet",
+            "type": "gfeewallet",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "ongamestat",
+            "type": "ongamestat",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "players",
+            "type": "players",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
+        {
+            "name": "usergamestat",
+            "type": "usergamestat",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        }
+    ],
+    "ricardian_clauses": [],
+    "variants": []
+}

@@ -8,6 +8,10 @@ void gpkbatescrow::transferbypl( const name& player,
 {
 	require_auth(permission_level(player, "active"_n));
 
+	check( (asset_contract_ac == "simpleassets"_n) 
+		|| (asset_contract_ac == "atomicassets"_n), 
+		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
+
 	check(card_ids.size() == 3, "the card_ids list chosen must be of size 3");
 
 	check(memo.size() <= 256, "memo has more than 256 bytes");
@@ -76,6 +80,10 @@ void gpkbatescrow::withdrawbypl( const name& player,
 								uint64_t card_id ) {
 	require_auth(player);
 
+	check( (asset_contract_ac == "simpleassets"_n) 
+		|| (asset_contract_ac == "atomicassets"_n), 
+		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
+
 	// instantiate the `cardwallet` table
 	cardwallet_index cardwallet_table(get_self(), player.value);
 	auto card_it = cardwallet_table.find(card_id);
@@ -118,6 +126,10 @@ void gpkbatescrow::disburse( uint64_t game_id,
 								vector<uint64_t> loser_card_ids 	// 2
 								) {
 	require_auth(game_contract_ac);
+
+	check( (asset_contract_ac == "simpleassets"_n) 
+		|| (asset_contract_ac == "atomicassets"_n), 
+		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
 
 	// Check that the game_id's status is marked "over" before disbursement of the cards
 	// instantiate the `ongamestat` table
