@@ -1,5 +1,32 @@
 #include <iostream>
 #include <algorithm>
+#include <vector>
+#include "../effolkronium/random.hpp"
+
+
+using Random = effolkronium::random_static;
+
+
+int main()
+{
+	std::vector<int> A = { 1, 2, 3, 4, 5, 6 };
+
+	Random::shuffle(A);
+
+	for (auto &&a : A)
+	std::cout << a << " " <<std::endl;
+	return 0;
+}
+
+
+
+
+
+
+
+
+/*#include <iostream>
+#include <algorithm>
 #include <random>
 #include <vector>
 
@@ -15,3 +42,4 @@ int main()
 	std::cout << a << " " <<std::endl;
 	return 0;
 }
+*/

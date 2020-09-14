@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/gpkbattlesco.dir/gpkbattlesco.cpp.o  -o gpkbattlesco 

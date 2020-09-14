@@ -108,6 +108,7 @@ public:
 	 * @param winner_card_ids - cards won i.e. 4 no.s
 	 * @param loser_card_ids - cards losen i.e. 2 no.s
 	 * 
+	 * @pre - Check that the game_id's status is marked "over" before disbursement of the cards
 	 * @pre - a new list create for winner, loser with equal in qty.
 	 * @pre - all the cards' owners are checked correspondingly with parsed winner, loser
 	 * @pre - erase all cards from the cardwallet table
@@ -118,8 +119,8 @@ public:
 						const name& loser,
 						const name& asset_contract_ac,
 						vector<uint64_t> winner_card_ids,	// 4
-						vector<uint64_t> loser_card_ids, 	// 2
-						)
+						vector<uint64_t> loser_card_ids 	// 2
+						);
 
 	using setgstatus_action  = action_wrapper<"setgstatus"_n, &gpkbatescrow::setgstatus>;
 	using disburse_action  = action_wrapper<"disburse"_n, &gpkbatescrow::disburse>;
@@ -144,7 +145,7 @@ public:
 			check (idx->author == "gpk.topps"_n, "Asset is not from this author");
 			check(idx->category == category, "The asset id\'s category must be exotic.");
 
-			auto mdata_1 = json::parse(idx->mdata);
+			auto mdata = json::parse(idx->mdata);
 			check((mdata["quality"] == "a") || (mdata["quality"] == "b"), "The asset id\'s quality must be either \'a\' or \'b\'."); 
 			check(mdata["variant"] == variant, "The asset id\'s variant must be \'base\'.");
 
@@ -165,7 +166,7 @@ public:
 			 // 1A, 2B
 			((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "b")) || 
 			((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
-			((cardtype_1 == "b") && (cardtype_2 == "b") && (cardtype_3 == "a")) || 
+			((cardtype_1 == "b") && (cardtype_2 == "b") && (cardtype_3 == "a"))
 			
 			, "the cards chosen are of different combination than (2A,1B) OR (1A,2B)."
 			);
@@ -191,6 +192,56 @@ private:
 	>;
 
 	// -----------------------------------------------------------------------------------------------------------------------
+	// scope - self
+	struct ongamestat {
+		uint64_t game_id;
+		name player_1;
+		name player_2;
+		asset game_fee;
+		name asset_contract_ac;
+		vector<uint64_t> player1_cards;
+		vector<uint64_t> player2_cards;
+		name player1_cards_combo;
+		name player2_cards_combo;
+		uint32_t start_timestamp;			// for draw, start_timestamp & end_timestamp is same.
+		uint32_t end_timestamp;				// for no-draw, start timestamp & end_timestamp are different, as there is a wait for RNG service involved of around 1-2 secs.
+		name result;						// draw/nodraw
+		name winner;
+		name loser;
+		uint64_t card_won;
+		name status;						// /waitdue1draw/over/waitforrng: waitdue1draw(i.e. wait due to 1 draw), over (i.e. game over) & waitforrng (i.e. waiting for rng)
+		checksum256 random_value;				// generated from WAX RNG service, if no-draw
+		uint8_t draw_count;				// param to monitor the no. of draws
+		uint8_t nodraw_count;				// param to ensure that the game is not played again if the count = 1.
+		uint8_t total_play_count;			// total play count including - 2 draws, 1 draw >> 1nodraw, 1 nodraw, . Max. is 2. 
+
+		auto primary_key() const { return game_id; }
+		uint64_t by_player1() const { return player_1.value; }
+		uint64_t by_player2() const { return player_2.value; }
+	};
+
+	using ongamestat_index = multi_index<"ongamestat"_n, ongamestat,
+								indexed_by< "byplayer1"_n, const_mem_fun<ongamestat, uint64_t, &ongamestat::by_player1>>,	
+								indexed_by< "byplayer2"_n, const_mem_fun<ongamestat, uint64_t, &ongamestat::by_player2>>	
+								>;
+	// -----------------------------------------------------------------------------------------------------------------------
+	/*
+	* Fungible token accounts table which stores information about balances.
+	* Scope: token owner
+	*/
+	struct account {
+		uint64_t	id;
+		name		author;
+		asset		balance;
+
+		uint64_t primary_key()const {
+			return id;
+		}
+	};
+
+	typedef eosio::multi_index< "accounts"_n, account > accounts;
+
+
 	// scope - owner
 	struct sasset {
 		uint64_t		id;

@@ -115,11 +115,18 @@ void gpkbatescrow::disburse( uint64_t game_id,
 								const name& loser,
 								const name& asset_contract_ac,
 								vector<uint64_t> winner_card_ids,	// 4
-								vector<uint64_t> loser_card_ids, 	// 2
+								vector<uint64_t> loser_card_ids 	// 2
 								) {
 	require_auth(game_contract_ac);
 
-	check(memo.size() <= 256, "memo has more than 256 bytes");
+	// Check that the game_id's status is marked "over" before disbursement of the cards
+	// instantiate the `ongamestat` table
+	ongamestat_index ongamestat_table(game_contract_ac, game_contract_ac.value);
+	auto ongamestat_it = ongamestat_table.find(game_id);
+
+	check(ongamestat_it != ongamestat_table.end(), "the game with id \'" + std::to_string(game_id) + "\' doesn't exist.");
+	check(ongamestat_it->status == "over"_n, "the game with id \'" + std::to_string(game_id) + "\' is not yet over. So, the game info. can\'t be moved to usergamestat table");
+
 
 	// instantiate the `cardwallet` table
 	cardwallet_index cardwallet_table(get_self(), winner.value);

@@ -1,8 +1,9 @@
 #include "gpkbattlesco.hpp"
 // #include "../gpkbatescrow/gpkbatescrow.hpp"
-#include <random>
+#include "../effolkronium/random.hpp"
 
-using std::default_random_engine;
+using Random = effolkronium::random_static;
+using Random::shuffle;
 // --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::match2player(const name& asset_contract_ac) {
 
@@ -15,7 +16,7 @@ void gpkbattlesco::match2player(const name& asset_contract_ac) {
 	check(players_it->players_list.size() > 1, "players_list size must be greater than 1.");
 
 	players_table.modify(players_it, get_self(), [&](auto& row) {
-		row.players_list = shuffle(players_it->players_list.begin(), players_it->players_list.end(), default_random_engine(time(NULL)));
+		shuffle(row.players_list);
 	});
 
 	auto p1 = players_it->players_list[0]; 
@@ -501,7 +502,8 @@ void gpkbattlesco::receiverand(uint64_t game_id, const eosio::checksum256& rando
 				row.loser = ongamestat_it->player2;
 
 				vector<uint64_t> winner_transfer_cards = ongamestat_it->player1_cards;
-				vector<uint64_t> loser_transfer_cards = shuffle(ongamestat_it->player2_cards.begin(), ongamestat_it->player2_cards.end(), default_random_engine(time(NULL)));
+				vector<uint64_t> loser_transfer_cards = ongamestat_it->player2_cards;
+				shuffle(loser_transfer_cards);
 
 				row.card_won = loser_transfer_cards[0];								// capture 1st card into `card_won`
 				winner_transfer_cards.emplace_back(loser_transfer_cards[0]);		// & put from loser's into winner's transfer cards list
@@ -520,7 +522,8 @@ void gpkbattlesco::receiverand(uint64_t game_id, const eosio::checksum256& rando
 				row.loser = ongamestat_it->player1;
 
 				vector<uint64_t> winner_transfer_cards = ongamestat_it->player2_cards;
-				vector<uint64_t> loser_transfer_cards = shuffle(ongamestat_it->player1_cards.begin(), ongamestat_it->player1_cards.end(), default_random_engine(time(NULL)));
+				vector<uint64_t> loser_transfer_cards = ongamestat_it->player1_cards;
+				shuffle(loser_transfer_cards);
 
 				row.card_won = loser_transfer_cards[0];								// capture 1st card into `card_won`
 				winner_transfer_cards.emplace_back(loser_transfer_cards[0]);		// & put from loser's into winner's transfer cards list
@@ -541,7 +544,8 @@ void gpkbattlesco::receiverand(uint64_t game_id, const eosio::checksum256& rando
 				row.loser = ongamestat_it->player2;
 
 				vector<uint64_t> winner_transfer_cards = ongamestat_it->player1_cards;
-				vector<uint64_t> loser_transfer_cards = shuffle(ongamestat_it->player2_cards.begin(), ongamestat_it->player2_cards.end(), default_random_engine(time(NULL)));
+				vector<uint64_t> loser_transfer_cards = ongamestat_it->player2_cards;
+				shuffle(loser_transfer_cards);
 
 				row.card_won = loser_transfer_cards[0];								// capture 1st card into `card_won`
 				winner_transfer_cards.emplace_back(loser_transfer_cards[0]);		// & put from loser's into winner's transfer cards list
@@ -560,7 +564,8 @@ void gpkbattlesco::receiverand(uint64_t game_id, const eosio::checksum256& rando
 				row.loser = ongamestat_it->player1;
 
 				vector<uint64_t> winner_transfer_cards = ongamestat_it->player2_cards;
-				vector<uint64_t> loser_transfer_cards = shuffle(ongamestat_it->player1_cards.begin(), ongamestat_it->player1_cards.end(), default_random_engine(time(NULL)));
+				vector<uint64_t> loser_transfer_cards = ongamestat_it->player1_cards;
+				shuffle(loser_transfer_cards);
 
 				row.card_won = loser_transfer_cards[0];								// capture 1st card into `card_won`
 				winner_transfer_cards.emplace_back(loser_transfer_cards[0]);		// & put from loser's into winner's transfer cards list
@@ -700,56 +705,6 @@ void gpkbattlesco::remplayer(const name& asset_contract_ac,
 	}
 }
 
-// --------------------------------------------------------------------------------------------------------------------
-// void gpkbattlesco::empifycards(const name& asset_contract_ac, 
-// 								const name& player, 
-// 								const vector<uint64_t> cards) {
-// 	require_auth(escrow_contract_ac);
-
-// 	// add card(s) to the cards_list, if not added
-// 	cards_index cards_table(get_self(), player.value);
-// 	auto cards_it = cards_table.find(asset_contract_ac.value);
-
-// 	if(cards_it == cards_table.end()) {
-// 		cards_table.emplace(get_self(), [&](auto& row){
-// 			row.cards_list = cards;
-// 		});
-// 	} else {
-// 		for(auto&& card : cards) {
-// 			auto vec_it = std::find(cards_it->cards_list.begin(), cards_it->cards_list.end(), card);
-// 			if(vec_it == cards_it->cards_list.end()) {
-// 				cards_table.modify(cards_it, get_self(), [&](auto& row) {
-// 					row.cards_list.emplace_back(card);
-// 				});
-// 			}
-// 		}
-// 	}
-
-// }
-
-// --------------------------------------------------------------------------------------------------------------------
-// void gpkbattlesco::remcards(const name& asset_contract_ac, 
-// 							const name& player, 
-// 							const vector<uint64_t> cards) {
-// 	require_auth(escrow_contract_ac);
-
-// 	// add card(s) to the cards_list, if not added
-// 	cards_index cards_table(get_self(), player.value);
-// 	auto cards_it = cards_table.find(asset_contract_ac.value);
-
-// 	if(cards_it != cards_table.end()) {
-// 		for(auto&& card : cards) {
-// 			auto vec_it = std::find(cards_it->cards_list.begin(), cards_it->cards_list.end(), card);
-// 			if(vec_it != cards_it->cards_list.end()) {
-// 				cards_table.modify(cards_it, get_self(), [&](auto& row) {
-// 					row.cards_list.erase(cards_it);
-// 				});
-// 			}
-// 		}
-// 	}
-
-
-// }
 
 // --------------------------------------------------------------------------------------------------------------------
 // void gpkbattlesco::set_gstatus( const name& player, 

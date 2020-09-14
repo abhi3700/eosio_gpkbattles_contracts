@@ -3,6 +3,7 @@
 #include <eosio/asset.hpp>
 #include <eosio/system.hpp>
 #include <eosio/crypto.hpp>
+#include <eosio/transaction.hpp>
 #include <vector>
 #include <algorithm>
 #include <string>
@@ -26,6 +27,9 @@ using eosio::symbol;
 using eosio::require_recipient;
 using eosio::checksum256;
 using eosio::action_wrapper;
+using eosio::sha256;
+using eosio::transaction_size;
+using eosio::read_transaction;
 
 using std::string;
 using std::vector;
@@ -38,7 +42,7 @@ private:
 	const symbol gamefee_token_symbol;
 	// const symbol gamefee_value;
 	const name asset_contract_ac;
-	static const name escrow_contract_ac;
+	const name escrow_contract_ac;
 
 public:
 	using contract::contract;
@@ -178,34 +182,6 @@ public:
 	 */
 	ACTION remplayer(const name& asset_contract_ac, const name& player);
 
-	/**
-	 * @brief - empify card
-	 * @details - empify card
-	 * 			- No checks on this, as it has to be used as an inline action here.
-	 * 			- If checks are applied & fails then the main action (previous to this) will also fail.
-	 * 			- add card(s). if fails then the transfer asset won't happen due to this.
-	 * 
-	 * @param asset_contract_ac - simpleassets, atomicassets
-	 * @param player - player name
-	 * @param cards - 1 or more cards
-	 * 
-	 */
-	// ACTION empifycards(const name& asset_contract_ac, const name& player, const vector<uint64_t> cards);
-
-
-	/**
-	 * @brief - remove card
-	 * @details - remove card
-	 * 			- No checks on this, as it has to be used as an inline action here.
-	 * 			- If checks are applied & fails then the main action (previous to this) will also fail.
-	 * 			- remove card(s). if fails then the transfer asset won't happen due to this.
-	 * 
-	 * @param asset_contract_ac - simpleassets, atomicassets
-	 * @param player - player name
-	 * @param cards - 1 or more cards
-	 * 
-	 */
-	// ACTION remcards(const name& asset_contract_ac, const name& player, const vector<uint64_t> cards);
 
 	/**
 	 * @brief - send alert
@@ -218,8 +194,8 @@ public:
 						const string& message);
 
 
-	using empifyplayer_action  = action_wrapper<"empifyplayer"_n, &gpkbatescrow::empifyplayer>;
-	using remplayer_action  = action_wrapper<"remplayer"_n, &gpkbatescrow::remplayer>;
+	using empifyplayer_action  = action_wrapper<"empifyplayer"_n, &gpkbattlesco::empifyplayer>;
+	using remplayer_action  = action_wrapper<"remplayer"_n, &gpkbattlesco::remplayer>;
 	// using empifycards_action  = action_wrapper<"empifycards"_n, &gpkbatescrow::empifycards>;
 	// using remcards_action  = action_wrapper<"remcards"_n, &gpkbatescrow::remcards>;
 
@@ -227,12 +203,12 @@ public:
 	// check if min. gfeewallet's balance is gamefee_value
 	static void check_gfee_balance(const name& player, const asset& game_fee) {
 		// instantiate the `gfeewallet` table
-		gfeewallet_index gfeewallet_table(get_self(), player.value);
+		gfeewallet_index gfeewallet_table("gpkbattlesco"_n, player.value);
 		auto gfeewallet_it = gfeewallet_table.find(game_fee.symbol.raw());
 
 		check(gfeewallet_it != gfeewallet_table.end(), "the player is not in the wallet table.");
 		check(gfeewallet_it->balance.amount >= game_fee.amount, "The player has no min. balance i.e. \'" + 
-												game_fee.to_string + "\' in the game wallet.");
+												game_fee.to_string() + "\' in the game wallet.");
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------
@@ -258,7 +234,7 @@ public:
 			check (idx->author == "gpk.topps"_n, "Asset is not from this author");
 			check(idx->category == category, "The asset id\'s category must be exotic.");
 
-			auto mdata_1 = json::parse(idx->mdata);
+			auto mdata = json::parse(idx->mdata);
 			check((mdata["quality"] == "a") || (mdata["quality"] == "b"), "The asset id\'s quality must be either \'a\' or \'b\'."); 
 			check(mdata["variant"] == variant, "The asset id\'s variant must be \'base\'.");
 
@@ -306,9 +282,9 @@ public:
 		vector<uint64_t> card_ids{};
 
 		// read the `cardwallet` table & collect 3 available cards of `asset_contract_ac`
-		cardwallet_index cardwallet_table(escrow_contract_ac, player.value);
-		auto usagstatus_idx = cardwallet_table.get_index<"byusagstatus">();
-		auto cardwallet_it = usagstatus_idx.find("available"_n);
+		cardwallet_index cardwallet_table("gpkbatescrow"_n, player.value);
+		auto usagstatus_idx = cardwallet_table.get_index<"byusagstatus"_n>();
+		auto cardwallet_it = usagstatus_idx.find("available"_n.value);
 
 		check( (cardwallet_it != usagstatus_idx.end()) &&
 				(cardwallet_it->contract_ac == asset_contract_ac)
@@ -366,9 +342,9 @@ private:
 		uint64_t by_player2() const { return player_2.value; }
 	};
 
-	using ongamestat_index = multi_index<"ongamestat"_n, ongamestat
-								indexed_by< "byplayer1"_n, const_mem_fun<ongamestat, uint64_t, &ongamestat::by_player1> >	
-								indexed_by< "byplayer2"_n, const_mem_fun<ongamestat, uint64_t, &ongamestat::by_player2> >	
+	using ongamestat_index = multi_index<"ongamestat"_n, ongamestat,
+								indexed_by< "byplayer1"_n, const_mem_fun<ongamestat, uint64_t, &ongamestat::by_player1>>,	
+								indexed_by< "byplayer2"_n, const_mem_fun<ongamestat, uint64_t, &ongamestat::by_player2>>	
 								>;
 	// -----------------------------------------------------------------------------------------------------------------------
 	// scope - player name
@@ -381,7 +357,7 @@ private:
 		uint32_t games;
 		vector<uint64_t> cards_won;
 
-		auto primary_key() const { return contract_type.value; }
+		auto primary_key() const { return asset_contract_ac.value; }
 	};
 
 	using usergamestat_index = multi_index<"usergamestat"_n, usergamestat>;
@@ -419,7 +395,7 @@ private:
 		vector<name> players_list;
 
 		auto primary_key() const { return contract_ac.value; }
-	}
+	};
 
 	using players_index = multi_index<"players"_n, players>;
 	
@@ -435,6 +411,23 @@ private:
 	using gfeewallet_index = multi_index<"gfeewallet"_n, gfeewallet>;
 
 	// -----------------------------------------------------------------------------------------------------------------------
+	/*
+	* Fungible token accounts table which stores information about balances.
+	* Scope: token owner
+	*/
+	struct account {
+		uint64_t	id;
+		name		author;
+		asset		balance;
+
+		uint64_t primary_key()const {
+			return id;
+		}
+	};
+
+	typedef eosio::multi_index< "accounts"_n, account > accounts;
+
+
 	// scope - owner
 	struct sasset {
 		uint64_t		id;
@@ -475,8 +468,8 @@ private:
 	};
 
 	using cardwallet_index = multi_index<"cardwallet"_n, cardwallet,
-							eosio::indexed_by< "byusagstatus"_n, eosio::const_mem_fun<cardwallet, uint64_t, &cardwallet::by_usagstatus> >
-	>;
+							indexed_by< "byusagstatus"_n, eosio::const_mem_fun<cardwallet, uint64_t, &cardwallet::by_usagstatus>>
+							>;
 
 	// ==================================================================================
 	// get the current timestamp
@@ -570,7 +563,7 @@ private:
 	void send_alert(const name& user, const string& message);
 	// -----------------------------------------------------------------------------------------------------------------------
 	// Adding inline action for `movegameinfo` action in the same contract 
-	void movegameinfo(uint64_t game_id, const name& player, const string& message);
+	void move_game_info(uint64_t game_id, const name& player, const string& message);
 
 
 };

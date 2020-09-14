@@ -1,0 +1,3 @@
+/mnt/f/Coding/github_repos/eosio_gpkbattles_contracts/gpkbattlesco/build/CMakeFiles/rebuild_cache.dir
+/mnt/f/Coding/github_repos/eosio_gpkbattles_contracts/gpkbattlesco/build/CMakeFiles/gpkbattlesco.dir
+/mnt/f/Coding/github_repos/eosio_gpkbattles_contracts/gpkbattlesco/build/CMakeFiles/edit_cache.dir
