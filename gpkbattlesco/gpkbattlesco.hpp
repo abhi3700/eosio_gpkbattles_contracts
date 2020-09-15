@@ -538,20 +538,33 @@ private:
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------
+	// function to convert Hexadecimal to Binary Number since C++11
+	string hextobin(const string &s){
+	    string out;
+	    for(auto i: s){
+	        uint8_t n;
+	        if(i <= '9' and i >= '0')
+	            n = i - '0';
+	        else
+	            n = 10 + i - 'a';
+	        for(int8_t j = 3; j >= 0; --j)
+	            out.push_back((n & (1<<j))? '1':'0');
+	    }
+
+	    return out;
+	}
+
+
 	// find game result in "a" or "b"
 	inline name find_game_result(const checksum256& random_val) {
 		string s = to_hex(&random_val, sizeof(random_val));
 
-		size_t found_a = s.find("a");
-		size_t found_b = s.find("b");
-
+		string bin_str = hextobin(s);
 		name res = ""_n;
-		if(found_a < found_b) {
+		if(bin_str[200] == '0')					// take the 200th bit of the binary output
 			res = "a"_n;
-		}
-		else if (found_a > found_b) {
+		else if(bin_str[200] == '1')
 			res = "b"_n;
-		}
 
 		return res;
 	}
