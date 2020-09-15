@@ -6,3 +6,4 @@ cleosw system newaccount gpkbattlesco gbuser111121 EOS6eP58enqGrKAo93Sbyhmz6tnpo
 cleosw system newaccount gpkbattlesco gbuser111122 EOS7ZbGaD8CBc9oDFbYRWW287yXSBnvuXvmkPyyacHapCS2Sw7Uuq EOS7ZbGaD8CBc9oDFbYRWW287yXSBnvuXvmkPyyacHapCS2Sw7Uuq --stake-net "0.2 WAX" --stake-cpu "0.2 WAX" --buy-ram-kbytes 5
 cleosw system newaccount gpkbattlesco gbuser111123 EOS5oLcmL22dy5m7m8DQtRoigHoH3LcrVx3kcgVi9DpXQ1PVaC6Pd EOS5oLcmL22dy5m7m8DQtRoigHoH3LcrVx3kcgVi9DpXQ1PVaC6Pd --stake-net "0.2 WAX" --stake-cpu "0.2 WAX" --buy-ram-kbytes 5
 cleosw system newaccount gpkbattlesco randomtestco EOS6qKcGDJWYNKuxcCYnPnCKpoHPYq97KpVGoY7tgsfKPbJQcAbVZ EOS6qKcGDJWYNKuxcCYnPnCKpoHPYq97KpVGoY7tgsfKPbJQcAbVZ --stake-net "0.2 WAX" --stake-cpu "0.2 WAX" --buy-ram-kbytes 5
+cleosw system newaccount gpkbattlesco gpkbattlesc1 EOS6qKcGDJWYNKuxcCYnPnCKpoHPYq97KpVGoY7tgsfKPbJQcAbVZ EOS6qKcGDJWYNKuxcCYnPnCKpoHPYq97KpVGoY7tgsfKPbJQcAbVZ --stake-net "0.2 WAX" --stake-cpu "0.2 WAX" --buy-ram-kbytes 5
