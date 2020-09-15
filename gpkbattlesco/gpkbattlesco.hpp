@@ -44,6 +44,8 @@ private:
 	// const symbol gamefee_value;
 	const name asset_contract_ac;
 	const name escrow_contract_ac;
+
+	// 370015336 for "simpleassets", 370015337 for "atomicassets"
 	const vector<pair<name, uint64_t>> vector_assetcontracts_associds;						// a list of pair of asset contract account names & assoc_ids
 
 public:
@@ -206,6 +208,16 @@ public:
 			print(card_id, " | ");
 		}
 	}
+
+	// ACTION testdplayers( const name& asset_contract_ac ) {
+	// 	// instantiate the players table
+	// 	players_index players_table(get_self(), get_self().value);
+	// 	auto players_it = players_table.find(asset_contract_ac.value);
+
+	// 	check(players_it != players_table.end(), "asset_contract ac doesn\'t exist.");
+
+	// 	players_table.erase(players_it);
+	// }
 
 
 	using empifyplayer_action  = action_wrapper<"empifyplayer"_n, &gpkbattlesco::empifyplayer>;
@@ -406,11 +418,10 @@ private:
 	// -----------------------------------------------------------------------------------------------------------------------
 	// scope - self
 	TABLE players {
-		name contract_ac;
-		uint64_t assoc_id;		// 370015336 for "simpleassets", 370015337 for "atomicassets"
+		name asset_contract_ac;
 		vector<name> players_list;
 
-		auto primary_key() const { return contract_ac.value; }
+		auto primary_key() const { return asset_contract_ac.value; }
 	};
 
 	using players_index = multi_index<"players"_n, players>;

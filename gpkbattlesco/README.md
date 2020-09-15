@@ -64,27 +64,35 @@ Warning, action <sendalert> does not have a ricardian contract
 ## Deploy
 * deploy contract
 ```console
-$ cleosw set contract gpkbattlesco ./
+$ cleosw set contract gpkbattlesc1 ./
 Reading WASM from /mnt/f/Coding/github_repos/eosio_gpkbattles_contracts/gpkbattlesco/gpkbattlesco.wasm...
 Publishing contract...
-executed transaction: 93d8a4807b83c3528fdec5b723ed341722028b4ca302a1d7ad604d2dce05cbf5  63616 bytes  8761 us
-#         eosio <= eosio::setcode               {"account":"gpkbattlesco","vmtype":0,"vmversion":0,"code":"0061736d0100000001c9022f60000060037f7f7f0...
-#         eosio <= eosio::setabi                {"account":"gpkbattlesco","abi":"0e656f73696f3a3a6162692f312e31000f0b6465706f73697467666565000406706...
+executed transaction: 66e19a80fda6d55889677820bf6371bab3858606c03c177c4b63842a21fd7e98  63848 bytes  10868 us
+#         eosio <= eosio::setcode               {"account":"gpkbattlesc1","vmtype":0,"vmversion":0,"code":"0061736d0100000001c9022f60000060037f7f7f0...
+#         eosio <= eosio::setabi                {"account":"gpkbattlesc1","abi":"0e656f73696f3a3a6162692f312e3100100b6465706f73697467666565000406706...
 warning: transaction executed locally, but may not be confirmed by the network yet         ]
 ```
 * Adding eosio.code to permissions (for inline actions)
 ```console
-$ cleosw set account permission gpkbattlesco active --add-code
-executed transaction: eb493c3eddecee583b276ba2d612ddeab66483464c701f6963a9e1734c4ab2b0  184 bytes  118 us
-#         eosio <= eosio::updateauth            {"account":"gpkbattlesco","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key...
+$ cleosw set account permission gpkbattlesc1 active --add-code
+executed transaction: 32dff3e5aba6607afbf1ea37f525f3a4094273818af81b72041d058a6a717208  184 bytes  162 us
+#         eosio <= eosio::updateauth            {"account":"gpkbattlesc1","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key...
 warning: transaction executed locally, but may not be confirmed by the network yet         ]
 ```
 
 ## Testing
 ### Action - `match2player`
+* match any 2 player of `simpleassets` contract type
+```console
+$ cleosw push action gpkbattlesc1 match2player '["simpleassets"]' -p gpkbattlesc1@active
+Error 3050003: eosio_assert_message assertion failure
+Error Details:
+assertion failure with message: players_list must be min. 2 in size.
+pending console output:
+```
+	- So, you need more players to be added into the `players_list` of `players` table
 
 ## TODO:
-- if anything wrong going during testing. try to look if it's due to 
 
 ## NOTES
 * The steps followed in the game is as follows:

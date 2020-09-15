@@ -46,7 +46,8 @@ public:
 	gpkbatescrow(name receiver, name code, datastream<const char*> ds) : 
 				contract(receiver, code, ds), 
 				// gamefee_token_symbol("WAX", 4),
-				game_contract_ac("gpkbattlesco"_n)
+				// game_contract_ac("gpkbattlesco"_n)				// For Mainnet
+				game_contract_ac("gpkbattlesc1"_n)					// For Testnet
 				// asset_contract_ac("simpleassets"_n) 
 				{}
 

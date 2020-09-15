@@ -178,12 +178,8 @@
             "base": "",
             "fields": [
                 {
-                    "name": "contract_ac",
+                    "name": "asset_contract_ac",
                     "type": "name"
-                },
-                {
-                    "name": "assoc_id",
-                    "type": "uint64"
                 },
                 {
                     "name": "players_list",

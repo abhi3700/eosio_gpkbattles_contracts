@@ -19,7 +19,11 @@ void gpkbattlesco::match2player(const name& asset_contract_ac) {
 	check(players_it->players_list.size() >= 2, "players_list must be min. 2 in size.");
 
 	// any fixed/variable no. fixed one used here.
-	uint64_t assoc_id = players_it->assoc_id;
+	auto s1_it = std::find_if(vector_assetcontracts_associds.begin(), vector_assetcontracts_associds.end(), [&](auto& vs){ return vs.first == asset_contract_ac; });
+
+	check(s1_it != vector_assetcontracts_associds.end(), "the asset_contract_ac can\'t be found for capturing the assoc_id");			// found
+	
+	auto assoc_id = s1_it->second;
 
 	// hash(txn_id, current_timestamp), & then convert hash to uint64_t
 	uint64_t signing_value = checksum256_to_uint64_t(hash_digest_256(get_trxid(), now())); 
@@ -742,14 +746,7 @@ void gpkbattlesco::empifyplayer(const name& asset_contract_ac,
 
 	if(players_it == players_table.end()) {
 		players_table.emplace(get_self(), [&](auto& row){
-			uint64_t assoc_id = 0;
-			auto s1_it = std::find_if(vector_assetcontracts_associds.begin(), vector_assetcontracts_associds.end(), [&](auto& vs){ return vs.first == asset_contract_ac; });
-
-			check(s1_it != vector_assetcontracts_associds.end(), "the asset_contract_ac can\'t be found for capturing the assoc_id");			// found
-			
-			assoc_id = s1_it->second;
-
-			row.assoc_id = assoc_id;										// not to be modified later.
+			row.asset_contract_ac = asset_contract_ac;
 			row.players_list = vector<name>{player};
 		});
 	} else {
