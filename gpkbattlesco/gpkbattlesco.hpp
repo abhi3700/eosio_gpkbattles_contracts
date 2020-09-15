@@ -198,6 +198,16 @@ public:
 						const string& message);
 
 
+	// for testing the escrow table by reading the cards for `select3cardauto` ACTION
+	ACTION testrdescrow( const name& player, const name& asset_contract_ac ) {
+		auto card_ids = checkget_3_available_cards(player, asset_contract_ac);
+
+		for(auto&& card_id : card_ids) {
+			print(card_id, " | ");
+		}
+	}
+
+
 	using empifyplayer_action  = action_wrapper<"empifyplayer"_n, &gpkbattlesco::empifyplayer>;
 	using remplayer_action  = action_wrapper<"remplayer"_n, &gpkbattlesco::remplayer>;
 	// using empifycards_action  = action_wrapper<"empifycards"_n, &gpkbatescrow::empifycards>;
@@ -235,7 +245,8 @@ public:
 			auto idx = assets.find(card_id);
 
 			check(idx != assets.end(), "Asset with id " + std::to_string(card_id) + " not found or not yours");
-			check (idx->author == "gpk.topps"_n, "Asset is not from this author");
+			// check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
+			check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
 			check(idx->category == category, "The asset id\'s category must be exotic.");
 
 			auto mdata = json::parse(idx->mdata);

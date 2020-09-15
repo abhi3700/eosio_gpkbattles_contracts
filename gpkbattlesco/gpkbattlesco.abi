@@ -274,6 +274,20 @@
             ]
         },
         {
+            "name": "testrdescrow",
+            "base": "",
+            "fields": [
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                }
+            ]
+        },
+        {
             "name": "usergamestat",
             "base": "",
             "fields": [
@@ -371,6 +385,11 @@
         {
             "name": "sendalert",
             "type": "sendalert",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "testrdescrow",
+            "type": "testrdescrow",
             "ricardian_contract": ""
         },
         {

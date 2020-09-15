@@ -736,24 +736,21 @@ void gpkbattlesco::empifyplayer(const name& asset_contract_ac,
 		|| (asset_contract_ac == "atomicassets"_n), 
 		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
 
-	uint64_t assoc_id = 0;
-	auto s1_it = std::find_if(vector_assetcontracts_associds.begin(), vector_assetcontracts_associds.end(), [&](auto& vs){ return vs.first == "simpleassets"_n; });
-	auto s2_it = std::find_if(vector_assetcontracts_associds.begin(), vector_assetcontracts_associds.end(), [&](auto& vs){ return vs.first == "atomicassets"_n; });
-
-	if (s1_it != vector_assetcontracts_associds.end()) {			// found
-		assoc_id = s1_it->second;
-	} else if(s2_it != vector_assetcontracts_associds.end()) {		// found
-		assoc_id = s2_it->second;
-	}
-
 	// add player to the players_list, if not added
 	players_index players_table(get_self(), get_self().value);
 	auto players_it = players_table.find(asset_contract_ac.value);
 
 	if(players_it == players_table.end()) {
 		players_table.emplace(get_self(), [&](auto& row){
-			row.assoc_id = assoc_id;						// not to be modified later.
-			row.players_list = vector{player};
+			uint64_t assoc_id = 0;
+			auto s1_it = std::find_if(vector_assetcontracts_associds.begin(), vector_assetcontracts_associds.end(), [&](auto& vs){ return vs.first == asset_contract_ac; });
+
+			check(s1_it != vector_assetcontracts_associds.end(), "the asset_contract_ac can\'t be found for capturing the assoc_id");			// found
+			
+			assoc_id = s1_it->second;
+
+			row.assoc_id = assoc_id;										// not to be modified later.
+			row.players_list = vector<name>{player};
 		});
 	} else {
 		auto vec_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), player);

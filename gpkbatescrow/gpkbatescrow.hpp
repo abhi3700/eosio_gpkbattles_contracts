@@ -61,10 +61,18 @@ public:
 	 * 
 	 * @pre - checked if the cards transferred are of "2a1b" or "1a2b" combo
 	 */
+	
 	ACTION transferbypl( const name& player,
 						const name& asset_contract_ac,
 						const vector<uint64_t> card_ids,
 						const string& memo );
+	// [[eosio::on_notify("*::transfer")]]
+	// void transferbypl( const name& player, 
+	// 						const name& to, 
+	// 						const vector<uint64_t>& card_ids, 
+	// 						const string& memo );
+
+
 
 	/**
 	 * @brief - an inline action for battle contract
@@ -142,7 +150,8 @@ public:
 			auto idx = assets.find(card_id);
 
 			check(idx != assets.end(), "Asset with id " + std::to_string(card_id) + " not found or not yours");
-			check (idx->author == "gpk.topps"_n, "Asset is not from this author");
+			// check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
+			check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
 			check(idx->category == category, "The asset id\'s category must be exotic.");
 
 			auto mdata = json::parse(idx->mdata);

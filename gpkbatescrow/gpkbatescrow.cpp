@@ -1,12 +1,27 @@
 #include "gpkbatescrow.hpp"
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbatescrow::transferbypl( const name& player,
+void gpkbatescrow::transferbypl
+								( const name& player,
 								const name& asset_contract_ac,
 								const vector<uint64_t> card_ids,
 								const string& memo )
-{
-	require_auth(permission_level(player, "active"_n));
+/*								( const name& player, 
+									const name& to, 
+									const vector<uint64_t>& card_ids, 
+									const string& memo )
+*/{
+
+	// check for conditions if either or both of these are true for `from` & `to`
+	// if(to != get_self() ||  player == get_self()) {		// atleast one of the condition is true
+	// 	print("Either money is not sent to the contract or contract itself is the player.");
+	// 	return;
+	// }
+
+	require_auth(player);
+
+	// auto asset_contract_ac = get_first_receiver();
+
 
 	check( (asset_contract_ac == "simpleassets"_n) 
 		|| (asset_contract_ac == "atomicassets"_n), 
@@ -16,18 +31,11 @@ void gpkbatescrow::transferbypl( const name& player,
 
 	check(memo.size() <= 256, "memo has more than 256 bytes");
 
-	// check cards quantity (either a or b), variant (base), category (exotic)
+	// check if it has been transferred & also
+	// check cards quantity, type (either a or b), variant (base), category (exotic)
 	// check "2a1b" or "1a2b" card combo
 	// here check is done before the transfer to the escrow contract
-	check_cards_type(asset_contract_ac, player, card_ids, "exotic"_n, "base");
-
-	action(
-		permission_level{player, "active"_n},
-		asset_contract_ac,
-		"transfer"_n,
-		std::make_tuple(player, get_self(), card_ids, 
-							"Transfer card(s) to " + get_self().to_string() + " for purpose: " + memo)
-	).send();
+	check_cards_type(asset_contract_ac, get_self(), card_ids, "exotic"_n, "base");
 
 	// instantiate the `cardwallet` table
 	cardwallet_index cardwallet_table(get_self(), player.value);
@@ -37,7 +45,7 @@ void gpkbatescrow::transferbypl( const name& player,
 
 		// if either of the cards already exist in the contract's table, it will exit.
 		check(card_it == cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " already exists in the table.");
-		cardwallet_table.emplace(player, [&](auto& row) {
+		cardwallet_table.emplace(get_self(), [&](auto& row) {
 			row.card_id = card_id;
 			row.contract_ac = asset_contract_ac;
 			row.usage_status = "available"_n;
@@ -49,7 +57,7 @@ void gpkbatescrow::transferbypl( const name& player,
 		permission_level{get_self(), "active"_n},
 		game_contract_ac,
 		"empifyplayer"_n,
-		std::make_tuple(get_self(), player)
+		std::make_tuple(asset_contract_ac, player)
 	).send();
 
 }
@@ -111,7 +119,7 @@ void gpkbatescrow::withdrawbypl( const name& player,
 			permission_level{get_self(), "active"_n},
 			game_contract_ac,
 			"remplayer"_n,
-			std::make_tuple(get_self(), player)
+			std::make_tuple(asset_contract_ac, player)
 		).send();
 	}
 
