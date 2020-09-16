@@ -313,6 +313,8 @@ public:
 			){
 			card_ids_type = "1a2b"_n;
 		}
+
+		return card_ids_type;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------
@@ -343,41 +345,6 @@ public:
 
 		return card_ids;
 	}
-	// -----------------------------------------------------------------------------------------------------------------------
-	static vector<uint64_t> checkget_3_available_cards_receiverand(const name& player, const name& asset_contract_ac) {
-		// create an empty vector of card
-		vector<uint64_t> card_ids{};
-
-		// read the `cardwallet` table & collect 3 available cards of `asset_contract_ac`
-		cardwallet_index cardwallet_table("gpkbatescrow"_n, player.value);
-		auto usagstatus_idx = cardwallet_table.get_index<"byusagstatus"_n>();
-		auto cardwallet_it = usagstatus_idx.find("available"_n.value);
-
-		// check( (cardwallet_it != usagstatus_idx.end()) &&
-		// 		(cardwallet_it->contract_ac == asset_contract_ac)
-		// 		, "player has no cards of asset contract: \'" + asset_contract_ac.to_string() + "\' available for selection.");
-		
-		if ( (cardwallet_it != usagstatus_idx.end()) && (cardwallet_it->contract_ac == asset_contract_ac) )
-		{
-			// capture the 1st card 
-			card_ids.emplace_back(cardwallet_it->card_id);	
-			
-			// capture the 2 more cards 
-			while(card_ids.size() < 3) {
-				++cardwallet_it;
-				// check( (cardwallet_it != usagstatus_idx.end()) && (cardwallet_it->contract_ac == asset_contract_ac)
-				// 	, "player has less than 3 available cards. Please ensure min. 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
-				if ((cardwallet_it != usagstatus_idx.end()) && (cardwallet_it->contract_ac == asset_contract_ac))
-				{
-					card_ids.emplace_back(cardwallet_it->card_id);	
-				}
-			}
-		}
-
-
-		return card_ids;
-	}
-
 	// -----------------------------------------------------------------------------------------------------------------------
 	static void check_quantity( const asset& quantity ) {
 		check(quantity.is_valid(), "invalid quantity");
