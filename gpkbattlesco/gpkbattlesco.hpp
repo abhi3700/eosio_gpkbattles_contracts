@@ -200,12 +200,24 @@ public:
 						const string& message);
 
 
+	/**
+	 * @brief - send alert related to error especially during `receiverand` ACTION
+	 * @details - send alert after the action is successfully done
+	 * 
+	 * @param user - user
+	 * @param message - note depending on the action
+	 */
+	ACTION sendalerterr( const name& user,
+						const string& message);
+
+
 	// for testing the escrow table by reading the cards for `select3cardauto` ACTION
 	ACTION testrdescrow( const name& player, const name& asset_contract_ac ) {
 		auto card_ids = checkget_3_available_cards(player, asset_contract_ac);
 
 		for(auto&& card_id : card_ids) {
-			print(card_id, " | ");
+			send_alert(player, std::to_string(card_id));			// to check if the cards are captured properly	
+			// print(std::to_string(card_id), " | ");
 		}
 	}
 
@@ -326,8 +338,42 @@ public:
 			check( (cardwallet_it != usagstatus_idx.end()) && 
 				(cardwallet_it->contract_ac == asset_contract_ac)
 				, "player has less than 3 available cards. Please ensure min. 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
-			card_ids.emplace_back(cardwallet_it->card_id);	
+			card_ids.emplace_back(cardwallet_it->card_id);
 		}
+
+		return card_ids;
+	}
+	// -----------------------------------------------------------------------------------------------------------------------
+	static vector<uint64_t> checkget_3_available_cards_receiverand(const name& player, const name& asset_contract_ac) {
+		// create an empty vector of card
+		vector<uint64_t> card_ids{};
+
+		// read the `cardwallet` table & collect 3 available cards of `asset_contract_ac`
+		cardwallet_index cardwallet_table("gpkbatescrow"_n, player.value);
+		auto usagstatus_idx = cardwallet_table.get_index<"byusagstatus"_n>();
+		auto cardwallet_it = usagstatus_idx.find("available"_n.value);
+
+		// check( (cardwallet_it != usagstatus_idx.end()) &&
+		// 		(cardwallet_it->contract_ac == asset_contract_ac)
+		// 		, "player has no cards of asset contract: \'" + asset_contract_ac.to_string() + "\' available for selection.");
+		
+		if ( (cardwallet_it != usagstatus_idx.end()) && (cardwallet_it->contract_ac == asset_contract_ac) )
+		{
+			// capture the 1st card 
+			card_ids.emplace_back(cardwallet_it->card_id);	
+			
+			// capture the 2 more cards 
+			while(card_ids.size() < 3) {
+				++cardwallet_it;
+				// check( (cardwallet_it != usagstatus_idx.end()) && (cardwallet_it->contract_ac == asset_contract_ac)
+				// 	, "player has less than 3 available cards. Please ensure min. 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
+				if ((cardwallet_it != usagstatus_idx.end()) && (cardwallet_it->contract_ac == asset_contract_ac))
+				{
+					card_ids.emplace_back(cardwallet_it->card_id);	
+				}
+			}
+		}
+
 
 		return card_ids;
 	}
@@ -619,6 +665,9 @@ private:
 	// -----------------------------------------------------------------------------------------------------------------------
 	// Adding inline action for `sendalert` action in the same contract 
 	void send_alert(const name& user, const string& message);
+	// -----------------------------------------------------------------------------------------------------------------------
+	// Adding inline action for `sendalerterr` action in the same contract 
+	void send_alert_err(const name& user, const string& message);
 	// -----------------------------------------------------------------------------------------------------------------------
 	// Adding inline action for `movegameinfo` action in the same contract 
 	void move_game_info(uint64_t game_id, const name& player, const string& message);

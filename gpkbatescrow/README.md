@@ -164,6 +164,64 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
   "next_key": ""
 }
 ```
+- Similarly do it for player-2 info details using `transferbypl` action of this contract after `transfer` assets using `simpleassets` contract
+```console
+$ cleosw push action gpkbatescrow transferbypl '{"player": "gbuser111112", "asset_contract_ac": "simpleassets", "card_ids": ["100000000007693", "100000000007694", "100000000007695"], "memo": "transfer cards for gpk.battles playing"}' -p gbuser111112@active
+executed transaction: d626d8d6b2d881c6212adb24b10ebdafdbeeb5a64916b08015468e9e0acecb85  176 bytes  360 us
+#  gpkbatescrow <= gpkbatescrow::transferbypl   {"player":"gbuser111112","asset_contract_ac":"simpleassets","card_ids":["100000000007693","100000000...
+#  gpkbattlesc1 <= gpkbattlesc1::empifyplayer   {"asset_contract_ac":"simpleassets","player":"gbuser111112"}
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+```
+	- view the table `cardwallet` of this contract
+```console
+$ cleosw get table gpkbatescrow gbuser111112 cardwallet --show-payer
+{
+  "rows": [{
+      "data": {
+        "card_id": "100000000007693",
+        "contract_ac": "simpleassets",
+        "usage_status": "available"
+      },
+      "payer": "gpkbatescrow"
+    },{
+      "data": {
+        "card_id": "100000000007694",
+        "contract_ac": "simpleassets",
+        "usage_status": "available"
+      },
+      "payer": "gpkbatescrow"
+    },{
+      "data": {
+        "card_id": "100000000007695",
+        "contract_ac": "simpleassets",
+        "usage_status": "available"
+      },
+      "payer": "gpkbatescrow"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+	- view the table `players` of `gpkbattlesc1` contract. Here, `gbuser111111` transferred later than `gbuser111112`
+```console
+$ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
+{
+  "rows": [{
+      "data": {
+        "asset_contract_ac": "simpleassets",
+        "players_list": [
+          "gbuser111112",
+          "gbuser111111"
+        ]
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
 
 ### Action - `withdrawbypl`
 * player `gbuser111111` wants to voluntarily withdraw the card id: `100000000007690`

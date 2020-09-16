@@ -90,7 +90,19 @@ Error Details:
 assertion failure with message: players_list must be min. 2 in size.
 pending console output:
 ```
-	- So, you need more players to be added into the `players_list` of `players` table
+	- So, you need min. 2 players to be added into the `players_list` of `players` table
+
+### Action - `depositgfee`
+
+
+### Action - `withdrawgfee`
+
+
+### Action - `sel3card`
+
+### Action - `sel3cardauto`
+
+### Action - `play`
 
 ## TODO:
 

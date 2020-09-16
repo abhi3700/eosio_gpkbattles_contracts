@@ -38,7 +38,10 @@ void gpkbattlesco::match2player(const name& asset_contract_ac) {
      .send();
 	
 
-    // continue the rest in receiverand ACTION based on assoc_id saved corresponding to asset_contract_ac row 
+    // continue the rest in receiverand ACTION based on assoc_id saved corresponding to asset_contract_ac row
+    // Technically, the shuffle players_list using RNG is needed only if there are players > 2, but if it is done so, then how to parse `p1` player, as there is limited 
+    // param in `receiverand` ACTION.
+    // That's why in both the cases (== 2 or > 2) the RNG is generated & then further work.
 	
 }
 
@@ -465,80 +468,111 @@ void gpkbattlesco::receiverand(uint64_t assoc_id, const eosio::checksum256& rand
 		players_index players_table(get_self(), get_self().value);
 		auto players_it = players_table.find(asset_contract_ac.value);
 
-		check(players_it != players_table.end(), "players_list is not set.");
+		// check(players_it != players_table.end(), "players_list is not set.");
 
 		// the purpose of instantiating the table is to check if the players_list has min. 2 players in the list & then generate RNG.
-		check(players_it->players_list.size() >= 2, "players_list must be min. 2 in size.");
+		// check(players_it->players_list.size() >= 2, "players_list must be min. 2 in size.");
 
-		// choose the 1st player
-		auto p1 = players_it->players_list[0];
-
-		// now choose the second player using randomization if rest_players' size > 2
+		name p1 = ""_n;
 		name p2 = ""_n;
-		if (players_it->players_list.size() == 2) {
-			p2 = players_it->players_list[1];
-		} 
-		else if (players_it->players_list.size() > 2) {
-			auto rest_players_list = players_it->players_list;				// copy the original players_list
-			rest_players_list.erase(rest_players_list.begin());				// erase the 1st player as it is already chosen
 
-			auto rand_index = get_random_indexfrmlist(random_value, rest_players_list);
-			p2 = players_it->players_list[rand_index];
+		if ( (players_it != players_table.end()) && (players_it->players_list.size() >= 2) )
+		{
+			// choose the 1st player
+			p1 = players_it->players_list[0];
+
+			// now choose the second player using randomization if rest_players' size > 2
+			if (players_it->players_list.size() == 2) {
+				p2 = players_it->players_list[1];
+			} 
+			else if (players_it->players_list.size() > 2) {
+				auto rest_players_list = players_it->players_list;				// copy the original players_list
+				rest_players_list.erase(rest_players_list.begin());				// erase the 1st player as it is already chosen
+
+				auto rand_index = get_random_indexfrmlist(random_value, rest_players_list);
+				p2 = players_it->players_list[rand_index];
+			}
+
+			send_alert(p1, "you have been matched with " + p2.to_string());
+			send_alert(p2, "you have been matched with " + p1.to_string());
+
+	/*		// check players matched are not identical
+			check(p1 != p2, "the matched players are identical by name. Please, ensure there is no duplicate players name in the list.");
+
+			// check each p1, p2 contain min. 3 cards
+			check(checkget_3_available_cards_receiverand(p1, asset_contract_ac).size() == 3, 
+				"player " + p1.to_string() + " has no 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
+			check(checkget_3_available_cards_receiverand(p2, asset_contract_ac).size() == 3, 
+				"player " + p2.to_string() + " has no 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
+	*/
+			if ( (p1 != p2) && (checkget_3_available_cards_receiverand(p1, asset_contract_ac).size() == 3) && checkget_3_available_cards_receiverand(p2, asset_contract_ac).size() == 3 )
+			{
+				// check that the players - p1, p2 are not present in the player_1 column & player_2 column of the table
+				ongamestat_index ongamestat_table(get_self(), get_self().value);
+				auto player1_idx = ongamestat_table.get_index<"byplayer1"_n>();
+				auto player2_idx = ongamestat_table.get_index<"byplayer2"_n>();
+
+				auto p11_it = player1_idx.find(p1.value);
+				auto p21_it = player1_idx.find(p2.value);
+
+				// check(p11_it == player1_idx.end(), p1.to_string() + " is already present with game_id: \'" + std::to_string(p11_it->game_id) + "\' in player_1 column of \'ongamestat\' table.");
+				// check(p21_it == player1_idx.end(), p2.to_string() + " is already present with game_id: \'" + std::to_string(p21_it->game_id) + "\' in player_1 column of \'ongamestat\' table.");
+
+				auto p12_it = player2_idx.find(p1.value);
+				auto p22_it = player2_idx.find(p2.value);
+
+				// check(p12_it == player2_idx.end(), p1.to_string() + " is already present with game_id: \'" + std::to_string(p12_it->game_id) + "\' in player_2 column of \'ongamestat\' table.");
+				// check(p22_it == player2_idx.end(), p2.to_string() + " is already present with game_id: \'" + std::to_string(p22_it->game_id) + "\' in player_2 column of \'ongamestat\' table.");
+
+				// After these above checks, the players are ok to be added now in the `ongamestat` table.
+
+				if ( (p11_it == player1_idx.end()) && 
+					(p21_it == player1_idx.end()) &&
+					(p12_it == player2_idx.end()) &&
+					(p22_it == player2_idx.end())
+					)
+				{
+					// generate game_id
+					uint64_t game_id = 10000123456789 + (uint64_t)now();
+
+					// now, emplace table with details - game_id, player_1, player_2
+					auto ongamestat_it = ongamestat_table.find(game_id);
+					check(ongamestat_it == ongamestat_table.end(), "The game with id: \'" + std::to_string(game_id) + "\' is already present in the table. So, players can't be matched." );
+					// select any iterator out of (p11_it, p21_it, p12_it, p22_it) for adding it into table.
+/*					if (ongamestat_it == ongamestat_table.end())
+					{
+						ongamestat_table.emplace(get_self(), [&](auto& row){
+							row.game_id = game_id;
+							row.player_1 = p1;
+							row.player_2 = p2;
+						});
+
+						// Now, erase p1, p2 from the `players` table's `players_list`
+						auto pl_search_it_1 = std::find(players_it->players_list.begin(), players_it->players_list.end(), p1);
+						auto pl_search_it_2 = std::find(players_it->players_list.begin(), players_it->players_list.end(), p2);
+
+
+						// check(pl_search_it_1 != players_it->players_list.end(), "p1 is not in the players_list.");
+						// check(pl_search_it_2 != players_it->players_list.end(), "p2 is not in the players_list.");
+						if ( (pl_search_it_1 != players_it->players_list.end()) && (pl_search_it_2 != players_it->players_list.end()))
+						{
+							players_table.modify(players_it, get_self(), [&](auto& row) {
+								row.players_list.erase(pl_search_it_1);
+								row.players_list.erase(pl_search_it_2);
+							});
+						}
+					}
+*/
+				}
+
+		
+			}
 		}
 
-		// check players matched are not identical
-		check(p1 != p2, "the matched players are identical by name. Please, ensure there is no duplicate players name in the list.");
 
-		// check each p1, p2 contain min. 3 cards
-		check(checkget_3_available_cards(p1, asset_contract_ac).size() == 3, 
-			"player " + p1.to_string() + " has no 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
-		check(checkget_3_available_cards(p2, asset_contract_ac).size() == 3, 
-			"player " + p2.to_string() + " has no 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
 
-		// check that the players - p1, p2 are not present in the player_1 column & player_2 column of the table
-		ongamestat_index ongamestat_table(get_self(), get_self().value);
-		auto player1_idx = ongamestat_table.get_index<"byplayer1"_n>();
-		auto player2_idx = ongamestat_table.get_index<"byplayer2"_n>();
 
-		auto p11_it = player1_idx.find(p1.value);
-		auto p21_it = player1_idx.find(p2.value);
 
-		check(p11_it == player1_idx.end(), p1.to_string() + " is already present with game_id: \'" + std::to_string(p11_it->game_id) + "\' in player_1 column of \'ongamestat\' table.");
-		check(p21_it == player1_idx.end(), p2.to_string() + " is already present with game_id: \'" + std::to_string(p21_it->game_id) + "\' in player_1 column of \'ongamestat\' table.");
-
-		auto p12_it = player2_idx.find(p1.value);
-		auto p22_it = player2_idx.find(p2.value);
-
-		check(p12_it == player2_idx.end(), p1.to_string() + " is already present with game_id: \'" + std::to_string(p12_it->game_id) + "\' in player_2 column of \'ongamestat\' table.");
-		check(p22_it == player2_idx.end(), p2.to_string() + " is already present with game_id: \'" + std::to_string(p22_it->game_id) + "\' in player_2 column of \'ongamestat\' table.");
-
-		// After these above checks, the players are ok to be added now in the `ongamestat` table.
-
-		// generate game_id
-		uint64_t game_id = 10000123456789 + (uint64_t)now();
-
-		// now, emplace table with details - game_id, player_1, player_2
-		auto ongamestat_it = ongamestat_table.find(game_id);
-		check(ongamestat_it == ongamestat_table.end(), "The game with id: \'" + std::to_string(game_id) + "\' is already present in the table. So, players can't be matched." );
-
-		// select any iterator out of (p11_it, p21_it, p12_it, p22_it) for adding it into table.
-		ongamestat_table.emplace(get_self(), [&](auto& row){
-			row.game_id = game_id;
-			row.player_1 = p1;
-			row.player_2 = p2;
-		});
-
-		// Now, erase p1, p2 from the `players` table's `players_list`
-		auto pl_search_it_1 = std::find(players_it->players_list.begin(), players_it->players_list.end(), p1);
-		auto pl_search_it_2 = std::find(players_it->players_list.begin(), players_it->players_list.end(), p2);
-
-		check(pl_search_it_1 != players_it->players_list.end(), "p1 is not in the players_list.");
-		check(pl_search_it_2 != players_it->players_list.end(), "p2 is not in the players_list.");
-
-		players_table.modify(players_it, get_self(), [&](auto& row) {
-			row.players_list.erase(pl_search_it_1);
-			row.players_list.erase(pl_search_it_2);
-		});
 
 	} 
 	else {
@@ -801,6 +835,28 @@ void gpkbattlesco::sendalert(const name& user,
 void gpkbattlesco::send_alert(const name& user, 
 							const string& message) {
 	check(message.size() <= 256, "message has more than 256 bytes");
+	
+	action(
+		permission_level(get_self(), "active"_n),
+		get_self(),
+		"sendalert"_n,
+		std::make_tuple(user, message)
+	).send();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::sendalerterr(const name& user,
+							const string& message) {
+	require_auth(get_self());
+
+	require_recipient(user);
+
+	check(message.size() <= 256, "message has more than 256 bytes");
+
+}
+
+void gpkbattlesco::send_alert_err(const name& user, 
+							const string& message) {
 	
 	action(
 		permission_level(get_self(), "active"_n),

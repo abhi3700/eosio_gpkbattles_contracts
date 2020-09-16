@@ -270,6 +270,20 @@
             ]
         },
         {
+            "name": "sendalerterr",
+            "base": "",
+            "fields": [
+                {
+                    "name": "user",
+                    "type": "name"
+                },
+                {
+                    "name": "message",
+                    "type": "string"
+                }
+            ]
+        },
+        {
             "name": "testrdescrow",
             "base": "",
             "fields": [
@@ -381,6 +395,11 @@
         {
             "name": "sendalert",
             "type": "sendalert",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "sendalerterr",
+            "type": "sendalerterr",
             "ricardian_contract": ""
         },
         {
