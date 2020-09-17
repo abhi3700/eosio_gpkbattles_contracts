@@ -29,10 +29,7 @@ void gpkbattlesco::match2player(const name& asset_contract_ac) {
 		p2 = players_it->players_list[1];
 	} 
 	else if (players_it->players_list.size() > 2) {
-		auto rest_players_list = players_it->players_list;				// copy the original players_list
-		rest_players_list.erase(rest_players_list.begin());				// erase the 1st player as it is already chosen
-
-		auto rand_index = get_random_indexfrmlist(random_value, rest_players_list);
+		auto rand_index = get_random_indexfrmlist(random_value, players_it->players_list);
 		p2 = players_it->players_list[rand_index];
 	}
 
@@ -78,6 +75,10 @@ void gpkbattlesco::match2player(const name& asset_contract_ac) {
 		row.player_2 = p2;
 	});
 
+	// Send the 2 players an alert that they have matched with & ask them to send the game fee if not sent
+	send_alert(p1, "You have been matched with " + p2.to_string());
+	send_alert(p2, "You have been matched with " + p1.to_string());
+
 	// Now, erase p1, p2 from the `players` table's `players_list`
 	auto pl_search_it_1 = std::find(players_it->players_list.begin(), players_it->players_list.end(), p1);
 	auto pl_search_it_2 = std::find(players_it->players_list.begin(), players_it->players_list.end(), p2);
@@ -87,6 +88,9 @@ void gpkbattlesco::match2player(const name& asset_contract_ac) {
 
 	players_table.modify(players_it, get_self(), [&](auto& row) {
 		row.players_list.erase(pl_search_it_1);
+	});
+
+	players_table.modify(players_it, get_self(), [&](auto& row) {
 		row.players_list.erase(pl_search_it_2);
 	});
 
@@ -722,7 +726,7 @@ void gpkbattlesco::remplayer(const name& asset_contract_ac,
 								const name& player) {
 	require_auth(escrow_contract_ac);
 
-	// add player to the players_list, if not added
+	// remove player to the players_list, if present
 	players_index players_table(get_self(), get_self().value);
 	auto players_it = players_table.find(asset_contract_ac.value);
 
@@ -758,28 +762,6 @@ void gpkbattlesco::sendalert(const name& user,
 void gpkbattlesco::send_alert(const name& user, 
 							const string& message) {
 	check(message.size() <= 256, "message has more than 256 bytes");
-	
-	action(
-		permission_level(get_self(), "active"_n),
-		get_self(),
-		"sendalert"_n,
-		std::make_tuple(user, message)
-	).send();
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-void gpkbattlesco::sendalerterr(const name& user,
-							const string& message) {
-	require_auth(get_self());
-
-	require_recipient(user);
-
-	check(message.size() <= 256, "message has more than 256 bytes");
-
-}
-
-void gpkbattlesco::send_alert_err(const name& user, 
-							const string& message) {
 	
 	action(
 		permission_level(get_self(), "active"_n),

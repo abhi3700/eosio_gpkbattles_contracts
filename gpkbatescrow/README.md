@@ -109,7 +109,7 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```
 	- transfers the card info details using `transferbypl` action of this contract
 ```console
-$ cleosw push action gpkbatescrow transferbypl '{"player": "gbuser111111", "asset_contract_ac": "simpleassets", "card_ids": ["100000000007690", "100000000007691", "100000000007692"], "memo": "transfer cards for gpk.battles playing"}' -p gbuser111111@active
+$ cleosw push action gpkbatescrow transferbypl '{"player": "gbuser111111", "asset_contract_ac": "simpleassets", "card_ids": ["100000000007690", "100000000007691", "100000000007692"], "memo": "transfer cards for gpk.battles playing"}' -p gpkbatescrow@active
 executed transaction: 063b6cc71b67a437cd8eaa41b73727146a593de424977ada0e49e99ba5197efb  176 bytes  414 us
 #  gpkbatescrow <= gpkbatescrow::transferbypl   {"player":"gbuser111111","asset_contract_ac":"simpleassets","card_ids":["100000000007690","100000000...
 #  gpkbattlesc1 <= gpkbattlesc1::empifyplayer   {"asset_contract_ac":"simpleassets","player":"gbuser111111"}
@@ -166,7 +166,7 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
 ```
 - Similarly do it for player-2 info details using `transferbypl` action of this contract after `transfer` assets using `simpleassets` contract
 ```console
-$ cleosw push action gpkbatescrow transferbypl '{"player": "gbuser111112", "asset_contract_ac": "simpleassets", "card_ids": ["100000000007693", "100000000007694", "100000000007695"], "memo": "transfer cards for gpk.battles playing"}' -p gbuser111112@active
+$ cleosw push action gpkbatescrow transferbypl '{"player": "gbuser111112", "asset_contract_ac": "simpleassets", "card_ids": ["100000000007693", "100000000007694", "100000000007695"], "memo": "transfer cards for gpk.battles playing"}' -p gpkbatescrow@active
 executed transaction: d626d8d6b2d881c6212adb24b10ebdafdbeeb5a64916b08015468e9e0acecb85  176 bytes  360 us
 #  gpkbatescrow <= gpkbatescrow::transferbypl   {"player":"gbuser111112","asset_contract_ac":"simpleassets","card_ids":["100000000007693","100000000...
 #  gpkbattlesc1 <= gpkbattlesc1::empifyplayer   {"asset_contract_ac":"simpleassets","player":"gbuser111112"}
@@ -221,6 +221,14 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
   "more": false,
   "next_key": ""
 }
+```
+* `gbuser111113` transfers wrong card combo & gets error:
+```console
+$ cleosw push action gpkbatescrow transferbypl '{"player": "gbuser111113", "asset_contract_ac": "simpleassets", "card_ids": ["100000000007697", "100000000007710", "100000000007714"], "memo": "transfer cards for gpk.battles playing"}' -p gpkbatescrow@active
+Error 3050003: eosio_assert_message assertion failure
+Error Details:
+assertion failure with message: the cards chosen are of different combination than (2A,1B) OR (1A,2B).
+pending console output:
 ```
 
 ### Action - `withdrawbypl`

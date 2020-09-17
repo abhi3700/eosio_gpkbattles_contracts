@@ -91,6 +91,65 @@ assertion failure with message: players_list must be min. 2 in size.
 pending console output:
 ```
 	- So, you need min. 2 players to be added into the `players_list` of `players` table
+* match any 2 player of `simpleassets` contract type
+```console
+$ cleosw push action gpkbattlesc1 match2player '["simpleassets"]' -p gpkbattlesc1@active
+executed transaction: 1dcdad933be9e2c33e7a6eedcf7c971beeb4314b1071c7ced8d169187ae5dcf4  104 bytes  315 us
+#  gpkbattlesc1 <= gpkbattlesc1::match2player   {"asset_contract_ac":"simpleassets"}
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+```
+	- view the table `ongamestat` of this contract
+```console
+$ cleosw get table gpkbattlesc1 gpkbattlesc1 ongamestat
+{
+  "rows": [{
+      "game_id": "10001723753231",
+      "player_1": "gbuser111112",
+      "player_2": "gbuser111115",
+      "game_fee": "0 ",
+      "asset_contract_ac": "",
+      "player1_cards": [],
+      "player2_cards": [],
+      "player1_cards_combo": "",
+      "player2_cards_combo": "",
+      "start_timestamp": 0,
+      "end_timestamp": 0,
+      "result": "",
+      "winner": "",
+      "loser": "",
+      "card_won": 0,
+      "status": "",
+      "random_value": "0000000000000000000000000000000000000000000000000000000000000000",
+      "draw_count": 0,
+      "nodraw_count": 0,
+      "total_play_count": 0
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+	- view the table `players` of this contract
+```console
+$ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
+{
+  "rows": [{
+      "data": {
+        "asset_contract_ac": "simpleassets",
+        "players_list": [
+          "gbuser111111",
+          "gbuser111115",
+          "gbuser111114",
+          "gbuser111121"
+        ]
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
 
 ### Action - `depositgfee`
 

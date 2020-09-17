@@ -200,16 +200,6 @@ public:
 						const string& message);
 
 
-	/**
-	 * @brief - send alert related to error especially during `receiverand` ACTION
-	 * @details - send alert after the action is successfully done
-	 * 
-	 * @param user - user
-	 * @param message - note depending on the action
-	 */
-	ACTION sendalerterr( const name& user,
-						const string& message);
-
 
 	// for testing the escrow table by reading the cards for `select3cardauto` ACTION
 	ACTION testrdescrow( const name& player, const name& asset_contract_ac ) {
@@ -220,6 +210,58 @@ public:
 			// print(std::to_string(card_id), " | ");
 		}
 	}
+
+	ACTION testdelongam( uint64_t game_id ) {
+		ongamestat_index ongamestat_table(get_self(), get_self().value);
+		auto ongamestat_it = ongamestat_table.find(game_id);
+		check(ongamestat_it != ongamestat_table.end(), "The game_id doesn't exist." );
+
+		ongamestat_table.erase(ongamestat_it);
+
+		// add the players back to the players list
+		// mark the cards as available
+	}
+
+	ACTION testaddplayr(const name& asset_contract_ac, const name& player) {
+		// add player to the players_list, if not added
+		players_index players_table(get_self(), get_self().value);
+		auto players_it = players_table.find(asset_contract_ac.value);
+
+		// check(players_it == players_table.end(), "there is players list with this asset contract ac");
+
+		if(players_it == players_table.end()) {
+			players_table.emplace(get_self(), [&](auto& row){
+				row.asset_contract_ac = asset_contract_ac;
+				row.players_list = vector<name>{player};
+			});
+		} else {
+			auto vec_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), player);
+			if(vec_it == players_it->players_list.end()) {
+				players_table.modify(players_it, get_self(), [&](auto& row) {
+					row.players_list.emplace_back(player);
+				});
+			}
+		}
+	}
+
+
+	ACTION testremplayr(const name& asset_contract_ac, const name& player) {
+		// remove player to the players_list, if present
+		players_index players_table(get_self(), get_self().value);
+		auto players_it = players_table.find(asset_contract_ac.value);
+
+		check(players_it != players_table.end(), "there is no players list with this asset contract ac");
+
+		auto vec_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), player);
+		if(vec_it != players_it->players_list.end()) {
+			players_table.modify(players_it, get_self(), [&](auto& row) {
+				row.players_list.erase(vec_it);
+			});
+		}
+	}
+
+
+
 
 	// ACTION testdplayers( const name& asset_contract_ac ) {
 	// 	// instantiate the players table
@@ -573,43 +615,8 @@ private:
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------
-	// function to convert Hexadecimal to Binary Number since C++11
-	string hextobin(const string &s){
-	    string out;
-	    for(auto i: s){
-	        uint8_t n;
-	        if(i <= '9' and i >= '0')
-	            n = i - '0';
-	        else
-	            n = 10 + i - 'a';
-	        for(int8_t j = 3; j >= 0; --j)
-	            out.push_back((n & (1<<j))? '1':'0');
-	    }
-
-	    return out;
-	}
-
-
 	// find game result in "a" or "b"
-	inline name find_game_result(const checksum256& random_val) {
-		string s = to_hex(&random_val, sizeof(random_val));
-
-		string bin_str = hextobin(s);
-		name res = ""_n;
-		if(bin_str[200] == '0')					// take the 200th bit of the binary output
-			res = "a"_n;
-		else if(bin_str[200] == '1')
-			res = "b"_n;
-
-		return res;
-	}
-
-	// -----------------------------------------------------------------------------------------------------------------------
-	// get random index from list (of players, of cards)
-	template<typename T>
-	inline uint64_t get_random_indexfrmlist(const checksum256& random_value, vector<T> list) {
-		//cast the random_value to a smaller number
-	    uint64_t max_value = list.size() - 1;			// set max index no. i.e. N-1 as the max_value		
+	inline name find_game_result(const checksum256& random_value) {
 	    auto byte_array = random_value.extract_as_byte_array();
 
 	    uint64_t random_int = 0;
@@ -617,8 +624,35 @@ private:
 	        random_int <<= 8;
 	        random_int |= (uint64_t)byte_array[i];
 	    }
+	    
+	    name res = ""_n;
+	    uint64_t num1 = random_int % 2;				// produces either 0 or 1
+		if(num1 == 0)
+			res = "a"_n;
+		else if(num1 == 1)
+			res = "b"_n;
 
-	    uint64_t num1 = random_int % max_value;
+		return res;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------------
+	// // get random index from list (of players, of cards)
+	template<typename T>
+	inline uint64_t get_random_indexfrmlist(const checksum256& random_value, vector<T> list) {
+		//cast the random_value to a smaller number
+		// this means creating random no. b/w min. & max. i.e. min <= num1 <= max
+	    uint64_t max_value = list.size()-1;
+	    uint64_t min_value = 1;
+	
+	    auto byte_array = random_value.extract_as_byte_array();
+
+	    uint64_t random_int = 0;
+	    for (int i = 0; i < 8; i++) {
+	        random_int <<= 8;
+	        random_int |= (uint64_t)byte_array[i];
+	    }
+	    
+	    uint64_t num1 = min_value + ( random_int % ( max_value - min_value + 1 ) );
 
 	    return num1;
 	}
@@ -632,9 +666,6 @@ private:
 	// -----------------------------------------------------------------------------------------------------------------------
 	// Adding inline action for `sendalert` action in the same contract 
 	void send_alert(const name& user, const string& message);
-	// -----------------------------------------------------------------------------------------------------------------------
-	// Adding inline action for `sendalerterr` action in the same contract 
-	void send_alert_err(const name& user, const string& message);
 	// -----------------------------------------------------------------------------------------------------------------------
 	// Adding inline action for `movegameinfo` action in the same contract 
 	void move_game_info(uint64_t game_id, const name& player, const string& message);

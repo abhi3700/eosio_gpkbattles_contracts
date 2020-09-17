@@ -270,16 +270,26 @@
             ]
         },
         {
-            "name": "sendalerterr",
+            "name": "testaddplayr",
             "base": "",
             "fields": [
                 {
-                    "name": "user",
+                    "name": "asset_contract_ac",
                     "type": "name"
                 },
                 {
-                    "name": "message",
-                    "type": "string"
+                    "name": "player",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "testdelongam",
+            "base": "",
+            "fields": [
+                {
+                    "name": "game_id",
+                    "type": "uint64"
                 }
             ]
         },
@@ -293,6 +303,20 @@
                 },
                 {
                     "name": "asset_contract_ac",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "testremplayr",
+            "base": "",
+            "fields": [
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "player",
                     "type": "name"
                 }
             ]
@@ -398,13 +422,23 @@
             "ricardian_contract": ""
         },
         {
-            "name": "sendalerterr",
-            "type": "sendalerterr",
+            "name": "testaddplayr",
+            "type": "testaddplayr",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "testdelongam",
+            "type": "testdelongam",
             "ricardian_contract": ""
         },
         {
             "name": "testrdescrow",
             "type": "testrdescrow",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "testremplayr",
+            "type": "testremplayr",
             "ricardian_contract": ""
         },
         {

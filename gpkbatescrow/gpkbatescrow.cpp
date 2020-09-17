@@ -18,7 +18,7 @@ void gpkbatescrow::transferbypl
 	// 	return;
 	// }
 
-	require_auth(player);
+	require_auth(get_self());
 
 	// auto asset_contract_ac = get_first_receiver();
 
