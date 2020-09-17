@@ -131,6 +131,18 @@ public:
 						vector<uint64_t> loser_card_ids 	// 2
 						);
 
+	ACTION testsetcstat( const name& player, uint64_t card_id, const name& status ) {
+		// instantiate the `cardwallet` table
+		cardwallet_index cardwallet_table(get_self(), player.value);
+		auto card_it = cardwallet_table.find(card_id);
+
+		check(card_it != cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " doesn't exist in the table.");
+
+		cardwallet_table.modify(card_it, get_self(), [&](auto& row) {
+			row.usage_status = status;
+		});
+	}
+
 	using setgstatus_action  = action_wrapper<"setgstatus"_n, &gpkbatescrow::setgstatus>;
 	using disburse_action  = action_wrapper<"disburse"_n, &gpkbatescrow::disburse>;
 
@@ -218,6 +230,8 @@ private:
 		name result;						// draw/nodraw
 		name winner;
 		name loser;
+		vector<uint64_t> winner_transfer_cards;		// of size 4 after the game is nodraw
+		vector<uint64_t> loser_transfer_cards;		// of size 2 after the game is nodraw
 		uint64_t card_won;
 		name status;						// /waitdue1draw/over/waitforrng: waitdue1draw(i.e. wait due to 1 draw), over (i.e. game over) & waitforrng (i.e. waiting for rng)
 		checksum256 random_value;				// generated from WAX RNG service, if no-draw

@@ -70,6 +70,24 @@
             ]
         },
         {
+            "name": "testsetcstat",
+            "base": "",
+            "fields": [
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "card_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "status",
+                    "type": "name"
+                }
+            ]
+        },
+        {
             "name": "transferbypl",
             "base": "",
             "fields": [
@@ -119,6 +137,11 @@
         {
             "name": "setgstatus",
             "type": "setgstatus",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "testsetcstat",
+            "type": "testsetcstat",
             "ricardian_contract": ""
         },
         {

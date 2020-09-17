@@ -4,24 +4,12 @@
     "types": [],
     "structs": [
         {
-            "name": "depositgfee",
+            "name": "disndcards",
             "base": "",
             "fields": [
                 {
-                    "name": "player",
-                    "type": "name"
-                },
-                {
-                    "name": "contract_ac",
-                    "type": "name"
-                },
-                {
-                    "name": "game_fee",
-                    "type": "asset"
-                },
-                {
-                    "name": "memo",
-                    "type": "string"
+                    "name": "game_id",
+                    "type": "uint64"
                 }
             ]
         },
@@ -126,6 +114,14 @@
                 {
                     "name": "loser",
                     "type": "name"
+                },
+                {
+                    "name": "winner_transfer_cards",
+                    "type": "uint64[]"
+                },
+                {
+                    "name": "loser_transfer_cards",
+                    "type": "uint64[]"
                 },
                 {
                     "name": "card_won",
@@ -372,8 +368,8 @@
     ],
     "actions": [
         {
-            "name": "depositgfee",
-            "type": "depositgfee",
+            "name": "disndcards",
+            "type": "disndcards",
             "ricardian_contract": ""
         },
         {

@@ -40,8 +40,9 @@ using json = nlohmann::json;
 CONTRACT gpkbattlesco : public contract
 {
 private:
+	const int64_t gamefee_token_amount;
 	const symbol gamefee_token_symbol;
-	// const symbol gamefee_value;
+	// const asset gamefee_value;
 	const name asset_contract_ac;
 	const name escrow_contract_ac;
 
@@ -53,8 +54,9 @@ public:
 
 	gpkbattlesco(name receiver, name code, datastream<const char*> ds) : 
 				contract(receiver, code, ds), 
-				gamefee_token_symbol("WAX", 4),
-				// gamefee_value(asset(50000, symbol("WAX", 4))),		// "5.0000 WAX"
+				gamefee_token_amount(500000000),
+				gamefee_token_symbol("WAX", 8),
+				// gamefee_value(asset(50000, symbol("WAX", 8))),		// "5.00000000 WAX"
 				asset_contract_ac("simpleassets"_n),
 				escrow_contract_ac("gpkbatescrow"_n),
 				vector_assetcontracts_associds({{"simpleassets"_n, 370015336}, {"atomicassets"_n, 370015337}})
@@ -83,7 +85,7 @@ public:
 	 * @param memo - memo
 	 */
 	[[eosio::on_notify("eosio.token::transfer")]]
-	ACTION depositgfee( const name& player,
+	void depositgfee( const name& player,
 					const name& contract_ac,
 					const asset& game_fee,
 					const string& memo );
@@ -153,6 +155,14 @@ public:
 	 * @return [description]
 	 */
 	ACTION receiverand(uint64_t assoc_id, const eosio::checksum256& random_value);
+
+	/**
+	 * @brief - disburse nodraw cards after game is over
+	 * @details - disburse nodraw cards after game is over
+	 * 
+	 * @param game_id - game_id
+	 */
+	ACTION disndcards( uint64_t game_id );
 
 	/**
 	 * @brief - move the game data
@@ -283,7 +293,8 @@ public:
 	// check if min. gfeewallet's balance is gamefee_value
 	static void check_gfee_balance(const name& player, const asset& game_fee) {
 		// instantiate the `gfeewallet` table
-		gfeewallet_index gfeewallet_table("gpkbattlesco"_n, player.value);
+		// gfeewallet_index gfeewallet_table("gpkbattlesco"_n, player.value);				// for WAX Mainnet
+		gfeewallet_index gfeewallet_table("gpkbattlesc1"_n, player.value);				// for WAX Testnet
 		auto gfeewallet_it = gfeewallet_table.find(game_fee.symbol.raw());
 
 		check(gfeewallet_it != gfeewallet_table.end(), "the player is not in the wallet table.");
@@ -391,7 +402,7 @@ public:
 	static void check_quantity( const asset& quantity ) {
 		check(quantity.is_valid(), "invalid quantity");
 		check(quantity.amount > 0, "must withdraw positive quantity");
-		check(quantity.symbol == symbol("WAX", 4), "symbol precision mismatch");
+		check(quantity.symbol == symbol("WAX", 8), "symbol precision mismatch");
 	}
 
 private:
@@ -412,6 +423,8 @@ private:
 		name result;						// draw/nodraw
 		name winner;
 		name loser;
+		vector<uint64_t> winner_transfer_cards;		// of size 4 after the game is nodraw
+		vector<uint64_t> loser_transfer_cards;		// of size 2 after the game is nodraw
 		uint64_t card_won;
 		name status;						// /waitdue1draw/over/waitforrng: waitdue1draw(i.e. wait due to 1 draw), over (i.e. game over) & waitforrng (i.e. waiting for rng)
 		checksum256 random_value;				// generated from WAX RNG service, if no-draw

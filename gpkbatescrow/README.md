@@ -475,3 +475,4 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
 * before deploy to MAINNET,
 	- [ ] change the card owner's name from `gpkbattlesco` to `gpk.topps`
 	- [ ] change the game contract account name from `gpkbattlesc1` to `gpkbattlesco`
+  - [ ] change the game contract account name from `gpkbattlesc1` to `gpkbattlesco` in the check_gfee_balance() func in `gpkbattlesco` contract
