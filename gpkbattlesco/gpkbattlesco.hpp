@@ -70,7 +70,7 @@ public:
 	 * 				
 	 * @param asset_contract_ac - asset contract account name
 	 */
-	ACTION match2player(const name& asset_contract_ac);
+	ACTION pair2player(const name& asset_contract_ac);
 
 
 	/**
@@ -641,6 +641,7 @@ private:
 	inline uint64_t get_random_indexfrmlist(const checksum256& random_value, vector<T> list) {
 		//cast the random_value to a smaller number
 		// this means creating random no. b/w min. & max. i.e. min <= num1 <= max
+		// i.e. 1 <= num1 <= N-1 in case of list
 	    uint64_t max_value = list.size()-1;
 	    uint64_t min_value = 1;
 	

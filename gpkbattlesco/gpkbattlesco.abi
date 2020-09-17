@@ -50,16 +50,6 @@
             ]
         },
         {
-            "name": "match2player",
-            "base": "",
-            "fields": [
-                {
-                    "name": "asset_contract_ac",
-                    "type": "name"
-                }
-            ]
-        },
-        {
             "name": "movegameinfo",
             "base": "",
             "fields": [
@@ -160,6 +150,16 @@
                 {
                     "name": "total_play_count",
                     "type": "uint8"
+                }
+            ]
+        },
+        {
+            "name": "pair2player",
+            "base": "",
+            "fields": [
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
                 }
             ]
         },
@@ -382,13 +382,13 @@
             "ricardian_contract": ""
         },
         {
-            "name": "match2player",
-            "type": "match2player",
+            "name": "movegameinfo",
+            "type": "movegameinfo",
             "ricardian_contract": ""
         },
         {
-            "name": "movegameinfo",
-            "type": "movegameinfo",
+            "name": "pair2player",
+            "type": "pair2player",
             "ricardian_contract": ""
         },
         {

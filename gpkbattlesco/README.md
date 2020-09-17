@@ -2,7 +2,7 @@
 # GPK.Battles
 ## Brief
 * It is a game battle contract where:
-	- [x] match 2 players
+	- [x] pair 2 players
 	- [x] players transfer 5 WAX each
 	- [x] select cards manually/automatically
 		+ players choose cards manually within 30s time
@@ -15,7 +15,7 @@
 * contract name - `gpkbattlesco`
 * contract's account name - `gpkbattlesco`
 * action
-	- `match2player`
+	- `pair2player`
 	- `depositgfee`	[Payable action]
 	- `withdrawgfee`
 	- `sel3card`
@@ -37,7 +37,7 @@
 $ eosio-cpp gpkbattlesco.cpp -o gpkbattlesco.wasm
 Warning, empty ricardian clause file
 Warning, empty ricardian clause file
-Warning, action <match2player> does not have a ricardian contract
+Warning, action <pair2player> does not have a ricardian contract
 Warning, action <depositgfee> does not have a ricardian contract
 Warning, action <withdrawgfee> does not have a ricardian contract
 Warning, action <sel3card> does not have a ricardian contract
@@ -48,7 +48,7 @@ Warning, action <movegameinfo> does not have a ricardian contract
 Warning, action <empifyplayer> does not have a ricardian contract
 Warning, action <remplayer> does not have a ricardian contract
 Warning, action <sendalert> does not have a ricardian contract
-Warning, action <match2player> does not have a ricardian contract
+Warning, action <pair2player> does not have a ricardian contract
 Warning, action <depositgfee> does not have a ricardian contract
 Warning, action <withdrawgfee> does not have a ricardian contract
 Warning, action <sel3card> does not have a ricardian contract
@@ -81,48 +81,79 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```
 
 ## Testing
-### Action - `match2player`
-* match any 2 player of `simpleassets` contract type
+### Action - `pair2player`
+* pair any 2 player of `simpleassets` contract type
 ```console
-$ cleosw push action gpkbattlesc1 match2player '["simpleassets"]' -p gpkbattlesc1@active
+$ cleosw push action gpkbattlesc1 pair2player '["simpleassets"]' -p gpkbattlesc1@active
 Error 3050003: eosio_assert_message assertion failure
 Error Details:
 assertion failure with message: players_list must be min. 2 in size.
 pending console output:
 ```
 	- So, you need min. 2 players to be added into the `players_list` of `players` table
-* match any 2 player of `simpleassets` contract type
+* pair any 2 player of `simpleassets` contract type
+	- view the table `players` of this contract prior to pairing
 ```console
-$ cleosw push action gpkbattlesc1 match2player '["simpleassets"]' -p gpkbattlesc1@active
-executed transaction: 1dcdad933be9e2c33e7a6eedcf7c971beeb4314b1071c7ced8d169187ae5dcf4  104 bytes  315 us
-#  gpkbattlesc1 <= gpkbattlesc1::match2player   {"asset_contract_ac":"simpleassets"}
+$ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
+{
+  "rows": [{
+      "data": {
+        "asset_contract_ac": "simpleassets",
+        "players_list": [
+          "gbuser111112",
+          "gbuser111111",
+          "gbuser111113",
+          "gbuser111115",
+          "gbuser111121",
+          "gbuser111114"
+        ]
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+	- pair 2 players
+```console
+$ cleosw push action gpkbattlesc1 pair2player '["simpleassets"]' -p gpkbattlesc1@active
+executed transaction: 8e2d5b9bc39fcfad90a8a2141b16257d81d46140b278ea2e8c760d7eb1d529e7  104 bytes  402 us
+#  gpkbattlesc1 <= gpkbattlesc1::pair2player    {"asset_contract_ac":"simpleassets"}
+#  gpkbattlesc1 <= gpkbattlesc1::sendalert      {"user":"gbuser111112","message":"You have been paired with player gbuser111113 & game_id: 100017237...
+#  gpkbattlesc1 <= gpkbattlesc1::sendalert      {"user":"gbuser111113","message":"You have been paired with player gbuser111112 & game_id: 100017237...
+#  gbuser111112 <= gpkbattlesc1::sendalert      {"user":"gbuser111112","message":"You have been paired with player gbuser111113 & game_id: 100017237...
+#  gbuser111113 <= gpkbattlesc1::sendalert      {"user":"gbuser111113","message":"You have been paired with player gbuser111112 & game_id: 100017237...
 warning: transaction executed locally, but may not be confirmed by the network yet         ]
 ```
 	- view the table `ongamestat` of this contract
 ```console
-$ cleosw get table gpkbattlesc1 gpkbattlesc1 ongamestat
+$ cleosw get table gpkbattlesc1 gpkbattlesc1 ongamestat --show-payer
 {
   "rows": [{
-      "game_id": "10001723753231",
-      "player_1": "gbuser111112",
-      "player_2": "gbuser111115",
-      "game_fee": "0 ",
-      "asset_contract_ac": "",
-      "player1_cards": [],
-      "player2_cards": [],
-      "player1_cards_combo": "",
-      "player2_cards_combo": "",
-      "start_timestamp": 0,
-      "end_timestamp": 0,
-      "result": "",
-      "winner": "",
-      "loser": "",
-      "card_won": 0,
-      "status": "",
-      "random_value": "0000000000000000000000000000000000000000000000000000000000000000",
-      "draw_count": 0,
-      "nodraw_count": 0,
-      "total_play_count": 0
+      "data": {
+        "game_id": "10001723786534",
+        "player_1": "gbuser111112",
+        "player_2": "gbuser111113",
+        "game_fee": "0 ",
+        "asset_contract_ac": "",
+        "player1_cards": [],
+        "player2_cards": [],
+        "player1_cards_combo": "",
+        "player2_cards_combo": "",
+        "start_timestamp": 0,
+        "end_timestamp": 0,
+        "result": "",
+        "winner": "",
+        "loser": "",
+        "card_won": 0,
+        "status": "",
+        "random_value": "0000000000000000000000000000000000000000000000000000000000000000",
+        "draw_count": 0,
+        "nodraw_count": 0,
+        "total_play_count": 0
+      },
+      "payer": "gpkbattlesc1"
     }
   ],
   "more": false,
@@ -139,8 +170,8 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
         "players_list": [
           "gbuser111111",
           "gbuser111115",
-          "gbuser111114",
-          "gbuser111121"
+          "gbuser111121",
+          "gbuser111114"
         ]
       },
       "payer": "gpkbattlesc1"
@@ -150,6 +181,81 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
   "next_key": ""
 }
 ```
+	- Observation:
+		+ A row created with game_id & paired players
+		+ the paired players are notified about getting paired with game_id
+		+ paired players are removed from the players_list
+* Second time pair players while another game is going on:
+```console
+$ cleosw push action gpkbattlesc1 pair2player '["simpleassets"]' -p gpkbattlesc1@active
+executed transaction: 76eb2a58aa954185813dbe6b4a15e230dfebb18e491575471e1e5824c1062187  104 bytes  392 us
+#  gpkbattlesc1 <= gpkbattlesc1::pair2player    {"asset_contract_ac":"simpleassets"}
+#  gpkbattlesc1 <= gpkbattlesc1::sendalert      {"user":"gbuser111111","message":"You have been paired with player gbuser111114 & game_id: 100017237...
+#  gpkbattlesc1 <= gpkbattlesc1::sendalert      {"user":"gbuser111114","message":"You have been paired with player gbuser111111 & game_id: 100017237...
+#  gbuser111111 <= gpkbattlesc1::sendalert      {"user":"gbuser111111","message":"You have been paired with player gbuser111114 & game_id: 100017237...
+#  gbuser111114 <= gpkbattlesc1::sendalert      {"user":"gbuser111114","message":"You have been paired with player gbuser111111 & game_id: 100017237...
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+```
+	- view the table `ongamestat` of this contract
+```console
+$ cleosw get table gpkbattlesc1 gpkbattlesc1 ongamestat --show-payer
+{
+  "rows": [{
+      "data": {
+        "game_id": "10001723786534",
+        "player_1": "gbuser111112",
+        "player_2": "gbuser111113",
+        "game_fee": "0 ",
+        "asset_contract_ac": "",
+        "player1_cards": [],
+        "player2_cards": [],
+        "player1_cards_combo": "",
+        "player2_cards_combo": "",
+        "start_timestamp": 0,
+        "end_timestamp": 0,
+        "result": "",
+        "winner": "",
+        "loser": "",
+        "card_won": 0,
+        "status": "",
+        "random_value": "0000000000000000000000000000000000000000000000000000000000000000",
+        "draw_count": 0,
+        "nodraw_count": 0,
+        "total_play_count": 0
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+	- view the table `players` of this contract
+```console
+$ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
+{
+  "rows": [{
+      "data": {
+        "asset_contract_ac": "simpleassets",
+        "players_list": [
+          "gbuser111111",
+          "gbuser111115",
+          "gbuser111121",
+          "gbuser111114"
+        ]
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+	- Observation:
+		+ A row created with game_id & paired players
+		+ the paired players are notified about getting paired with game_id
+		+ paired players are removed from the players_list
+
 
 ### Action - `depositgfee`
 
@@ -167,7 +273,7 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
 
 ## NOTES
 * The steps followed in the game is as follows:
-	1. Match 2 players using `match2player` action
+	1. Pair 2 players using `pair2player` action
 	2. Each player transfers fees using `token::transfer` action
 	3. Each Player select 3 cards using `select3card` action
 	4. if same card selected ==> Draw

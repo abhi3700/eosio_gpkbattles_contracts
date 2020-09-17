@@ -1,8 +1,7 @@
 #include "gpkbattlesco.hpp"
-// #include "../gpkbatescrow/gpkbatescrow.hpp"
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbattlesco::match2player(const name& asset_contract_ac) {
+void gpkbattlesco::pair2player(const name& asset_contract_ac) {
 
 	require_auth(get_self());
 
@@ -33,8 +32,8 @@ void gpkbattlesco::match2player(const name& asset_contract_ac) {
 		p2 = players_it->players_list[rand_index];
 	}
 
-	// check players matched are not identical
-	check(p1 != p2, "the matched players are identical by name. Please, ensure there is no duplicate players name in the list.");
+	// check players paired are not identical
+	check(p1 != p2, "the paired players are identical by name. Please, ensure there is no duplicate players name in the list.");
 
 	// check each p1, p2 contain min. 3 cards
 	check(checkget_3_available_cards(p1, asset_contract_ac).size() == 3, 
@@ -66,7 +65,7 @@ void gpkbattlesco::match2player(const name& asset_contract_ac) {
 
 	// now, emplace table with details - game_id, player_1, player_2
 	auto ongamestat_it = ongamestat_table.find(game_id);
-	check(ongamestat_it == ongamestat_table.end(), "The game with id: \'" + std::to_string(game_id) + "\' is already present in the table. So, players can't be matched." );
+	check(ongamestat_it == ongamestat_table.end(), "The game with id: \'" + std::to_string(game_id) + "\' is already present in the table. So, players can't be paired." );
 
 	// select any iterator out of (p11_it, p21_it, p12_it, p22_it) for adding it into table.
 	ongamestat_table.emplace(get_self(), [&](auto& row){
@@ -75,25 +74,21 @@ void gpkbattlesco::match2player(const name& asset_contract_ac) {
 		row.player_2 = p2;
 	});
 
-	// Send the 2 players an alert that they have matched with & ask them to send the game fee if not sent
-	send_alert(p1, "You have been matched with " + p2.to_string());
-	send_alert(p2, "You have been matched with " + p1.to_string());
+	// Send the 2 players an alert that they have paired with & ask them to send the game fee if not sent
+	send_alert(p1, "You have been paired with player " + p2.to_string() + " & game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+	send_alert(p2, "You have been paired with player " + p1.to_string() + " & game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
 
 	// Now, erase p1, p2 from the `players` table's `players_list`
-	auto pl_search_it_1 = std::find(players_it->players_list.begin(), players_it->players_list.end(), p1);
-	auto pl_search_it_2 = std::find(players_it->players_list.begin(), players_it->players_list.end(), p2);
+	std::vector<name> paired_players = {p1, p2};
 
-	check(pl_search_it_1 != players_it->players_list.end(), "p1 is not in the players_list.");
-	check(pl_search_it_2 != players_it->players_list.end(), "p2 is not in the players_list.");
-
-	players_table.modify(players_it, get_self(), [&](auto& row) {
-		row.players_list.erase(pl_search_it_1);
-	});
-
-	players_table.modify(players_it, get_self(), [&](auto& row) {
-		row.players_list.erase(pl_search_it_2);
-	});
-
+	for(auto&& p : paired_players) {
+		auto pl_search_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), p);
+		check(pl_search_it != players_it->players_list.end(), p.to_string() + " is not in the players_list.");
+		players_table.modify(players_it, get_self(), [&](auto& row) {
+			row.players_list.erase(pl_search_it);
+			// send_alert(p, p.to_string() + " is erased from the players list");			// for debug
+		});
+	}
 	
 }
 
@@ -401,7 +396,7 @@ void gpkbattlesco::play(uint64_t game_id) {
 		1. mark the cards as "available" for both players in `cardwallet` table of escrow contract
 		2. Alert the players that the game_id is draw.
 		3. move info to `usergamestat` table for both players
-		4. add back the players into the players_list
+		4. add back the players into the players_list, as the cards are also marked as available (above)
 		5. erase the row
 
 		if 2 times draw, then dump the row & the add the players back to `players_list` in `players` table, 
@@ -454,24 +449,17 @@ void gpkbattlesco::play(uint64_t game_id) {
 
 			check(players_it != players_table.end(), "players_list is not set.");
 
-			players_table.modify(players_it, get_self(), [&](auto& row){
-				auto search1_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), ongamestat_it->player_1);
+			// Now, erase player_1, player_2 from the `players` table's `players_list`
+			std::vector<name> paired_players = {ongamestat_it->player_1, ongamestat_it->player_2};
 
-				// add player_1 if not added
-				if (search1_it == players_it->players_list.end()) {
-					row.players_list.emplace_back(ongamestat_it->player_1);
-				} 
-
-
-				auto search2_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), ongamestat_it->player_2);
-
-				// add player_2 if not added
-				if (search2_it == players_it->players_list.end()) {
-					row.players_list.emplace_back(ongamestat_it->player_2);					
-				}
-
-			});
-
+			for(auto&& p : paired_players) {
+				auto pl_search_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), p);
+				check(pl_search_it != players_it->players_list.end(), p.to_string() + " is not in the players_list.");
+				players_table.modify(players_it, get_self(), [&](auto& row) {
+					row.players_list.emplace_back(p);
+					// send_alert(p, p.to_string() + " is erased from the players list");			// for debug
+				});
+			}
 			
 			// 5. lastly erase the row, as all the info has been moved.
 			ongamestat_table.erase(ongamestat_it);
