@@ -28,8 +28,10 @@ void gpkbattlesco::pair2player(const name& asset_contract_ac) {
 		p2 = players_it->players_list[1];
 	} 
 	else if (players_it->players_list.size() > 2) {
-		auto rand_index = get_random_indexfrmlist(random_value, players_it->players_list);
-		p2 = players_it->players_list[rand_index];
+		auto remaining_players_list = players_it->players_list;
+		remaining_players_list.erase(remaining_players_list.begin());
+		auto rand_index = get_random_indexfrmlist(random_value, remaining_players_list);
+		p2 = remaining_players_list[rand_index];
 	}
 
 	// check players paired are not identical
@@ -330,17 +332,16 @@ void gpkbattlesco::play(uint64_t game_id) {
 				row.status = "over"_n;
 		});
 
-/*		
-		Instructions for 1 time draw:
-		=============================
-		1. mark the cards as "available" for both players in `cardwallet` table of escrow contract
-		2. Alert the players to select cards again.
-		3. clear the required row fields.
-		if 1 time draw, then re-select the cards again
-		clear the all params except 
-		-- game_id, player_1, player_2, result, draw_count, nodraw_count, total_play_count, random_value (as not generated), 
-		card_won (as not won any), winner, loser, status
-*/
+		// Instructions for 1 time draw:
+		// =============================
+		// 1. mark the cards as "available" for both players in `cardwallet` table of escrow contract
+		// 2. Alert the players to select cards again.
+		// 3. clear the required row fields.
+		// if 1 time draw, then re-select the cards again
+		// clear the all params except 
+		// -- game_id, player_1, player_2, result, draw_count, nodraw_count, total_play_count, random_value (as not generated), 
+		// card_won (as not won any), winner, loser, status
+
 		if (ongamestat_it->draw_count == 1) {
 			// 1. mark the cards as "available" for both players in `cardwallet` table of escrow contract
 			// modify card's status as "available" in `cardwallet` table of escrow contract
@@ -387,7 +388,7 @@ void gpkbattlesco::play(uint64_t game_id) {
 			});
 
 
-		}
+		} else if (ongamestat_it->draw_count == 2) {
 
 		// Instructions for 2 times draw:
 		// =============================
@@ -400,7 +401,7 @@ void gpkbattlesco::play(uint64_t game_id) {
 		// if 2 times draw, then dump the row & the add the players back to `players_list` in `players` table, 
 		// & mark the cards as "available" for both players in `cardwallet` table of escrow contract
 
-		else if (ongamestat_it->draw_count == 2) {
+
 			// 1. mark the cards as "available" for both players in `cardwallet` table of escrow contract
 			// modify card's status as "available" in `cardwallet` table of escrow contract
 			// For player_1
@@ -424,23 +425,13 @@ void gpkbattlesco::play(uint64_t game_id) {
 
 			// 2. Send alerts
 			// send alert to player_1
-			send_alert(ongamestat_it->player_1, " The game with id: \'" + std::to_string(ongamestat_it->game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " times.");
+			send_alert(ongamestat_it->player_1, " The game with id: \'" + std::to_string(game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " times.");
 
 			// send alert to player_2
-			send_alert(ongamestat_it->player_2, " The game with id: \'" + std::to_string(ongamestat_it->game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " times.");
+			send_alert(ongamestat_it->player_2, " The game with id: \'" + std::to_string(game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " times.");
 
 
-			// 3. move info to `usergamestat` table before erasing this row from `ongamestat` table
-			// For player-1
-			move_game_info(ongamestat_it->game_id, ongamestat_it->player_1, "your game with id: \'" + 
-				std::to_string(ongamestat_it->game_id) + "\' is moved to \'usergamestat\' table.");
-
-			// For player-2
-			move_game_info(ongamestat_it->game_id, ongamestat_it->player_2, "your game with id: \'" + 
-				std::to_string(ongamestat_it->game_id) + "\' is moved to \'usergamestat\' table.");
-
-			
-			// 4. add back the players into the players_list
+			// 3. add back the players into the players_list
 			// instantiate the `players` table
 			players_index players_table(get_self(), get_self().value);
 			auto players_it = players_table.find(ongamestat_it->asset_contract_ac.value);
@@ -451,18 +442,22 @@ void gpkbattlesco::play(uint64_t game_id) {
 
 			for(auto&& p : paired_players) {
 				auto pl_search_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), p);
-				check(pl_search_it == players_it->players_list.end(), p.to_string() + " is not in the players_list.");
+				check(pl_search_it == players_it->players_list.end(), p.to_string() + " is already added in the players_list.");
 				players_table.modify(players_it, get_self(), [&](auto& row) {
 					row.players_list.emplace_back(p);
 					// send_alert(p, p.to_string() + " is erased from the players list");			// for debug
 				});
 			}
 			
-			// 5. lastly erase the row, as all the info has been moved.
-			ongamestat_table.erase(ongamestat_it);
+
+			// 4. move & erase game info to `usergamestat` table
+			// For player-1 & player-2
+			moer_game_info(game_id, "your game with id: \'" + std::to_string(game_id) + "\' is moved to \'usergamestat\' table.");
+
 		}
 
 		// NOTE: in case of draw (1 or 2 times), the cards are intact with escrow contract for respective players
+
 
 	}
 	else {												// No Draw
@@ -527,14 +522,6 @@ void gpkbattlesco::receiverand(uint64_t assoc_id, const eosio::checksum256& rand
 				winner_transfer_cards.emplace_back(loser_transfer_cards[rand_index]);			// & put from loser's into winner's transfer cards list
 				loser_transfer_cards.erase(std::find(loser_transfer_cards.begin(), loser_transfer_cards.end(), loser_transfer_cards[rand_index]));						// & delete the card from loser's transfer cards list
 
-				// // disburse (check & then transfer) the card to winner & loser at a time
-				// action(
-				// 	permission_level{get_self(), "active"_n},
-				// 	escrow_contract_ac,
-				// 	"disburse"_n,
-				// 	std::make_tuple(game_id, ongamestat_it->player_1, ongamestat_it->player_2, asset_contract_ac, winner_transfer_cards, loser_transfer_cards)
-				// ).send();
-
 			} else if (ongamestat_it->player1_cards_combo == "1a2b"_n) {
 				row.winner = ongamestat_it->player_2;
 				row.loser = ongamestat_it->player_1;
@@ -547,13 +534,6 @@ void gpkbattlesco::receiverand(uint64_t assoc_id, const eosio::checksum256& rand
 				winner_transfer_cards.emplace_back(loser_transfer_cards[rand_index]);			// & put from loser's into winner's transfer cards list
 				loser_transfer_cards.erase(std::find(loser_transfer_cards.begin(), loser_transfer_cards.end(), loser_transfer_cards[rand_index]));						// & delete the card from loser's transfer cards list
 			
-				// // disburse (check & then transfer) the card to winner & loser at a time
-				// action(
-				// 	permission_level{get_self(), "active"_n},
-				// 	escrow_contract_ac,
-				// 	"disburse"_n,
-				// 	std::make_tuple(game_id, ongamestat_it->player_2, ongamestat_it->player_1, asset_contract_ac, winner_transfer_cards, loser_transfer_cards)
-				// ).send();
 			}
 		}
 		else if(res == "b"_n) {
@@ -569,14 +549,6 @@ void gpkbattlesco::receiverand(uint64_t assoc_id, const eosio::checksum256& rand
 				winner_transfer_cards.emplace_back(loser_transfer_cards[rand_index]);			// & put from loser's into winner's transfer cards list
 				loser_transfer_cards.erase(std::find(loser_transfer_cards.begin(), loser_transfer_cards.end(), loser_transfer_cards[rand_index]));						// & delete the card from loser's transfer cards list
 	
-				// // disburse (check & then transfer) the card to winner & loser at a time
-				// action(
-				// 	permission_level{get_self(), "active"_n},
-				// 	escrow_contract_ac,
-				// 	"disburse"_n,
-				// 	std::make_tuple(game_id, ongamestat_it->player_1, ongamestat_it->player_2, asset_contract_ac, winner_transfer_cards, loser_transfer_cards)
-				// ).send();
-
 			} else if (ongamestat_it->player1_cards_combo == "2a1b"_n) {
 				row.winner = ongamestat_it->player_2;
 				row.loser = ongamestat_it->player_1;
@@ -588,14 +560,6 @@ void gpkbattlesco::receiverand(uint64_t assoc_id, const eosio::checksum256& rand
 				row.card_won = loser_transfer_cards[rand_index];								// capture 1st card into `card_won`
 				winner_transfer_cards.emplace_back(loser_transfer_cards[rand_index]);			// & put from loser's into winner's transfer cards list
 				loser_transfer_cards.erase(std::find(loser_transfer_cards.begin(), loser_transfer_cards.end(), loser_transfer_cards[rand_index]));						// & delete the card from loser's transfer cards list
-
-				// // disburse (check & then transfer) the card to winner & loser at a time
-				// action(
-				// 	permission_level{get_self(), "active"_n},
-				// 	escrow_contract_ac,
-				// 	"disburse"_n,
-				// 	std::make_tuple(game_id, ongamestat_it->player_2, ongamestat_it->player_1, asset_contract_ac, winner_transfer_cards, loser_transfer_cards)
-				// ).send();
 
 			}
 		}
@@ -622,22 +586,23 @@ void gpkbattlesco::disndcards( uint64_t game_id ) {
 	check(ongamestat_it->result == "nodraw"_n, "For cards to be disbursed, the parsed game_id \'" + std::to_string(game_id) + "\' should be of result: \'nodraw\'");
 	check(ongamestat_it->status == "over"_n, "the game with id \'" + std::to_string(game_id) + "\' is not yet over. So, the cards can\'t be disbursed");
 
-	// disburse (check & then transfer) the card to winner & loser at a time
+	// 1. disburse (check & then transfer) the card to winner & loser at a time
 	action(
 		permission_level{get_self(), "active"_n},
 		escrow_contract_ac,
 		"disburse"_n,
 		std::make_tuple(game_id, ongamestat_it->winner, ongamestat_it->loser, ongamestat_it->asset_contract_ac, ongamestat_it->winner_transfer_cards, ongamestat_it->loser_transfer_cards)
 	).send();
+
+	// 2. move & erase game info to `usergamestat` table
+	// For player-1 & player-2
+	moer_game_info(game_id, "your game with id: \'" + std::to_string(game_id) + "\' is moved to \'usergamestat\' table.");
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbattlesco::movegameinfo(uint64_t game_id, 
-								const name& player, 
+void gpkbattlesco::moergameinfo(uint64_t game_id, 
 								const string& message) {
 	require_auth(get_self());
-
-	require_recipient(player);
 
 	check(message.size() <= 256, "message has more than 256 bytes");
 
@@ -648,57 +613,70 @@ void gpkbattlesco::movegameinfo(uint64_t game_id,
 	check(ongamestat_it != ongamestat_table.end(), "the game with id \'" + std::to_string(game_id) + "\' doesn't exist.");
 	check(ongamestat_it->status == "over"_n, "the game with id \'" + std::to_string(game_id) + "\' is not yet over. So, the game info. can\'t be moved to usergamestat table");
 
-	// Instantiate the `usergamestat` table
-	usergamestat_index usergamestat_table(get_self(), player.value);
-	auto usergamestat_player_it = usergamestat_table.find(ongamestat_it->asset_contract_ac.value);
+	vector<name> players = {ongamestat_it->player_1, ongamestat_it->player_2};
 
-	if(usergamestat_player_it == usergamestat_table.end()) {
-		usergamestat_table.emplace( get_self(), [&](auto& row) {
-			row.asset_contract_ac = ongamestat_it->asset_contract_ac;
-			row.game_ids = vector<uint64_t>{ongamestat_it->game_id};
-			if ((ongamestat_it->result == "nodraw"_n) && (ongamestat_it->winner == player)) {
-				row.wins += 1;
-				row.cards_won = vector<uint64_t>{ongamestat_it->card_won};
-			} else if((ongamestat_it->result == "nodraw"_n) && (ongamestat_it->loser == player)) {
-				row.loses += 1;
-			} else if((ongamestat_it->result == "draw"_n)) {
-				row.draws += 1;
-			}
-			row.games += 1;
-		});
+	for(auto&& player : players) {
+		// Instantiate the `usergamestat` table
+		usergamestat_index usergamestat_table(get_self(), player.value);
+		auto usergamestat_player_it = usergamestat_table.find(ongamestat_it->asset_contract_ac.value);
 
+		if(usergamestat_player_it == usergamestat_table.end()) {
+			usergamestat_table.emplace( get_self(), [&](auto& row) {
+				row.asset_contract_ac = ongamestat_it->asset_contract_ac;
+				row.game_ids = vector<uint64_t>{ongamestat_it->game_id};
+
+				// for wins, loses, draws
+				if ((ongamestat_it->result == "nodraw"_n) && (ongamestat_it->winner == player)) {
+					row.wins += 1;
+					row.cards_won = vector<uint64_t>{ongamestat_it->card_won};
+				} else if((ongamestat_it->result == "nodraw"_n) && (ongamestat_it->loser == player)) {
+					row.loses += 1;
+				} else if((ongamestat_it->result == "draw"_n)) {
+					row.draws += 1;
+				}
+
+				row.games += 1;
+			});
+
+		}
+		else {
+			usergamestat_table.modify(usergamestat_player_it, get_self(), [&](auto& row) {
+				row.game_ids = vector<uint64_t>{ongamestat_it->game_id};
+
+				// for wins, loses, draws
+				if ((ongamestat_it->result == "nodraw"_n) && (ongamestat_it->winner == player))
+				{
+					row.wins += 1;
+					row.cards_won.emplace_back(ongamestat_it->card_won);		// it will duplicate the asset_id. So, no search using `std::find()`
+				} else if((ongamestat_it->result == "nodraw"_n) && (ongamestat_it->loser == player)) {
+					row.loses += 1;
+				} else if((ongamestat_it->result == "draw"_n)) {
+					row.draws += 1;
+				}
+
+				row.games += 1;
+
+			});
+		}
 	}
-	else {
-		usergamestat_table.modify(usergamestat_player_it, get_self(), [&](auto& row) {
-			row.game_ids = vector<uint64_t>{ongamestat_it->game_id};
-			if ((ongamestat_it->result == "nodraw"_n) && (ongamestat_it->winner == player))
-			{
-				row.wins += 1;
-				row.cards_won.emplace_back(ongamestat_it->card_won);		// it will duplicate the asset_id. So, no search using `std::find()`
-			} else if((ongamestat_it->result == "nodraw"_n) && (ongamestat_it->loser == player)) {
-				row.loses += 1;
-			} else if((ongamestat_it->result == "draw"_n)) {
-				row.draws += 1;
-			}
-			row.games += 1;
 
-		});
-	}
-	// send alert to player that their game info is moved to `usergamestat`table
-	send_alert(player, message);
+	// 2. send alert to players that their game info is moved to `usergamestat`table
+	send_alert(ongamestat_it->player_1, message);
+	send_alert(ongamestat_it->player_2, message);
 
+	// 3. lastly erase the row, as all the info has been moved.
+	ongamestat_table.erase(ongamestat_it);
 
 }
 
-void gpkbattlesco::move_game_info(uint64_t game_id, 
-								const name& player, 
+void gpkbattlesco::moer_game_info(uint64_t game_id, 
 								const string& message) {
 	
 	action(
 		permission_level(get_self(), "active"_n),
 		get_self(),
-		"movegameinfo"_n,
-		std::make_tuple(game_id, player, message)
+		"moergameinfo"_n,
+		std::make_tuple(game_id, message)
 	).send();
 }
 // --------------------------------------------------------------------------------------------------------------------

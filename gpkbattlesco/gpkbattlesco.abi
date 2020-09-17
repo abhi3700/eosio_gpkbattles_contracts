@@ -38,16 +38,12 @@
             ]
         },
         {
-            "name": "movegameinfo",
+            "name": "moergameinfo",
             "base": "",
             "fields": [
                 {
                     "name": "game_id",
                     "type": "uint64"
-                },
-                {
-                    "name": "player",
-                    "type": "name"
                 },
                 {
                     "name": "message",
@@ -378,8 +374,8 @@
             "ricardian_contract": ""
         },
         {
-            "name": "movegameinfo",
-            "type": "movegameinfo",
+            "name": "moergameinfo",
+            "type": "moergameinfo",
             "ricardian_contract": ""
         },
         {

@@ -165,12 +165,12 @@ public:
 	ACTION disndcards( uint64_t game_id );
 
 	/**
-	 * @brief - move the game data
+	 * @brief - move & erase (i.e. moer) the game data for both the players after game in 3 cases: "1 Draw, 1 NoDraw", "2 times Draw" & "NoDraw" 
 	 * @details - move the info from "ongamestat" to respective players' table in "usergamestat"
-	 * 
+	 * 			- Note that in case of 1 time Draw, the players are given one last chance to select cards. So, no movement of data. 
 	 * @param game_id - game id
 	 */
-	ACTION movegameinfo(uint64_t game_id, const name& player, const string& message);
+	ACTION moergameinfo(uint64_t game_id, const string& message);
 
 	/**
 	 * @brief - empify player
@@ -653,10 +653,9 @@ private:
 	template<typename T>
 	inline uint64_t get_random_indexfrmlist(const checksum256& random_value, vector<T> list) {
 		//cast the random_value to a smaller number
-		// this means creating random no. b/w min. & max. i.e. min <= num1 <= max
-		// i.e. 1 <= num1 <= N-1 in case of list
-	    uint64_t max_value = list.size()-1;
-	    uint64_t min_value = 1;
+		// this means creating random no. upto max., where, num1 <  max (not included)
+		// i.e. num1 < N in case of list
+	    uint64_t max_value = list.size();
 	
 	    auto byte_array = random_value.extract_as_byte_array();
 
@@ -666,7 +665,7 @@ private:
 	        random_int |= (uint64_t)byte_array[i];
 	    }
 	    
-	    uint64_t num1 = min_value + ( random_int % ( max_value - min_value + 1 ) );
+	    uint64_t num1 = random_int % max_value;
 
 	    return num1;
 	}
@@ -681,8 +680,8 @@ private:
 	// Adding inline action for `sendalert` action in the same contract 
 	void send_alert(const name& user, const string& message);
 	// -----------------------------------------------------------------------------------------------------------------------
-	// Adding inline action for `movegameinfo` action in the same contract 
-	void move_game_info(uint64_t game_id, const name& player, const string& message);
+	// Adding inline action for `moergameinfo` action in the same contract 
+	void moer_game_info(uint64_t game_id, const string& message);
 
 
 };
