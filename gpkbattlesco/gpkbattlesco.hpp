@@ -655,6 +655,9 @@ private:
 		//cast the random_value to a smaller number
 		// this means creating random no. upto max., where, num1 <  max (not included)
 		// i.e. num1 < N in case of list
+		// Here, it is generalized for cards, players both. 
+		// So, in case of cards shuffling would happen in out of 3 cards. So, 0 to 2 indices allowed
+		// In case of remaining players in `pair2player` ACTION, 0 to N-1, N is the size of remaining_players_list.
 	    uint64_t max_value = list.size();
 	
 	    auto byte_array = random_value.extract_as_byte_array();
