@@ -21,6 +21,8 @@ void gpkbattlesco::pair2player(const name& asset_contract_ac) {
 
 	// choose the 1st player
 	auto p1 = players_it->players_list[0];
+	auto remaining_players_list = players_it->players_list;
+	remaining_players_list.erase(remaining_players_list.begin());
 
 	// now choose the second player using randomization if rest_players' size > 2
 	name p2 = ""_n;
@@ -28,11 +30,12 @@ void gpkbattlesco::pair2player(const name& asset_contract_ac) {
 		p2 = players_it->players_list[1];
 	} 
 	else if (players_it->players_list.size() > 2) {
-		auto remaining_players_list = players_it->players_list;
-		remaining_players_list.erase(remaining_players_list.begin());
 		auto rand_index = get_random_indexfrmlist(random_value, remaining_players_list);
 		p2 = remaining_players_list[rand_index];
 	}
+
+	// send_alert(p1, "You have been paired with player " + p2.to_string());			// for debug
+	// send_alert(p2, "You have been paired with player " + p1.to_string());			// for debug
 
 	// check players paired are not identical
 	check(p1 != p2, "the paired players are identical by name. Please, ensure there is no duplicate players name in the list.");
@@ -68,6 +71,7 @@ void gpkbattlesco::pair2player(const name& asset_contract_ac) {
 	// now, emplace table with details - game_id, player_1, player_2
 	auto ongamestat_it = ongamestat_table.find(game_id);
 	check(ongamestat_it == ongamestat_table.end(), "The game with id: \'" + std::to_string(game_id) + "\' is already present in the table. So, players can't be paired." );
+	check((p1 != ""_n) && (p2 != ""_n), "Either p1 or p2 is empty.");
 
 	// select any iterator out of (p11_it, p21_it, p12_it, p22_it) for adding it into table.
 	ongamestat_table.emplace(get_self(), [&](auto& row){
