@@ -80,10 +80,6 @@ void gpkbattlesco::pair2player(const name& asset_contract_ac) {
 		row.player_2 = p2;
 	});
 
-	// Send the 2 players an alert that they have paired with & ask them to send the game fee if not sent
-	send_alert(p1, "You have been paired with player " + p2.to_string() + " & game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
-	send_alert(p2, "You have been paired with player " + p1.to_string() + " & game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
-
 	// Now, erase p1, p2 from the `players` table's `players_list`
 	std::vector<name> paired_players = {p1, p2};
 
@@ -96,6 +92,10 @@ void gpkbattlesco::pair2player(const name& asset_contract_ac) {
 		});
 	}
 	
+
+	// Send the 2 players an alert that they have paired with & ask them to send the game fee if not sent
+	send_alert(p1, "You have been paired with player " + p2.to_string() + " & game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+	send_alert(p2, "You have been paired with player " + p1.to_string() + " & game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
 }
 
 // --------------------------------------------------------------------------------------------------------------------
