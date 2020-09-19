@@ -126,18 +126,9 @@ void gpkbatescrow::withdrawbypl( const name& player,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbatescrow::disburse( uint64_t game_id,
-								const name& winner,
-								const name& loser,
-								const name& asset_contract_ac,
-								vector<uint64_t> winner_card_ids,	// 4
-								vector<uint64_t> loser_card_ids 	// 2
-								) {
+void gpkbatescrow::disburse( uint64_t game_id ) 
+{
 	require_auth(game_contract_ac);
-
-	check( (asset_contract_ac == "simpleassets"_n) 
-		|| (asset_contract_ac == "atomicassets"_n), 
-		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
 
 	// Check that the game_id's status is marked "over" before disbursement of the cards
 	// instantiate the `ongamestat` table
@@ -145,59 +136,64 @@ void gpkbatescrow::disburse( uint64_t game_id,
 	auto ongamestat_it = ongamestat_table.find(game_id);
 
 	check(ongamestat_it != ongamestat_table.end(), "the game with id \'" + std::to_string(game_id) + "\' doesn't exist.");
-	check(ongamestat_it->status == "over"_n, "the game with id \'" + std::to_string(game_id) + "\' is not yet over. So, the game info. can\'t be moved to usergamestat table");
-
+	check(ongamestat_it->status == "over"_n, "the game with id \'" + std::to_string(game_id) + "\' is not yet over. So, the cards of the game info. can\'t be disbursed.");
+	check(ongamestat_it->result == "nodraw"_n, "the result of the game with id \'" + std::to_string(game_id) + "\' is draw. So, cards can\'t be disbursed.");
+	check(ongamestat_it->winner_transfer_cards.size() == 4, "no. of winner transfer cards must be 4.");
+	check(ongamestat_it->loser_transfer_cards.size() == 2, "no. of loser transfer cards must be 2.");
 
 	// instantiate the `cardwallet` table
-	cardwallet_index cardwallet_table(get_self(), winner.value);
+	cardwallet_index cardwallet_winner_table(get_self(), ongamestat_it->winner.value);
+	cardwallet_index cardwallet_loser_table(get_self(), ongamestat_it->loser.value);
 
-	auto check_card_ids_winner = winner_card_ids;
-	check_card_ids_winner.erase(check_card_ids_winner.end());		// remove the last one which belongs to the loser
-	auto check_card_ids_loser = loser_card_ids;
-	check_card_ids_loser.emplace_back(winner_card_ids[-1]);		// add the last one of winner which belongs to the loser
+	auto check_card_ids_winner = ongamestat_it->winner_transfer_cards;
+	check_card_ids_winner.erase(check_card_ids_winner.begin() + 3);		// remove the last one which belongs to the loser
+	auto check_card_ids_loser = ongamestat_it->loser_transfer_cards;
+	check_card_ids_loser.emplace_back(ongamestat_it->winner_transfer_cards.back());		// add the last one of winner which belongs to the loser
 
 	// check for winner if 3 cards are marked "selected"
 	for(auto&& card_id : check_card_ids_winner) {
-		auto winner_card_it = cardwallet_table.find(card_id);
+		auto winner_card_it = cardwallet_winner_table.find(card_id);
 
-		check(winner_card_it != cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " doesn\'t exist in the table.");
+		check(winner_card_it != cardwallet_winner_table.end(), "card with id:" + std::to_string(card_id) + " doesn\'t exist in the table.");
 
 		// the card should be in "selected" status
 		check(winner_card_it->usage_status == "selected"_n, "card with id:" + std::to_string(card_id) + " can\'t be disbursed as it was not \'selected\' for playing.");
 
 		// erase the card from cardwallet table
-		cardwallet_table.erase(winner_card_it);
+		cardwallet_winner_table.erase(winner_card_it);
 	}
 
 	// check for loser if 3 cards are marked "selected"
 	for(auto&& card_id : check_card_ids_loser) {
-		auto loser_card_it = cardwallet_table.find(card_id);
+		auto loser_card_it = cardwallet_loser_table.find(card_id);
 
-		check(loser_card_it != cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " doesn\'t exist in the table.");
+		check(loser_card_it != cardwallet_loser_table.end(), "card with id:" + std::to_string(card_id) + " doesn\'t exist in the table.");
 
 		// the card should be in "selected" status
 		check(loser_card_it->usage_status == "selected"_n, "card with id:" + std::to_string(card_id) + " can\'t be disbursed as it was not \'selected\' for playing.");
 
 		// erase the card from cardwallet table
-		cardwallet_table.erase(loser_card_it);
+		cardwallet_loser_table.erase(loser_card_it);
 	}
 
 
 	// escrow contract transfers all cards to winner at a time
 	action(
 		permission_level{get_self(), "active"_n},
-		asset_contract_ac,
+		ongamestat_it->asset_contract_ac,
 		"transfer"_n,
-		std::make_tuple(get_self(), winner, winner_card_ids, "disburses " + std::to_string(winner_card_ids.size()) 
+		std::make_tuple(get_self(), ongamestat_it->winner, ongamestat_it->winner_transfer_cards, "disburses " + std::to_string(ongamestat_it->winner_transfer_cards.size()) 
 			+ " cards for winning the game with id: \'" + std::to_string(game_id) + "\'.")
 	).send();
 
 	// escrow contract transfers all cards to loser at a time
 	action(
 		permission_level{get_self(), "active"_n},
-		asset_contract_ac,
+		ongamestat_it->asset_contract_ac,
 		"transfer"_n,
-		std::make_tuple(get_self(), loser, loser_card_ids, "disburses " + std::to_string(loser_card_ids.size())
+		std::make_tuple(get_self(), ongamestat_it->loser, ongamestat_it->loser_transfer_cards, "disburses " + std::to_string(ongamestat_it->loser_transfer_cards.size())
 			+ " cards for losing the game with id: \'" + std::to_string(game_id) + "\'.")
 	).send();
+
+
 }

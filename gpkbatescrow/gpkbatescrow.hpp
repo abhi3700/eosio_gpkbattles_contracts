@@ -111,25 +111,13 @@ public:
 	 * 			- alerts the user with win/lose status with game_id	 
 	 * 
 	 * @param game_id - for adding into memo note
-	 * @param winner - player who wins 
-	 * @param loser - player who loses 
-	 * @param asset_contract_ac - simpleassets, atomicassets
-	 * @param winner_card_ids - cards won i.e. 4 no.s
-	 * @param loser_card_ids - cards losen i.e. 2 no.s
 	 * 
 	 * @pre - Check that the game_id's status is marked "over" before disbursement of the cards
-	 * @pre - a new list create for winner, loser with equal in qty.
-	 * @pre - all the cards' owners are checked correspondingly with parsed winner, loser
-	 * @pre - erase all cards from the cardwallet table
-	 * @pre - then transfers the parsed cards to players respectively i.e 4 to winner & 2 to loser
+	 * @pre - Check that the game_id's result is marked "nodraw" before disbursement of the cards
+	 * @pre - winner_transfer_cards size must be 4
+	 * @pre - loser_transfer_cards size must be 2
 	 */
-	ACTION disburse( uint64_t game_id,
-						const name& winner,
-						const name& loser,
-						const name& asset_contract_ac,
-						vector<uint64_t> winner_card_ids,	// 4
-						vector<uint64_t> loser_card_ids 	// 2
-						);
+	ACTION disburse( uint64_t game_id );
 
 	ACTION testsetcstat( const name& player, uint64_t card_id, const name& status ) {
 		// instantiate the `cardwallet` table

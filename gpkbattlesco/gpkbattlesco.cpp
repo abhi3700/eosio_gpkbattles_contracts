@@ -21,6 +21,8 @@ void gpkbattlesco::pair2player(const name& asset_contract_ac) {
 
 	// choose the 1st player
 	auto p1 = players_it->players_list[0];
+	// require_recipient(p1);
+
 	auto remaining_players_list = players_it->players_list;
 	remaining_players_list.erase(remaining_players_list.begin());
 
@@ -28,14 +30,25 @@ void gpkbattlesco::pair2player(const name& asset_contract_ac) {
 	name p2 = ""_n;
 	if (players_it->players_list.size() == 2) {
 		p2 = players_it->players_list[1];
+		// paired_player2 = players_it->players_list[1];
+		// ++paired_player2_count;
 	} 
 	else if (players_it->players_list.size() > 2) {
 		auto rand_index = get_random_indexfrmlist(random_value, remaining_players_list);
 		p2 = remaining_players_list[rand_index];
+		// paired_player2 = remaining_players_list[rand_index];
+		// require_recipient(remaining_players_list[rand_index]);
+		// ++paired_player2_count;
 	}
 
-	// send_alert(p1, "You have been paired with player " + p2.to_string());			// for debug
-	// send_alert(p2, "You have been paired with player " + p1.to_string());			// for debug
+	// require_recipient(p1);
+	// require_recipient(p2);
+
+	// name& ref_p2 = p2;
+	// static const auto p2 = paired_player2;
+
+	// send_alert(p1, "You have been paired with player " + ref_p2	.to_string());			// for debug
+	// send_alert(ref_p2, "You have been paired with player " + p1.to_string());			// for debug
 
 	// check players paired are not identical
 	check(p1 != p2, "the paired players are identical by name. Please, ensure there is no duplicate players name in the list.");
@@ -90,12 +103,19 @@ void gpkbattlesco::pair2player(const name& asset_contract_ac) {
 			row.players_list.erase(pl_search_it);
 			// send_alert(p, p.to_string() + " is erased from the players list");			// for debug
 		});
+
+		// send_alert(p, "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
 	}
 	
 
 	// Send the 2 players an alert that they have paired with & ask them to send the game fee if not sent
-	send_alert(p1, "You have been paired with player " + p2.to_string() + " & game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
-	send_alert(p2, "You have been paired with player " + p1.to_string() + " & game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+	// send_alert(paired_players[0], "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+	// send_alert(paired_players[1], "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+
+	// send_alert(p1, "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+	// send_alert(p2, "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+	// send_alert(p2, "You have been paired with " + std::to_string(paired_player2_count) + " with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -595,7 +615,7 @@ void gpkbattlesco::disndcards( uint64_t game_id ) {
 		permission_level{get_self(), "active"_n},
 		escrow_contract_ac,
 		"disburse"_n,
-		std::make_tuple(game_id, ongamestat_it->winner, ongamestat_it->loser, ongamestat_it->asset_contract_ac, ongamestat_it->winner_transfer_cards, ongamestat_it->loser_transfer_cards)
+		std::make_tuple(game_id)
 	).send();
 
 	// 2. move & erase game info to `usergamestat` table
@@ -741,7 +761,22 @@ void gpkbattlesco::remplayer(const name& asset_contract_ac,
 // 	setgstatus.send(player, card_id, status);
 // }
 
+// --------------------------------------------------------------------------------------------------------------------
+// void gpkbattlesco::sendmsgplyrs(uint64_t game_id, const string& msg) {
+// 	require_auth(get_self());
 
+// 	check(msg.size() <= 256, "message has more than 256 bytes");
+
+
+// 	ongamestat_index ongamestat_table(get_self(), get_self().value);
+// 	auto ongamestat_it = ongamestat_table.find(game_id);
+
+// 	check(ongamestat_it == ongamestat_table.end(), "The game with id: \'" + std::to_string(game_id) + "\' is already present in the table. So, players can't be paired." );
+
+// 	require_recipient(ongamestat_it->player_1);
+// 	require_recipient(ongamestat_it->player_2);
+
+// }
 // --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::sendalert(const name& user,
 							const string& message) {

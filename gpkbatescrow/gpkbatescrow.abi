@@ -28,26 +28,6 @@
                 {
                     "name": "game_id",
                     "type": "uint64"
-                },
-                {
-                    "name": "winner",
-                    "type": "name"
-                },
-                {
-                    "name": "loser",
-                    "type": "name"
-                },
-                {
-                    "name": "asset_contract_ac",
-                    "type": "name"
-                },
-                {
-                    "name": "winner_card_ids",
-                    "type": "uint64[]"
-                },
-                {
-                    "name": "loser_card_ids",
-                    "type": "uint64[]"
                 }
             ]
         },
