@@ -178,6 +178,37 @@ void gpkbattlesco::withdrawgfee( const name& player,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::selftransfer( const name& player, 
+									const asset& qty ) {
+	require_auth(get_self());
+
+	check_quantity(qty);
+
+	gfeewallet_index gfeewallet_table(get_self(), player.value);
+	auto gfeewallet_it = gfeewallet_table.find(qty.symbol.raw());
+
+	check(gfeewallet_it != gfeewallet_table.end(), "the player is not in the wallet table.");
+	check(gfeewallet_it->balance.amount >= qty.amount, "The player is overdrawing from the game wallet.");
+
+	action(
+		permission_level{get_self(), "active"_n},
+		"eosio.token"_n,
+		"transfer"_n,
+		std::make_tuple(get_self(), income_contract_ac, qty, "transfer game fee")
+	).send();
+
+	gfeewallet_table.modify(gfeewallet_it, get_self(), [&](auto& row){
+		row.balance -= qty;
+	});
+
+	// check if zero balance, then delete the data
+	if( (gfeewallet_it->balance).amount == 0 ) {
+		gfeewallet_table.erase(gfeewallet_it);
+	}
+
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::sel3card( const name& player,
 								const name& asset_contract_ac,
 								uint64_t card1_id,
@@ -474,7 +505,7 @@ void gpkbattlesco::play(uint64_t game_id) {
 			}
 			
 
-			// 4. move & erase game info to `usergamestat` table
+			// 4. move & erase game info to `usergamestat` table. Here also, the game_fee is transferred to income account
 			// For player-1 & player-2
 			moer_game_info(game_id, "your game with id: \'" + std::to_string(game_id) + "\' is moved to \'usergamestat\' table.");
 
@@ -610,6 +641,11 @@ void gpkbattlesco::disndcards( uint64_t game_id ) {
 	check(ongamestat_it->result == "nodraw"_n, "For cards to be disbursed, the parsed game_id \'" + std::to_string(game_id) + "\' should be of result: \'nodraw\'");
 	check(ongamestat_it->status == "over"_n, "the game with id \'" + std::to_string(game_id) + "\' is not yet over. So, the cards can\'t be disbursed");
 
+	// check game_fee balance as "5 WAX" for each player
+	check_gfee_balance(ongamestat_it->player_1, asset(gamefee_token_amount, gamefee_token_symbol));
+	check_gfee_balance(ongamestat_it->player_2, asset(gamefee_token_amount, gamefee_token_symbol));
+
+
 	// 1. disburse (check & then transfer) the card to winner & loser at a time
 	action(
 		permission_level{get_self(), "active"_n},
@@ -618,7 +654,8 @@ void gpkbattlesco::disndcards( uint64_t game_id ) {
 		std::make_tuple(game_id)
 	).send();
 
-	// 2. move & erase game info to `usergamestat` table
+
+	// 2. move & erase game info to `usergamestat` table. Here also, the game_fee is transferred to income account
 	// For player-1 & player-2
 	moer_game_info(game_id, "your game with id: \'" + std::to_string(game_id) + "\' is moved to \'usergamestat\' table.");
 }
@@ -636,6 +673,24 @@ void gpkbattlesco::moergameinfo(uint64_t game_id,
 
 	check(ongamestat_it != ongamestat_table.end(), "the game with id \'" + std::to_string(game_id) + "\' doesn't exist.");
 	check(ongamestat_it->status == "over"_n, "the game with id \'" + std::to_string(game_id) + "\' is not yet over. So, the game info. can\'t be moved to usergamestat table");
+
+	// transfer money to income account so that the player can't take the money out.
+	// of player_1
+	action(
+		permission_level(get_self(), "active"_n),
+		get_self(),
+		"selftransfer"_n,
+		std::make_tuple(ongamestat_it->player_1, asset(gamefee_token_amount, gamefee_token_symbol))
+	).send();
+
+	// of player_2
+	action(
+		permission_level(get_self(), "active"_n),
+		get_self(),
+		"selftransfer"_n,
+		std::make_tuple(ongamestat_it->player_2, asset(gamefee_token_amount, gamefee_token_symbol))
+	).send();
+
 
 	vector<name> players = {ongamestat_it->player_1, ongamestat_it->player_2};
 

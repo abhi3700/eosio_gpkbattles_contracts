@@ -45,6 +45,7 @@ private:
 	// const asset gamefee_value;
 	const name asset_contract_ac;
 	const name escrow_contract_ac;
+	const name income_contract_ac;
 	name paired_player2;
 	uint8_t paired_player2_count;
 
@@ -61,6 +62,7 @@ public:
 				// gamefee_value(asset(50000, symbol("WAX", 8))),		// "5.00000000 WAX"
 				asset_contract_ac("simpleassets"_n),
 				escrow_contract_ac("gpkbatescrow"_n),
+				income_contract_ac("gpkbatincome"_n),
 				paired_player2(""_n),
 				paired_player2_count(0),
 				vector_assetcontracts_associds({{"simpleassets"_n, 370015336}, {"atomicassets"_n, 370015337}})
@@ -106,6 +108,17 @@ public:
 
 	ACTION withdrawgfee( const name& player, 
 							const asset& qty);
+
+	/**
+	 * @brief - transfer game fee to income account
+	 * @details - transfer game fee to income account
+	 * 
+	 * @param player - player
+	 * @param qty - quantity
+	 * 
+	 */
+	ACTION selftransfer( const name& player, 
+							const asset& qty );
 
 	/**
 	 * @brief - player select cards

@@ -248,6 +248,20 @@
             ]
         },
         {
+            "name": "selftransfer",
+            "base": "",
+            "fields": [
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "qty",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
             "name": "sendalert",
             "base": "",
             "fields": [
@@ -406,6 +420,11 @@
         {
             "name": "sel3cardauto",
             "type": "sel3cardauto",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "selftransfer",
+            "type": "selftransfer",
             "ricardian_contract": ""
         },
         {

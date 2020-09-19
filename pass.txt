@@ -95,6 +95,10 @@ gpkbattlesc1
 Private key: 5K3WXVoRMGsCr8szYhKseQxRtmqUhXVVxQWC91387UTGZJYd3xv
 Public key: EOS89GjKGPBDuNaMXaThD4te7qPacaQaL9iBGFBLqbPD7d78TqkZc
 -------------------------------------------------------------
+gpkbatincome
+Private key: 5KK64gyfdKWrpUDbySFdJZJaqkQbuFSvVyaSso4EBYcbYHKBjJ5
+Public key: EOS6swMs1bu2axNG19s2LmbGfbsBotbLEWkmBetZCL7vt8ci176MM
+-------------------------------------------------------------
 randomtestco
 Private key: 5KVVa88d3rGYDEJ3ZAPEgg7CtnLsCq5NtjzR2RWe9bQFFXXNsJY
 Public key: EOS6qKcGDJWYNKuxcCYnPnCKpoHPYq97KpVGoY7tgsfKPbJQcAbVZ
