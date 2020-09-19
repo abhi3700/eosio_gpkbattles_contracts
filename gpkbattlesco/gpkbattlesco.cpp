@@ -156,8 +156,8 @@ void gpkbattlesco::withdrawgfee( const name& player,
 	gfeewallet_index gfeewallet_table(get_self(), player.value);
 	auto gfeewallet_it = gfeewallet_table.find(qty.symbol.raw());
 
-	check(gfeewallet_it != gfeewallet_table.end(), "the player is not in the wallet table.");
-	check(gfeewallet_it->balance.amount >= qty.amount, "The player is overdrawing from the game wallet.");
+	check(gfeewallet_it != gfeewallet_table.end(), "the player is not in the gamefee wallet table.");
+	check(gfeewallet_it->balance.amount >= qty.amount, "The player is overdrawing from the gamefee wallet.");
 
 	action(
 		permission_level{get_self(), "active"_n},
@@ -187,14 +187,14 @@ void gpkbattlesco::selftransfer( const name& player,
 	gfeewallet_index gfeewallet_table(get_self(), player.value);
 	auto gfeewallet_it = gfeewallet_table.find(qty.symbol.raw());
 
-	check(gfeewallet_it != gfeewallet_table.end(), "the player is not in the wallet table.");
-	check(gfeewallet_it->balance.amount >= qty.amount, "The player is overdrawing from the game wallet.");
+	check(gfeewallet_it != gfeewallet_table.end(), "the player is not in the gamefee wallet table.");
+	check(gfeewallet_it->balance.amount >= qty.amount, "The player is overdrawing from the gamefee wallet.");
 
 	action(
 		permission_level{get_self(), "active"_n},
 		"eosio.token"_n,
 		"transfer"_n,
-		std::make_tuple(get_self(), income_contract_ac, qty, "transfer game fee")
+		std::make_tuple(get_self(), income_contract_ac, qty, std::string("transfer game fee"))
 	).send();
 
 	gfeewallet_table.modify(gfeewallet_it, get_self(), [&](auto& row){
