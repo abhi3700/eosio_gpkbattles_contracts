@@ -83,7 +83,7 @@ WAX Testnet
 
 GPKBattles Contracts
 ====================
-gpkbattlesco
+gpkbattlesco [DEPRECATED due to error in Table deletion]
 Private key: 5JJeLdyZyxBMCgVzTCAZ6Sw4EqtNHXFdTQdhAgB8NCmAScM5DAP
 Public key: EOS7PVSCTqgDNPpDWnxMMJRxiMLS4yzHv6rCrguoEn1vNadtM3xbe
 -------------------------------------------------------------
