@@ -1,26 +1,20 @@
 #include "gpkbatescrow.hpp"
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbatescrow::transferbypl
-								( const name& player,
-								const name& asset_contract_ac,
-								const vector<uint64_t> card_ids,
-								const string& memo )
-/*								( const name& player, 
+void gpkbatescrow::transferbypl( const name& player, 
 									const name& to, 
 									const vector<uint64_t>& card_ids, 
 									const string& memo )
-*/{
+{
 
 	// check for conditions if either or both of these are true for `from` & `to`
-	// if(to != get_self() ||  player == get_self()) {		// atleast one of the condition is true
-	// 	print("Either money is not sent to the contract or contract itself is the player.");
-	// 	return;
-	// }
+	if(to != get_self() ||  player == get_self()) {		// atleast one of the condition is true
+		print("Either money is not sent to the contract or contract itself is the player.");
+		return;
+	}
 
-	require_auth(get_self());
 
-	// auto asset_contract_ac = get_first_receiver();
+	auto asset_contract_ac = get_first_receiver();
 
 
 	check( (asset_contract_ac == "simpleassets"_n) 

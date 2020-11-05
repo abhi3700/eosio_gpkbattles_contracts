@@ -63,15 +63,11 @@ public:
 	 * @pre - checked if the cards transferred are of "2a1b" or "1a2b" combo
 	 */
 	
-	ACTION transferbypl( const name& player,
-						const name& asset_contract_ac,
-						const vector<uint64_t> card_ids,
-						const string& memo );
-	// [[eosio::on_notify("*::transfer")]]
-	// void transferbypl( const name& player, 
-	// 						const name& to, 
-	// 						const vector<uint64_t>& card_ids, 
-	// 						const string& memo );
+	[[eosio::on_notify("*::transfer")]]
+	void transferbypl( const name& player, 
+							const name& to, 
+							const vector<uint64_t>& card_ids, 
+							const string& memo );
 
 
 

@@ -68,28 +68,6 @@
             ]
         },
         {
-            "name": "transferbypl",
-            "base": "",
-            "fields": [
-                {
-                    "name": "player",
-                    "type": "name"
-                },
-                {
-                    "name": "asset_contract_ac",
-                    "type": "name"
-                },
-                {
-                    "name": "card_ids",
-                    "type": "uint64[]"
-                },
-                {
-                    "name": "memo",
-                    "type": "string"
-                }
-            ]
-        },
-        {
             "name": "withdrawbypl",
             "base": "",
             "fields": [
@@ -122,11 +100,6 @@
         {
             "name": "testsetcstat",
             "type": "testsetcstat",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "transferbypl",
-            "type": "transferbypl",
             "ricardian_contract": ""
         },
         {
