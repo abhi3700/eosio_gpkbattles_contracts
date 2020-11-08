@@ -1406,6 +1406,8 @@ warning: transaction executed locally, but may not be confirmed by the network y
 * [ ] Suppose the `pair2player` ACTION happens & the players don't transfer money >> selectcards forever.
 	- In this case, we lose the RAM space in `gpkbattlesco` contract
 	- Solution: We need to set some time (at `pair2player`) for the 1(only selectcard) or 2 (both gfee & selectcard) further steps 
+* [ ] can a player play multiple game_ids at same time? 
+  - Already `simpleassets::transfer` allows cards transfer, & there is `gpkbattlesco::sel3card` action for selecting cards.
 
 ## NOTES
 * The steps followed in the game is as follows:
