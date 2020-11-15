@@ -29,7 +29,7 @@
 * table
 	- `ongamestat`
 	- `usergamestat`
-	- `players`
+	- `players` - table maintaining list of players (for asset type, e.g. `simpleassets`) who have selected cards & are ready to get paired.
 	- `gfeewallet`
 
 ## Compile
