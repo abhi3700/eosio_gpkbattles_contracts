@@ -1,6 +1,8 @@
 # Battles contract
 # GPK.Battles
 ## Brief
+
+### OLD
 * It is a game battle contract where:
 	- [x] pair 2 players
 	- [x] players transfer 5 WAX each
@@ -10,6 +12,8 @@
 	- [x] based on their cards selection, draw or nodraw happens
 	- [x] if draw, then players get 1 more chance. If 2 times draw successively for 1 game_id, then the round is dumped. And the card is available for selection in the cardwallet
 	- [x] if nodraw, then winner receives 4 cards with 1 as winning reward, whereas the loser receives 2 cards with 1 losing card (any by shuffle)
+
+### NEW
 
 ## About
 * contract name - `gpkbattlesco`
@@ -1381,6 +1385,8 @@ executed transaction: ee5b545d6b83424376effc8c798d73f0ea417020d7dac5231eccb66fce
 #  gpkbattlesc1 <= gpkbattlesc1::testaddplayr   {"asset_contract_ac":"simpleassets","player":"gbuser111113"}
 warning: transaction executed locally, but may not be confirmed by the network yet         ]
 
+cleosw push action gpkbattlesc1 testremplayr '["simpleassets", "gbuser111111"]' -p gpkbattlesc1@active
+
 $ cleosw push action gpkbattlesc1 testdelongam '["10001723801103"]' -p gpkbattlesc1@active
 executed transaction: 65bc2a6a15781f12e391f967e53241c51b7b5b1bc9d7d189b1bc773dc2162d5a  104 bytes  297 us
 #  gpkbattlesc1 <= gpkbattlesc1::testdelongam   {"game_id":"10001723786534"}
@@ -1399,6 +1405,14 @@ warning: transaction executed locally, but may not be confirmed by the network y
 $ cleosw push action gpkbatescrow testsetcstat '["gbuser111112", "100000000007695", "available"]' -p gpkbatescrow@active
 executed transaction: 716d42bfe63f6277147bdfac9f65cfd2bd7421a30b23ab45e242258db9720ff9  120 bytes  166 us
 #  gpkbatescrow <= gpkbatescrow::testsetcstat   {"player":"gbuser111112","card_id":"100000000007695","status":"available"}
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+
+$ cleosw push action gpkbattlesc1 withdrawgfee '["gbuser111111", "5.00000000 WAX"]' -p gbuser111111@active
+executed transaction: 23ca3efbf986d9eed9e62af8cbf48b69b1067f31bbdfda0e265dc1166ca904fe  120 bytes  291 us
+#  gpkbattlesc1 <= gpkbattlesc1::withdrawgfee   {"player":"gbuser111111","qty":"5.00000000 WAX"}
+#   eosio.token <= eosio.token::transfer        {"from":"gpkbattlesc1","to":"gbuser111111","quantity":"5.00000000 WAX","memo":"player withdraws 5.00...
+#  gpkbattlesc1 <= eosio.token::transfer        {"from":"gpkbattlesc1","to":"gbuser111111","quantity":"5.00000000 WAX","memo":"player withdraws 5.00...
+#  gbuser111111 <= eosio.token::transfer        {"from":"gpkbattlesc1","to":"gbuser111111","quantity":"5.00000000 WAX","memo":"player withdraws 5.00...
 warning: transaction executed locally, but may not be confirmed by the network yet         ]
 ```
 

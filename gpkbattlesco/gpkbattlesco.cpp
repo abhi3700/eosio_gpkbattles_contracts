@@ -1,124 +1,6 @@
 #include "gpkbattlesco.hpp"
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbattlesco::pair2player(const name& asset_contract_ac) {
-
-	require_auth(get_self());
-
-	check( (asset_contract_ac == "simpleassets"_n) 
-		|| (asset_contract_ac == "atomicassets"_n), 
-		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
-
-	players_index players_table(get_self(), get_self().value);
-	auto players_it = players_table.find(asset_contract_ac.value);
-
-	check(players_it != players_table.end(), "players_list is not set.");
-
-	// the purpose of instantiating the table is to check if the players_list has min. 2 players in the list & then generate RNG.
-	check(players_it->players_list.size() >= 2, "players_list must be min. 2 in size.");
-
-	auto random_value = hash_digest_256(get_trxid(), now());
-
-	// choose the 1st player
-	auto p1 = players_it->players_list[0];
-	// require_recipient(p1);
-
-	auto remaining_players_list = players_it->players_list;
-	remaining_players_list.erase(remaining_players_list.begin());
-
-	// now choose the second player using randomization if rest_players' size > 2
-	name p2 = ""_n;
-	if (players_it->players_list.size() == 2) {
-		p2 = players_it->players_list[1];
-		// paired_player2 = players_it->players_list[1];
-		// ++paired_player2_count;
-	} 
-	else if (players_it->players_list.size() > 2) {
-		auto rand_index = get_random_indexfrmlist(random_value, remaining_players_list);
-		p2 = remaining_players_list[rand_index];
-		// paired_player2 = remaining_players_list[rand_index];
-		// require_recipient(remaining_players_list[rand_index]);
-		// ++paired_player2_count;
-	}
-
-	// require_recipient(p1);
-	// require_recipient(p2);
-
-	// name& ref_p2 = p2;
-	// static const auto p2 = paired_player2;
-
-	// send_alert(p1, "You have been paired with player " + ref_p2	.to_string());			// for debug
-	// send_alert(ref_p2, "You have been paired with player " + p1.to_string());			// for debug
-
-	// check players paired are not identical
-	check(p1 != p2, "the paired players are identical by name. Please, ensure there is no duplicate players name in the list.");
-
-	// check each p1, p2 contain min. 3 cards
-	check(checkget_3_available_cards(p1, asset_contract_ac).size() == 3, 
-		"player " + p1.to_string() + " has no 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
-	check(checkget_3_available_cards(p2, asset_contract_ac).size() == 3, 
-		"player " + p2.to_string() + " has no 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
-
-	// check that the players - p1, p2 are not present in the player_1 column & player_2 column of the table
-	ongamestat_index ongamestat_table(get_self(), get_self().value);
-	auto player1_idx = ongamestat_table.get_index<"byplayer1"_n>();
-	auto player2_idx = ongamestat_table.get_index<"byplayer2"_n>();
-
-	auto p11_it = player1_idx.find(p1.value);
-	auto p21_it = player1_idx.find(p2.value);
-
-	check(p11_it == player1_idx.end(), p1.to_string() + " is already present with game_id: \'" + std::to_string(p11_it->game_id) + "\' in player_1 column of \'ongamestat\' table.");
-	check(p21_it == player1_idx.end(), p2.to_string() + " is already present with game_id: \'" + std::to_string(p21_it->game_id) + "\' in player_1 column of \'ongamestat\' table.");
-
-	auto p12_it = player2_idx.find(p1.value);
-	auto p22_it = player2_idx.find(p2.value);
-
-	check(p12_it == player2_idx.end(), p1.to_string() + " is already present with game_id: \'" + std::to_string(p12_it->game_id) + "\' in player_2 column of \'ongamestat\' table.");
-	check(p22_it == player2_idx.end(), p2.to_string() + " is already present with game_id: \'" + std::to_string(p22_it->game_id) + "\' in player_2 column of \'ongamestat\' table.");
-
-	// After these above checks, the players are ok to be added now in the `ongamestat` table.
-
-	// generate game_id
-	uint64_t game_id = 10000123456789 + (uint64_t)now();
-
-	// now, emplace table with details - game_id, player_1, player_2
-	auto ongamestat_it = ongamestat_table.find(game_id);
-	check(ongamestat_it == ongamestat_table.end(), "The game with id: \'" + std::to_string(game_id) + "\' is already present in the table. So, players can't be paired." );
-	check((p1 != ""_n) && (p2 != ""_n), "Either p1 or p2 is empty.");
-
-	// select any iterator out of (p11_it, p21_it, p12_it, p22_it) for adding it into table.
-	ongamestat_table.emplace(get_self(), [&](auto& row){
-		row.game_id = game_id;
-		row.player_1 = p1;
-		row.player_2 = p2;
-	});
-
-	// Now, erase p1, p2 from the `players` table's `players_list`
-	std::vector<name> paired_players = {p1, p2};
-
-	for(auto&& p : paired_players) {
-		auto pl_search_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), p);
-		check(pl_search_it != players_it->players_list.end(), p.to_string() + " is not in the players_list.");
-		players_table.modify(players_it, get_self(), [&](auto& row) {
-			row.players_list.erase(pl_search_it);
-			// send_alert(p, p.to_string() + " is erased from the players list");			// for debug
-		});
-
-		// send_alert(p, "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
-	}
-	
-
-	// Send the 2 players an alert that they have paired with & ask them to send the game fee if not sent
-	// send_alert(paired_players[0], "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
-	// send_alert(paired_players[1], "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
-
-	// send_alert(p1, "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
-	// send_alert(p2, "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
-	// send_alert(p2, "You have been paired with " + std::to_string(paired_player2_count) + " with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
-
-}
-
-// --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::depositgfee( const name& player,
 							const name& contract_ac,
 							const asset& game_fee,
@@ -145,6 +27,7 @@ void gpkbattlesco::depositgfee( const name& player,
 		});
 	}
 }
+
 
 // --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::withdrawgfee( const name& player, 
@@ -209,7 +92,7 @@ void gpkbattlesco::selftransfer( const name& player,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbattlesco::sel3card( const name& player,
+/*void gpkbattlesco::sel3card( const name& player,
 								const name& asset_contract_ac,
 								uint64_t card1_id,
 								uint64_t card2_id,
@@ -288,9 +171,9 @@ void gpkbattlesco::sel3card( const name& player,
 	}
 
 }
-
+*/
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbattlesco::sel3cardauto( const name& player,
+/*void gpkbattlesco::sel3cardauto( const name& player,
 								const name& asset_contract_ac ) {
 	require_auth(get_self());
 
@@ -353,6 +236,134 @@ void gpkbattlesco::sel3cardauto( const name& player,
 	}
 
 }
+*/
+
+
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::pairwplayer(const name& player_1, 
+								const name& asset_contract_ac) {
+
+	// check player_1 has deposited game fee
+	// check game_fee balance as "5.00000000 WAX" for player_1
+	check_gfee_balance(player_1, asset(gamefee_token_amount, gamefee_token_symbol));
+
+	// collect card_ids if transferred
+	vector<uint64_t> card_ids{};
+	card_ids = checkget_3_available_cards(player_1, asset_contract_ac);
+
+	// check if the card types are either (2A,1B) or (1A,2B) with escrow contract as owner.
+	// here check is done after the transfer to the escrow contract
+	// check card types
+	auto card_ids_type = checkget_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
+	check( (card_ids_type == card_ids_type_1) || (card_ids_type == card_ids_type_2), "invalid card type");
+
+	require_auth(player_1);
+
+	check( (asset_contract_ac == "simpleassets"_n) 
+		|| (asset_contract_ac == "atomicassets"_n), 
+		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
+
+	players_index players_table(get_self(), get_self().value);
+	auto players_it = players_table.find(asset_contract_ac.value);
+
+	check(players_it != players_table.end(), "players_list is not set.");
+
+	// the purpose of instantiating the table is to check if the players_list has min. 2 players in the list & then generate RNG.
+	check(players_it->players_list.size() >= 2, "players_list must be min. 2 in size.");
+
+	auto random_value = hash_digest_256(get_trxid(), now());
+
+	// choose the 1st player
+	auto p1 = player_1;
+
+	auto remaining_players_list = players_it->players_list;
+	remaining_players_list.erase(remaining_players_list.begin());
+
+	// now choose the second player using randomization if rest_players' size > 2
+	name p2 = ""_n;
+	if (players_it->players_list.size() == 2) {
+		p2 = players_it->players_list[1];
+		// paired_player2 = players_it->players_list[1];
+		// ++paired_player2_count;
+	} 
+	else if (players_it->players_list.size() > 2) {
+		auto rand_index = get_random_indexfrmlist(random_value, remaining_players_list);
+		p2 = remaining_players_list[rand_index];
+		// paired_player2 = remaining_players_list[rand_index];
+		// require_recipient(remaining_players_list[rand_index]);
+		// ++paired_player2_count;
+	}
+
+	// check players paired are not identical
+	check(p1 != p2, "the paired players are identical by name. Please, ensure there is no duplicate players name in the list.");
+
+	// check each p1, p2 contain min. 3 cards
+	check(checkget_3_available_cards(p1, asset_contract_ac).size() == 3, 
+		"player " + p1.to_string() + " has no 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
+	check(checkget_3_available_cards(p2, asset_contract_ac).size() == 3, 
+		"player " + p2.to_string() + " has no 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
+
+	// check that the players - p1, p2 are not present in the player_1 column & player_2 column of the table
+	ongamestat_index ongamestat_table(get_self(), get_self().value);
+	auto player1_idx = ongamestat_table.get_index<"byplayer1"_n>();
+	auto player2_idx = ongamestat_table.get_index<"byplayer2"_n>();
+
+	auto p11_it = player1_idx.find(p1.value);
+	auto p21_it = player1_idx.find(p2.value);
+
+	check(p11_it == player1_idx.end(), p1.to_string() + " is already present with game_id: \'" + std::to_string(p11_it->game_id) + "\' in player_1 column of \'ongamestat\' table.");
+	check(p21_it == player1_idx.end(), p2.to_string() + " is already present with game_id: \'" + std::to_string(p21_it->game_id) + "\' in player_1 column of \'ongamestat\' table.");
+
+	auto p12_it = player2_idx.find(p1.value);
+	auto p22_it = player2_idx.find(p2.value);
+
+	check(p12_it == player2_idx.end(), p1.to_string() + " is already present with game_id: \'" + std::to_string(p12_it->game_id) + "\' in player_2 column of \'ongamestat\' table.");
+	check(p22_it == player2_idx.end(), p2.to_string() + " is already present with game_id: \'" + std::to_string(p22_it->game_id) + "\' in player_2 column of \'ongamestat\' table.");
+
+	// After these above checks, the players are ok to be added now in the `ongamestat` table.
+
+	// generate game_id
+	uint64_t game_id = 10000123456789 + (uint64_t)now();
+
+	// now, emplace table with details - game_id, player_1, player_2
+	auto ongamestat_it = ongamestat_table.find(game_id);
+	check(ongamestat_it == ongamestat_table.end(), "The game with id: \'" + std::to_string(game_id) + "\' is already present in the table. So, players can't be paired." );
+	check((p1 != ""_n) && (p2 != ""_n), "Either p1 or p2 is empty.");
+
+	// select any iterator out of (p11_it, p21_it, p12_it, p22_it) for adding it into table.
+	ongamestat_table.emplace(get_self(), [&](auto& row){
+		row.game_id = game_id;
+		row.player_1 = p1;
+		row.player_2 = p2;
+	});
+
+	// Now, erase p1, p2 from the `players` table's `players_list`
+	std::vector<name> paired_players = {p1, p2};
+
+	for(auto&& p : paired_players) {
+		auto pl_search_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), p);
+		check(pl_search_it != players_it->players_list.end(), p.to_string() + " is not in the players_list.");
+		players_table.modify(players_it, get_self(), [&](auto& row) {
+			row.players_list.erase(pl_search_it);
+			// send_alert(p, p.to_string() + " is erased from the players list");			// for debug
+		});
+
+		// send_alert(p, "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+	}
+	
+
+	// Send the 2 players an alert that they have paired with & ask them to send the game fee if not sent
+	// send_alert(paired_players[0], "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+	// send_alert(paired_players[1], "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+
+	// send_alert(p1, "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+	// send_alert(p2, "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+	// send_alert(p2, "You have been paired with " + std::to_string(paired_player2_count) + " with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+
+}
+
+
+
 // --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::play(uint64_t game_id) {
 	require_auth(get_self());
@@ -792,7 +803,7 @@ void gpkbattlesco::remplayer(const name& asset_contract_ac,
 								const name& player) {
 	require_auth(escrow_contract_ac);
 
-	// remove player to the players_list, if present
+	// remove player from the players_list, if present
 	players_index players_table(get_self(), get_self().value);
 	auto players_it = players_table.find(asset_contract_ac.value);
 

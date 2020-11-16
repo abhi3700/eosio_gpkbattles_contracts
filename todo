@@ -1,0 +1,6 @@
+- check the `pairwplayer` action where
+  - shuffle remaining players & choose one i.e. player_2
+  - delete player_1 & player_2 from `players` table for asset list
+- check the draw case where the cards has to be returned back to `simpleassets` contract for each players
+- check the escrow contract where the status param is to removed
+- check the players are added to the `players` table after the cards are transferred from `simpleassets` to `gpkbatescrow`

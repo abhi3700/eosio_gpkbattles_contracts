@@ -43,14 +43,16 @@ private:
 	const int64_t gamefee_token_amount;
 	const symbol gamefee_token_symbol;
 	// const asset gamefee_value;
-	const name asset_contract_ac;
+	// const name asset_contract_ac;
 	const name escrow_contract_ac;
 	const name income_contract_ac;
 	name paired_player2;
 	uint8_t paired_player2_count;
 
 	// 370015336 for "simpleassets", 370015337 for "atomicassets"
-	const vector<pair<name, uint64_t>> vector_assetcontracts_associds;						// a list of pair of asset contract account names & assoc_ids
+	// const vector<pair<name, uint64_t>> vector_assetcontracts_associds;						// a list of pair of asset contract account names & assoc_ids
+
+	name card_ids_type_1, card_ids_type_2;
 
 public:
 	using contract::contract;
@@ -60,26 +62,17 @@ public:
 				gamefee_token_amount(500000000),
 				gamefee_token_symbol("WAX", 8),
 				// gamefee_value(asset(50000, symbol("WAX", 8))),		// "5.00000000 WAX"
-				asset_contract_ac("simpleassets"_n),
+				// asset_contract_ac("simpleassets"_n),
 				escrow_contract_ac("gpkbatescrow"_n),
 				income_contract_ac("gpkbatincome"_n),
 				paired_player2(""_n),
 				paired_player2_count(0),
-				vector_assetcontracts_associds({{"simpleassets"_n, 370015336}, {"atomicassets"_n, 370015337}})
+				// vector_assetcontracts_associds({{"simpleassets"_n, 370015336}, {"atomicassets"_n, 370015337}}),
+				card_ids_type_1("2a1b"_n),
+				card_ids_type_2("1a2b"_n)
 				{}
 
 	
-
-
-	/**
-	 * @brief - match players & generate game_id
-	 * @details - shuffle vector of player list,
-	 * 				& take the first 2 elements of the vector
-	 * 				
-	 * @param asset_contract_ac - asset contract account name
-	 */
-	ACTION pair2player(const name& asset_contract_ac);
-
 
 	/**
 	 * @brief - deposit game fee
@@ -95,6 +88,20 @@ public:
 					const name& contract_ac,
 					const asset& game_fee,
 					const string& memo );
+
+
+	/**
+	 * @brief - match players & generate game_id
+	 * @details - shuffle vector of player list,
+	 * 				& take the first 2 elements of the vector
+	 * 
+	 * @param player_1 - player who presses the pair button				
+	 * @param asset_contract_ac - asset contract account name
+	 */
+	ACTION pairwplayer(const name& player_1, 
+						const name& asset_contract_ac);
+
+
 
 
 	/**
@@ -133,12 +140,12 @@ public:
 	 * 
 	 * @pre - check the types are 2A1B or 1A2B
 	 */
-	ACTION sel3card( const name& player,
+/*	ACTION sel3card( const name& player,
 						const name& asset_contract_ac,
 						uint64_t card1_id,
 						uint64_t card2_id,
 						uint64_t card3_id );
-
+*/
 	/**
 	 * @brief - contract auto-select cards for player
 	 * @details - contract auto-select cards for player, after 30 secs if not selected by player
@@ -148,9 +155,9 @@ public:
 	 *	
 	 * @pre - check the types are 2A1B or 1A2B
 	 */
-	ACTION sel3cardauto( const name& player,
+/*	ACTION sel3cardauto( const name& player,
 						const name& asset_contract_ac);
-
+*/
 
 
 	/**
@@ -288,6 +295,15 @@ public:
 				row.players_list.erase(vec_it);
 			});
 		}
+	}
+
+	ACTION testdelugame(const name& player, const name& asset_contract_ac) {
+		usergamestat_index usergamestat_table(get_self(), player.value);
+		auto usergamestat_player_it = usergamestat_table.find(asset_contract_ac);
+
+		check(usergamestat_player_it != usergamestat_table.end(), "there is no row created for this asset type.");
+
+		usergamestat_table.erase(usergamestat_player_it);
 	}
 
 
