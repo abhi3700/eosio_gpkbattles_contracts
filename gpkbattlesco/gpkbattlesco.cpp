@@ -278,6 +278,8 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 	auto p1_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), p1);
 	check(p1_it != players_it->players_list.end(), "As the player_1 has not sent any cards to escrow contract, that\'s why not added in the players list.");
 
+	
+
 	auto remaining_players_list = players_it->players_list;
 	remaining_players_list.erase(remaining_players_list.begin());
 
