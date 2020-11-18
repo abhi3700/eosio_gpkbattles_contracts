@@ -278,9 +278,8 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 	auto p1_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), p1);
 	check(p1_it != players_it->players_list.end(), "As the player_1 has not sent any cards to escrow contract, that\'s why not added in the players list.");
 
-	
-
-	auto remaining_players_list = players_it->players_list;
+	auto remaining_players_list = players_it->players_list;				// copy the players_list (with player_1)
+	auto
 	remaining_players_list.erase(remaining_players_list.begin());
 
 	// now choose the second player using randomization if rest_players' size > 2
@@ -297,6 +296,9 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 		// require_recipient(remaining_players_list[rand_index]);
 		// ++paired_player2_count;
 	}
+
+	// erase the player_1 from original players' players_list
+	rem_player(asset_contract_ac, player_1);
 
 	// check players paired are not identical
 	check(p1 != p2, "the paired players are identical by name. Please, ensure there is no duplicate players name in the list.");

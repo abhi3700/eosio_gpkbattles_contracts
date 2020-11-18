@@ -709,6 +709,26 @@ private:
 	    return num1;
 	}
 
+
+	// -----------------------------------------------------------------------------------------------------------------------
+	// remove player from the players_list, if present
+	inline void rem_player(const name& asset_contract_ac, 
+								const name& player) {
+		players_index players_table(get_self(), get_self().value);
+		auto players_it = players_table.find(asset_contract_ac.value);
+
+		if (players_it != players_table.end())
+		{
+			auto vec_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), player);
+			if(vec_it != players_it->players_list.end()) {
+				players_table.modify(players_it, get_self(), [&](auto& row) {
+					row.players_list.erase(vec_it);
+				});
+			}
+	}
+		
+	}
+
 	// ==================================================================================
 	// Adding inline action for `setgstatus` action in the ridex contract   
 	// void set_gstatus( const name& player, 
