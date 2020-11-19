@@ -8,7 +8,9 @@
 * contract name - `gpkbatescrow`
 * contract's account name - `gpkbatescrow`
 * action
-	- `transferbypl`
+	- `transelectpl`
+    1. set the cards & status of each as 'selected'
+    1. add player to players_list
 	- `setgstatus`
 	- `withdrawbypl`
 	- `disburse`
