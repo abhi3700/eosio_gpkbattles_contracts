@@ -34,6 +34,9 @@
 	- `ongamestat`
 	- `usergamestat`
 	- `players` - table maintaining list of players (for asset type, e.g. `simpleassets`) who have selected cards & are ready to get paired.
+    + here, if a player's name is not there, then 2 possibilities:
+      - cards transferred & game is ongoing
+      - cards not transferred
 	- `gfeewallet`
 
 ## Compile

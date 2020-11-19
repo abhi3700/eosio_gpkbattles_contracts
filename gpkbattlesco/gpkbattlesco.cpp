@@ -243,6 +243,8 @@ void gpkbattlesco::selftransfer( const name& player,
 void gpkbattlesco::pairwplayer(const name& player_1, 
 								const name& asset_contract_ac) {
 
+	require_auth(player_1);
+
 	// check player_1 has deposited game fee
 	// check game_fee balance as "5.00000000 WAX" for player_1
 	check_gfee_balance(player_1, asset(gamefee_token_amount, gamefee_token_symbol));
@@ -256,8 +258,6 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 	// check card types
 	auto card_ids_type = checkget_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
 	check( (card_ids_type == card_ids_type_1) || (card_ids_type == card_ids_type_2), "invalid card type");
-
-	require_auth(player_1);
 
 	check( (asset_contract_ac == "simpleassets"_n) 
 		|| (asset_contract_ac == "atomicassets"_n), 
@@ -273,39 +273,33 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 
 	auto random_value = hash_digest_256(get_trxid(), now());
 
+	auto p1 = player_1;
 
 	// search the player_1 in the players list for asset_contract_ac
 	auto p1_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), p1);
-	check(p1_it != players_it->players_list.end(), "As the player_1 has not sent any cards to escrow contract, that\'s why not added in the players list.");
+	check(p1_it != players_it->players_list.end(), "Either the player_1 has not sent any cards to escrow contract or game is ongoing, that\'s why not added in the players list.");
 
-	auto remaining_players_list = players_it->players_list;				// copy the players_list (with player_1)
-	auto
-	remaining_players_list.erase(remaining_players_list.begin());
+	auto remaining_players_list = players_it->players_list;				// copy the players_list (including player_1)
+	auto remaining_players_list_it = std::find(remaining_players_list.begin(), remaining_players_list.end(), player_1);
+	remaining_players_list.erase(remaining_players_list_it);			// remove the player_1 from the temp list
 
-	// now choose the second player using randomization if rest_players' size > 2
+	// now choose the second player using randomization if rest_players' size > 1
 	name p2 = ""_n;
-	if (players_it->players_list.size() == 2) {
-		p2 = players_it->players_list[1];
-		// paired_player2 = players_it->players_list[1];
-		// ++paired_player2_count;
+	if (remaining_players_list.size() == 1) {
+		p2 = players_it->players_list[0];
 	} 
-	else if (players_it->players_list.size() > 2) {
+	else if (remaining_players_list.size() > 1) {
 		auto rand_index = get_random_indexfrmlist(random_value, remaining_players_list);
 		p2 = remaining_players_list[rand_index];
-		// paired_player2 = remaining_players_list[rand_index];
-		// require_recipient(remaining_players_list[rand_index]);
-		// ++paired_player2_count;
 	}
 
-	// erase the player_1 from original players' players_list
+	// erase the player_1 from original players' players_list so that it's not considered for pairing with other player
 	rem_player(asset_contract_ac, player_1);
 
 	// check players paired are not identical
 	check(p1 != p2, "the paired players are identical by name. Please, ensure there is no duplicate players name in the list.");
 
-	// check each p1, p2 contain min. 3 cards
-	check(checkget_3_available_cards(p1, asset_contract_ac).size() == 3, 
-		"player " + p1.to_string() + " has no 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
+	// check p2 contain min. 3 cards
 	check(checkget_3_available_cards(p2, asset_contract_ac).size() == 3, 
 		"player " + p2.to_string() + " has no 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
 
