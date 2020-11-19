@@ -19,6 +19,10 @@
 * contract name - `gpkbattlesco`
 * contract's account name - `gpkbattlesco`
 * action
+	- `depositgfee`	[Payable action]
+	- `withdrawgfee`
+	- `sel3card` [DEPRECATED]
+	- `sel3cardauto` [DEPRECATED]
 	- `pairwplayer`
 		1. check player has deposited game fee - "5 WAX" 
 		1. Cards transfer & selection
@@ -34,11 +38,6 @@
 			- check p1 & p2 doesn't have any ongoing game
 			- add p1 & p2 into a row with game_id
 		1. Erase 2 players from original players_list
-
-	- `depositgfee`	[Payable action]
-	- `withdrawgfee`
-	- `sel3card` [DEPRECATED]
-	- `sel3cardauto` [DEPRECATED]
 	- `play`
 	- `receiverand` [For WAX RNG Oracle service]
 	- `movegameinfo` [Internal inline]
