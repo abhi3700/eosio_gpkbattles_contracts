@@ -307,19 +307,6 @@ public:
 	}
 
 
-
-
-	// ACTION testdplayers( const name& asset_contract_ac ) {
-	// 	// instantiate the players table
-	// 	players_index players_table(get_self(), get_self().value);
-	// 	auto players_it = players_table.find(asset_contract_ac.value);
-
-	// 	check(players_it != players_table.end(), "asset_contract ac doesn\'t exist.");
-
-	// 	players_table.erase(players_it);
-	// }
-
-
 	using empifyplayer_action  = action_wrapper<"empifyplayer"_n, &gpkbattlesco::empifyplayer>;
 	using remplayer_action  = action_wrapper<"remplayer"_n, &gpkbattlesco::remplayer>;
 	// using empifycards_action  = action_wrapper<"empifycards"_n, &gpkbatescrow::empifycards>;
@@ -339,6 +326,35 @@ public:
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------
+	static vector<uint64_t> checkget_3_available_cards(const name& player, const name& asset_contract_ac) {
+		// create an empty vector of card
+		vector<uint64_t> card_ids{};
+
+		// read the `cardwallet` table & collect 3 available cards of `asset_contract_ac`
+		cardwallet_index cardwallet_table("gpkbatescrow"_n, player.value);
+		auto usagstatus_idx = cardwallet_table.get_index<"byusagstatus"_n>();
+		auto cardwallet_it = usagstatus_idx.find("available"_n.value);
+
+		check( (cardwallet_it != usagstatus_idx.end()) &&
+				(cardwallet_it->contract_ac == asset_contract_ac)
+				, "player has no cards of asset contract: \'" + asset_contract_ac.to_string() + "\' available for selection.");
+		
+		// capture the 1st card 
+		card_ids.emplace_back(cardwallet_it->card_id);	
+		
+		// capture the 2 more cards 
+		while(card_ids.size() < 3) {
+			++cardwallet_it;
+			check( (cardwallet_it != usagstatus_idx.end()) && 
+				(cardwallet_it->contract_ac == asset_contract_ac)
+				, "player has less than 3 available cards. Please ensure min. 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
+			card_ids.emplace_back(cardwallet_it->card_id);
+		}
+
+		return card_ids;
+	}
+
+		// -----------------------------------------------------------------------------------------------------------------------
 	// check card's category, quality, variant & 2A,1B or 1A,2B before/after the transfer to the contract
 	static name checkget_cards_type( const name& asset_contract_ac,
 								const name& owner,
@@ -406,34 +422,6 @@ public:
 		return card_ids_type;
 	}
 
-	// -----------------------------------------------------------------------------------------------------------------------
-	static vector<uint64_t> checkget_3_available_cards(const name& player, const name& asset_contract_ac) {
-		// create an empty vector of card
-		vector<uint64_t> card_ids{};
-
-		// read the `cardwallet` table & collect 3 available cards of `asset_contract_ac`
-		cardwallet_index cardwallet_table("gpkbatescrow"_n, player.value);
-		auto usagstatus_idx = cardwallet_table.get_index<"byusagstatus"_n>();
-		auto cardwallet_it = usagstatus_idx.find("available"_n.value);
-
-		check( (cardwallet_it != usagstatus_idx.end()) &&
-				(cardwallet_it->contract_ac == asset_contract_ac)
-				, "player has no cards of asset contract: \'" + asset_contract_ac.to_string() + "\' available for selection.");
-		
-		// capture the 1st card 
-		card_ids.emplace_back(cardwallet_it->card_id);	
-		
-		// capture the 2 more cards 
-		while(card_ids.size() < 3) {
-			++cardwallet_it;
-			check( (cardwallet_it != usagstatus_idx.end()) && 
-				(cardwallet_it->contract_ac == asset_contract_ac)
-				, "player has less than 3 available cards. Please ensure min. 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
-			card_ids.emplace_back(cardwallet_it->card_id);
-		}
-
-		return card_ids;
-	}
 	// -----------------------------------------------------------------------------------------------------------------------
 	static void check_quantity( const asset& quantity ) {
 		check(quantity.is_valid(), "invalid quantity");

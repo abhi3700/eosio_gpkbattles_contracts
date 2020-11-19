@@ -11,7 +11,7 @@
 	- `transelectpl`
     1. set the cards & status of each as 'selected'
     1. add player to players_list
-	- `setgstatus`
+	- `setgstatus` [External inline]
 	- `withdrawbypl`
 	- `disburse`
 * table
