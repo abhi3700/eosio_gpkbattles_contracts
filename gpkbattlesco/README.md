@@ -23,6 +23,8 @@
 	- `withdrawgfee`
 	- `sel3card` [DEPRECATED]
 	- `sel3cardauto` [DEPRECATED]
+	- `drawsel3card`
+		1. 
 	- `pairwplayer`
 		1. check player has deposited game fee - "5 WAX" 
 		1. Cards transfer & selection

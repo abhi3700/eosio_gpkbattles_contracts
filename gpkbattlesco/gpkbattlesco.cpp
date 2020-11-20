@@ -92,11 +92,11 @@ void gpkbattlesco::selftransfer( const name& player,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-/*void gpkbattlesco::sel3card( const name& player,
-								const name& asset_contract_ac,
-								uint64_t card1_id,
-								uint64_t card2_id,
-								uint64_t card3_id ) {
+	void gpkbattlesco::drawsel3card( const name& player,
+										const name& asset_contract_ac,
+										uint64_t card1_id,
+										uint64_t card2_id,
+										uint64_t card3_id ) {
 	require_auth(player);
 
 	check( (asset_contract_ac == "simpleassets"_n) 
@@ -170,7 +170,7 @@ void gpkbattlesco::selftransfer( const name& player,
 	}
 
 }
-*/
+
 // --------------------------------------------------------------------------------------------------------------------
 /*void gpkbattlesco::sel3cardauto( const name& player,
 								const name& asset_contract_ac ) {
@@ -376,14 +376,14 @@ void gpkbattlesco::play(uint64_t game_id) {
 
 	check(ongamestat_it != ongamestat_table.end(), "the parsed game_id \'" + std::to_string(game_id) + "\' doesn't exist.");
 
-	// Although not required. Because this is already maintained during `pair2player` ACTION during emplace data
+	// Although not required. Because this is already maintained during `pairwplayer` ACTION during emplace data
 	check(ongamestat_it->player_1 != ongamestat_it->player_2, "Both the players should be different.");
 
 	// check game_fee balance as "5 WAX" for each player
 	check_gfee_balance(ongamestat_it->player_1, asset(gamefee_token_amount, gamefee_token_symbol));
 	check_gfee_balance(ongamestat_it->player_2, asset(gamefee_token_amount, gamefee_token_symbol));
 	
-	// check if draw or not
+	// check if draw or nodraw
 	if(ongamestat_it->player1_cards_combo == ongamestat_it->player2_cards_combo) {			// Draw
 		check((ongamestat_it->draw_count < 2), "this game can't be proceeded further, as this game is draw & already played for min. 2 times.");
 

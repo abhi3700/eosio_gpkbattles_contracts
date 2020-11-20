@@ -125,12 +125,13 @@ public:
 	 * 
 	 * @pre - check the types are 2A1B or 1A2B
 	 */
-/*	ACTION sel3card( const name& player,
+	ACTION drawsel3card( const name& player,
 						const name& asset_contract_ac,
 						uint64_t card1_id,
 						uint64_t card2_id,
 						uint64_t card3_id );
-*/
+
+
 	/**
 	 * @brief - contract auto-select cards for player
 	 * @details - contract auto-select cards for player, after 30 secs if not selected by player
