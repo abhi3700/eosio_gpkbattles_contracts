@@ -39,6 +39,7 @@ private:
 	// const symbol gamefee_token_symbol;
 	const name game_contract_ac;
 	// const name asset_contract_ac;
+	const name card_author;
 
 public:
 	using contract::contract;
@@ -46,9 +47,11 @@ public:
 	gpkbatescrow(name receiver, name code, datastream<const char*> ds) : 
 				contract(receiver, code, ds), 
 				// gamefee_token_symbol("WAX", 4),
-				// game_contract_ac("gpkbattlesco"_n)				// For Mainnet
-				game_contract_ac("gpkbattlesc1"_n)					// For Testnet
-				// asset_contract_ac("simpleassets"_n) 
+				// game_contract_ac("gpkbattlesco"_n),				// For Mainnet
+				game_contract_ac("gpkbattlesc1"_n),					// For Testnet
+				// asset_contract_ac("simpleassets"_n)
+				// card_author("gpk.topps"_n)							// For Mainnet
+				card_author("gpkbattlesco"_n)						// For Testnet
 				{}
 
 	/**
@@ -82,7 +85,7 @@ public:
 	 * @pre - status should be either "available" or "selected"
 	 * @pre - card should have been transferred by the player
 	 */
-	ACTION setgstatus( const name& player, 
+	ACTION setcstatus( const name& player, 
 						uint64_t card_id,
 						const name& status );
 
@@ -127,7 +130,7 @@ public:
 		});
 	}
 
-	using setgstatus_action  = action_wrapper<"setgstatus"_n, &gpkbatescrow::setgstatus>;
+	using setcstatus_action  = action_wrapper<"setcstatus"_n, &gpkbatescrow::setcstatus>;
 	using disburse_action  = action_wrapper<"disburse"_n, &gpkbatescrow::disburse>;
 
 	// -----------------------------------------------------------------------------------------------------------------------
@@ -147,8 +150,7 @@ public:
 			auto idx = assets.find(card_id);
 
 			check(idx != assets.end(), "Asset with id " + std::to_string(card_id) + " not found or not yours");
-			// check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
-			check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
+			check (idx->author == card_author, "Asset is not from this author");
 			check(idx->category == category, "The asset id\'s category must be exotic.");
 
 			auto mdata = json::parse(idx->mdata);

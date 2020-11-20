@@ -21,8 +21,6 @@ void gpkbatescrow::transferbypl( const name& player,
 		|| (asset_contract_ac == "atomicassets"_n), 
 		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
 
-	check(card_ids.size() == 3, "the card_ids list chosen must be of size 3");
-
 	check(memo.size() <= 256, "memo has more than 256 bytes");
 
 	// check if it has been transferred & also
@@ -42,7 +40,7 @@ void gpkbatescrow::transferbypl( const name& player,
 		cardwallet_table.emplace(get_self(), [&](auto& row) {
 			row.card_id = card_id;
 			row.contract_ac = asset_contract_ac;
-			row.usage_status = "available"_n;
+			row.usage_status = "selected"_n;
 		});
 	}
 
@@ -57,7 +55,7 @@ void gpkbatescrow::transferbypl( const name& player,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbatescrow::setgstatus( const name& player, 
+void gpkbatescrow::setcstatus( const name& player, 
 								uint64_t card_id,
 								const name& status ) {
 	require_auth(game_contract_ac);

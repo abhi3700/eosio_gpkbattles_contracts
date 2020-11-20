@@ -9,7 +9,13 @@
 * contract's account name - `gpkbatescrow`
 * action
 	- `transelectpl`
-    1. set the cards & status of each as 'selected'
+    1. check the cards type:
+      - valid asset_id
+      - author == "gpk.topps"
+      - category e.g. exotic
+      - quality e.g. a, b
+      - variant e.g. base
+    1. set the cards with id & status of each as 'selected'
     1. add player to players_list
 	- `setgstatus` [External inline]
 	- `withdrawbypl`
