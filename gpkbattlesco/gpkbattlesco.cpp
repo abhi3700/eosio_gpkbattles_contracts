@@ -123,8 +123,7 @@ void gpkbattlesco::selftransfer( const name& player,
 
 	// check if the card types are either (2A,1B) or (1A,2B) with escrow contract as owner.
 	// here check is done after the transfer to the escrow contract
-	auto card_ids_type = checkget_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
-	// here, no use of this card_ids_type var
+	check_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
 
 
 	// modify card's status as "selected" in `cardwallet` table of escrow contract
@@ -132,7 +131,7 @@ void gpkbattlesco::selftransfer( const name& player,
 		action(
 			permission_level{get_self(), "active"_n},
 			escrow_contract_ac,
-			"setgstatus"_n,
+			"setcstatus"_n,
 			std::make_tuple(player, card_id, "selected"_n)
 		).send();
 	}
@@ -189,15 +188,14 @@ void gpkbattlesco::selftransfer( const name& player,
 
 	// check if the card types are either (2A,1B) or (1A,2B) with escrow contract as owner.
 	// here check is done after the transfer to the escrow contract
-	auto card_ids_type = checkget_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
-	// here, no use of this card_ids_type var
+	check_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
 
 	// modify card's status as "selected" in `cardwallet` table of escrow contract
 	for(auto&& card_id : card_ids) {
 		action(
 			permission_level{get_self(), "active"_n},
 			escrow_contract_ac,
-			"setgstatus"_n,
+			"setcstatus"_n,
 			std::make_tuple(player, card_id, "selected"_n)
 		).send();
 	}
@@ -249,15 +247,14 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 	// check game_fee balance as "5.00000000 WAX" for player_1
 	check_gfee_balance(player_1, asset(gamefee_token_amount, gamefee_token_symbol));
 
-	// collect card_ids if transferred
-	vector<uint64_t> card_ids{};
-	card_ids = checkget_3_available_cards(player_1, asset_contract_ac);
+	// check if p1 contain min. 3 cards as selected
+	// collect card_ids for p1 if transferred
+	vector<uint64_t> card_ids_p1{};
+	card_ids_p1 = checkget_3_selected_cards(player_1, asset_contract_ac);
 
-	// check if the card types are either (2A,1B) or (1A,2B) with escrow contract as owner.
+	// Now, check if 3 selected cards are of either (2A,1B) or (1A,2B) with escrow contract as owner.
 	// here check is done after the transfer to the escrow contract
-	// check card types
-	auto card_ids_type = checkget_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
-	check( (card_ids_type == card_ids_type_1) || (card_ids_type == card_ids_type_2), "invalid card type");
+	check_cards_type(asset_contract_ac, escrow_contract_ac, card_ids_p1, "exotic"_n, "base");
 
 	check( (asset_contract_ac == "simpleassets"_n) 
 		|| (asset_contract_ac == "atomicassets"_n), 
@@ -299,9 +296,14 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 	// check players paired are not identical
 	check(p1 != p2, "the paired players are identical by name. Please, ensure there is no duplicate players name in the list.");
 
-	// check p2 contain min. 3 cards
-	check(checkget_3_available_cards(p2, asset_contract_ac).size() == 3, 
-		"player " + p2.to_string() + " has no 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
+	// check if p2 contain min. 3 cards as selected
+	// collect card_ids for p2 if transferred
+	vector<uint64_t> card_ids_p2{};
+	card_ids_p2 = checkget_3_selected_cards(p2, asset_contract_ac);
+
+	// Now, check if 3 selected cards are of either (2A,1B) or (1A,2B) with escrow contract as owner.
+	// here check is done after the transfer to the escrow contract
+	check_cards_type(asset_contract_ac, escrow_contract_ac, card_ids_p2, "exotic"_n, "base");
 
 	// check that the players - p1, p2 are not present in the player_1 column & player_2 column of the table
 	ongamestat_index ongamestat_table(get_self(), get_self().value);
@@ -416,7 +418,7 @@ void gpkbattlesco::play(uint64_t game_id) {
 				action(
 					permission_level{get_self(), "active"_n},
 					escrow_contract_ac,
-					"setgstatus"_n,
+					"setcstatus"_n,
 					std::make_tuple(ongamestat_it->player_1, card_id, "available"_n)
 				).send();
 			}
@@ -425,7 +427,7 @@ void gpkbattlesco::play(uint64_t game_id) {
 				action(
 					permission_level{get_self(), "active"_n},
 					escrow_contract_ac,
-					"setgstatus"_n,
+					"setcstatus"_n,
 					std::make_tuple(ongamestat_it->player_2, card_id, "available"_n)
 				).send();
 			}
@@ -475,7 +477,7 @@ void gpkbattlesco::play(uint64_t game_id) {
 				action(
 					permission_level{get_self(), "active"_n},
 					escrow_contract_ac,
-					"setgstatus"_n,
+					"setcstatus"_n,
 					std::make_tuple(ongamestat_it->player_1, card_id, "available"_n)
 				).send();
 			}
@@ -484,7 +486,7 @@ void gpkbattlesco::play(uint64_t game_id) {
 				action(
 					permission_level{get_self(), "active"_n},
 					escrow_contract_ac,
-					"setgstatus"_n,
+					"setcstatus"_n,
 					std::make_tuple(ongamestat_it->player_2, card_id, "available"_n)
 				).send();
 			}
@@ -817,15 +819,6 @@ void gpkbattlesco::remplayer(const name& asset_contract_ac,
 		}
 	}
 }
-
-
-// --------------------------------------------------------------------------------------------------------------------
-// void gpkbattlesco::set_gstatus( const name& player, 
-// 								uint64_t card_id,
-// 								const name& status ) {
-// 	gpkbatescrow::setgstatus_action setgstatus(escrow_contract_ac, {get_self(), "active"_n});
-// 	setgstatus.send(player, card_id, status);
-// }
 
 // --------------------------------------------------------------------------------------------------------------------
 // void gpkbattlesco::sendmsgplyrs(uint64_t game_id, const string& msg) {

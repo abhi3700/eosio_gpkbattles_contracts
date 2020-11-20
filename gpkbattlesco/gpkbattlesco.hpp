@@ -52,7 +52,7 @@ private:
 	// 370015336 for "simpleassets", 370015337 for "atomicassets"
 	// const vector<pair<name, uint64_t>> vector_assetcontracts_associds;						// a list of pair of asset contract account names & assoc_ids
 
-	name card_ids_type_1, card_ids_type_2;
+	// name card_ids_type_1, card_ids_type_2;
 
 public:
 	using contract::contract;
@@ -66,10 +66,10 @@ public:
 				escrow_contract_ac("gpkbatescrow"_n),
 				income_contract_ac("gpkbatincome"_n),
 				paired_player2(""_n),
-				paired_player2_count(0),
+				paired_player2_count(0)
 				// vector_assetcontracts_associds({{"simpleassets"_n, 370015336}, {"atomicassets"_n, 370015337}}),
-				card_ids_type_1("2a1b"_n),
-				card_ids_type_2("1a2b"_n)
+				// card_ids_type_1("2a1b"_n),
+				// card_ids_type_2("1a2b"_n)
 				{}
 
 	
@@ -88,21 +88,6 @@ public:
 					const name& contract_ac,
 					const asset& game_fee,
 					const string& memo );
-
-
-	/**
-	 * @brief - match players & generate game_id
-	 * @details - shuffle vector of player list,
-	 * 				& take the first 2 elements of the vector
-	 * 
-	 * @param player_1 - player who presses the pair button				
-	 * @param asset_contract_ac - asset contract account name
-	 */
-	ACTION pairwplayer(const name& player_1, 
-						const name& asset_contract_ac);
-
-
-
 
 	/**
 	 * @brief - player excess withdraw game fee
@@ -159,6 +144,17 @@ public:
 						const name& asset_contract_ac);
 */
 
+
+	/**
+	 * @brief - match players & generate game_id
+	 * @details - shuffle vector of player list,
+	 * 				& take the first 2 elements of the vector
+	 * 
+	 * @param player_1 - player who presses the pair button				
+	 * @param asset_contract_ac - asset contract account name
+	 */
+	ACTION pairwplayer(const name& player_1, 
+						const name& asset_contract_ac);
 
 	/**
 	 * @brief - play the game
@@ -354,9 +350,40 @@ public:
 		return card_ids;
 	}
 
+
+	// -----------------------------------------------------------------------------------------------------------------------
+	static vector<uint64_t> checkget_3_selected_cards(const name& player, const name& asset_contract_ac) {
+		// create an empty vector of card
+		vector<uint64_t> card_ids{};
+
+		// read the `cardwallet` table & collect 3 selected cards of `asset_contract_ac`
+		cardwallet_index cardwallet_table("gpkbatescrow"_n, player.value);
+		auto usagstatus_idx = cardwallet_table.get_index<"byusagstatus"_n>();
+		auto cardwallet_it = usagstatus_idx.find("selected"_n.value);
+
+		check( (cardwallet_it != usagstatus_idx.end()) &&
+				(cardwallet_it->contract_ac == asset_contract_ac)
+				, "player has no cards of asset contract: \'" + asset_contract_ac.to_string() + "\' selected for selection.");
+		
+		// capture the 1st card 
+		card_ids.emplace_back(cardwallet_it->card_id);	
+		
+		// capture the 2 more cards 
+		while(card_ids.size() < 3) {
+			++cardwallet_it;
+			check( (cardwallet_it != usagstatus_idx.end()) && 
+				(cardwallet_it->contract_ac == asset_contract_ac)
+				, "player has less than 3 selected cards. Please ensure min. 3 cards selected for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
+			card_ids.emplace_back(cardwallet_it->card_id);
+		}
+
+		return card_ids;
+	}
+
+
 		// -----------------------------------------------------------------------------------------------------------------------
-	// check card's category, quality, variant & 2A,1B or 1A,2B before/after the transfer to the contract
-	static name checkget_cards_type( const name& asset_contract_ac,
+	// check cards' category, quality, variant & 2A,1B or 1A,2B before/after the transfer to the contract
+	static void check_cards_type( const name& asset_contract_ac,
 								const name& owner,
 								const vector<uint64_t> card_ids,
 								const name& category,
@@ -404,22 +431,22 @@ public:
 			, "the cards chosen are of different combination than (2A,1B) OR (1A,2B). Please, select again."
 			);
 
-		if(	// 2A, 1B
-			((cardtype_1 == "a") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
-			((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "a")) || 
-			((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "a"))
-			) {
-			card_ids_type = "2a1b"_n;
-		}
-		else if (	// 1A, 2B
-			((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "b")) || 
-			((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
-			((cardtype_1 == "b") && (cardtype_2 == "b") && (cardtype_3 == "a")) 
-			){
-			card_ids_type = "1a2b"_n;
-		}
+		// if(	// 2A, 1B
+		// 	((cardtype_1 == "a") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
+		// 	((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "a")) || 
+		// 	((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "a"))
+		// 	) {
+		// 	card_ids_type = "2a1b"_n;
+		// }
+		// else if (	// 1A, 2B
+		// 	((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "b")) || 
+		// 	((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
+		// 	((cardtype_1 == "b") && (cardtype_2 == "b") && (cardtype_3 == "a")) 
+		// 	){
+		// 	card_ids_type = "1a2b"_n;
+		// }
 
-		return card_ids_type;
+		// return card_ids_type;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------
