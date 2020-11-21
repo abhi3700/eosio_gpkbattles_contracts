@@ -41,17 +41,17 @@ void gpkbatescrow::transferbypl( const name& player,
 		cardwallet_table.emplace(get_self(), [&](auto& row) {
 			row.card_id = card_id;
 			row.contract_ac = asset_contract_ac;
-			row.usage_status = "selected"_n;
+			row.usage_status = "available"_n;
 		});
 	}
 
 	// add player name into `players` table, if not already added
-	action(
-		permission_level{get_self(), "active"_n},
-		game_contract_ac,
-		"empifyplayer"_n,
-		std::make_tuple(asset_contract_ac, player)
-	).send();
+	// action(
+	// 	permission_level{get_self(), "active"_n},
+	// 	game_contract_ac,
+	// 	"empifyplayer"_n,
+	// 	std::make_tuple(asset_contract_ac, player)
+	// ).send();
 
 }
 

@@ -61,7 +61,7 @@ void gpkbattlesco::withdrawgfee( const name& player,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbattlesco::selftransfer( const name& player, 
+void gpkbattlesco::trincomegfee( const name& player, 
 									const asset& qty ) {
 	require_auth(get_self());
 
@@ -92,7 +92,7 @@ void gpkbattlesco::selftransfer( const name& player,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-	void gpkbattlesco::drawsel3card( const name& player,
+	void gpkbattlesco::sel3card( const name& player,
 										const name& asset_contract_ac,
 										uint64_t card1_id,
 										uint64_t card2_id,
@@ -123,7 +123,7 @@ void gpkbattlesco::selftransfer( const name& player,
 
 	// check if the card types are either (2A,1B) or (1A,2B) with escrow contract as owner.
 	// here check is done after the transfer to the escrow contract
-	check_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
+	auto card_ids_type = checkget_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
 
 
 	// modify card's status as "selected" in `cardwallet` table of escrow contract
@@ -168,6 +168,14 @@ void gpkbattlesco::selftransfer( const name& player,
 			row.player2_cards_combo = card_ids_type;
 		});
 	}
+
+	// add player name into `players` table, if not already added
+	action(
+		permission_level{get_self(), "active"_n},
+		game_contract_ac,
+		"empifyplayer"_n,
+		std::make_tuple(asset_contract_ac, player)
+	).send();
 
 }
 
@@ -693,7 +701,7 @@ void gpkbattlesco::moergameinfo(uint64_t game_id,
 	action(
 		permission_level(get_self(), "active"_n),
 		get_self(),
-		"selftransfer"_n,
+		"trincomegfee"_n,
 		std::make_tuple(ongamestat_it->player_1, asset(gamefee_token_amount, gamefee_token_symbol))
 	).send();
 
@@ -701,7 +709,7 @@ void gpkbattlesco::moergameinfo(uint64_t game_id,
 	action(
 		permission_level(get_self(), "active"_n),
 		get_self(),
-		"selftransfer"_n,
+		"trincomegfee"_n,
 		std::make_tuple(ongamestat_it->player_2, asset(gamefee_token_amount, gamefee_token_symbol))
 	).send();
 
@@ -775,7 +783,8 @@ void gpkbattlesco::moer_game_info(uint64_t game_id,
 // --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::empifyplayer(const name& asset_contract_ac, 
 								const name& player) {
-	require_auth(escrow_contract_ac);
+	// require_auth(escrow_contract_ac);
+	require_auth(get_self());
 
 	check( (asset_contract_ac == "simpleassets"_n) 
 		|| (asset_contract_ac == "atomicassets"_n), 
@@ -805,6 +814,7 @@ void gpkbattlesco::empifyplayer(const name& asset_contract_ac,
 void gpkbattlesco::remplayer(const name& asset_contract_ac, 
 								const name& player) {
 	require_auth(escrow_contract_ac);
+	// require_auth(get_self());
 
 	// remove player from the players_list, if present
 	players_index players_table(get_self(), get_self().value);

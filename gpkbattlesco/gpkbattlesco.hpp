@@ -109,7 +109,7 @@ public:
 	 * @param qty - quantity
 	 * 
 	 */
-	ACTION selftransfer( const name& player, 
+	ACTION trincomegfee( const name& player, 
 							const asset& qty );
 
 	/**
@@ -125,7 +125,7 @@ public:
 	 * 
 	 * @pre - check the types are 2A1B or 1A2B
 	 */
-	ACTION drawsel3card( const name& player,
+	ACTION sel3card( const name& player,
 						const name& asset_contract_ac,
 						uint64_t card1_id,
 						uint64_t card2_id,
@@ -382,7 +382,7 @@ public:
 	}
 
 
-		// -----------------------------------------------------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------------------------------
 	// check cards' category, quality, variant & 2A,1B or 1A,2B before/after the transfer to the contract
 	static void check_cards_type( const name& asset_contract_ac,
 								const name& owner,
@@ -450,6 +450,73 @@ public:
 		// return card_ids_type;
 	}
 
+	// -----------------------------------------------------------------------------------------------------------------------
+	// check cards' category, quality, variant & 2A,1B or 1A,2B before/after the transfer to the contract
+	static name checkget_cards_type( const name& asset_contract_ac,
+								const name& owner,
+								const vector<uint64_t> card_ids,
+								const name& category,
+								const string& variant ) 
+	{
+		// create an empty card_ids_type of eosio::name type
+		name card_ids_type = ""_n;
+
+		check(card_ids.size() == 3, "the card_ids list chosen must be of size 3");
+		vector<string> cardtypes{};
+
+		sassets assets(asset_contract_ac, owner.value);
+
+		for(auto&& card_id : card_ids) {
+			auto idx = assets.find(card_id);
+
+			check(idx != assets.end(), "Asset with id " + std::to_string(card_id) + " not found or not yours");
+			// check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
+			check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
+			check(idx->category == category, "The asset id\'s category must be exotic.");
+
+			auto mdata = json::parse(idx->mdata);
+			check((mdata["quality"] == "a") || (mdata["quality"] == "b"), "The asset id\'s quality must be either \'a\' or \'b\'."); 
+			check(mdata["variant"] == variant, "The asset id\'s variant must be \'base\'.");
+
+			cardtypes.emplace_back(mdata["quality"]);
+		}
+
+		// get the respective card types of the given cards
+		auto cardtype_1 = cardtypes[0];
+		auto cardtype_2 = cardtypes[1];
+		auto cardtype_3 = cardtypes[2];
+
+		check(
+			// 2A, 1B
+			((cardtype_1 == "a") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
+			((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "a")) || 
+			((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "a")) ||
+
+			 // 1A, 2B
+			((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "b")) || 
+			((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
+			((cardtype_1 == "b") && (cardtype_2 == "b") && (cardtype_3 == "a")) 
+			
+			, "the cards chosen are of different combination than (2A,1B) OR (1A,2B). Please, select again."
+			);
+
+		if(	// 2A, 1B
+			((cardtype_1 == "a") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
+			((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "a")) || 
+			((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "a"))
+			) {
+			card_ids_type = "2a1b"_n;
+		}
+		else if (	// 1A, 2B
+			((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "b")) || 
+			((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
+			((cardtype_1 == "b") && (cardtype_2 == "b") && (cardtype_3 == "a")) 
+			){
+			card_ids_type = "1a2b"_n;
+		}
+
+		return card_ids_type;
+	}
 	// -----------------------------------------------------------------------------------------------------------------------
 	static void check_quantity( const asset& quantity ) {
 		check(quantity.is_valid(), "invalid quantity");
