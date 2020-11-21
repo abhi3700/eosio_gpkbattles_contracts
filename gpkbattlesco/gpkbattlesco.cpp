@@ -106,7 +106,7 @@ void gpkbattlesco::selftransfer( const name& player,
 	// check game_fee balance as "5.00000000 WAX"
 	check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
 
-	// check if the cards have been transferred to the escrow's cardwallet
+	// check if the cards are present in the escrow's cardwallet & are in "available" status
 	cardwallet_index cardwallet_table(escrow_contract_ac, player.value);
 
 	vector<uint64_t> card_ids{card1_id, card2_id, card3_id};
@@ -405,6 +405,7 @@ void gpkbattlesco::play(uint64_t game_id) {
 		// 1. mark the cards as "available" for both players in `cardwallet` table of escrow contract
 		// 2. Alert the players to select cards again.
 		// 3. clear the required row fields.
+
 		// if 1 time draw, then re-select the cards again
 		// clear the all params except 
 		// -- game_id, player_1, player_2, result, draw_count, nodraw_count, total_play_count, random_value (as not generated), 
@@ -436,13 +437,13 @@ void gpkbattlesco::play(uint64_t game_id) {
 			// 2. Send alerts
 			// send alert to player_1
 			send_alert(ongamestat_it->player_1, 
-				ongamestat_it->player_1.to_string() + " has one last chance to select card, as game with id: \'" + 
-				std::to_string(ongamestat_it->game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " time.");
+				"You have one last chance to select card, as game with id: \'" + 
+				std::to_string(ongamestat_it->game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " time(s)");
 
 			// send alert to player_2
 			send_alert(ongamestat_it->player_2, 
-				ongamestat_it->player_2.to_string() + " has one last chance to select card, as game with id: \'" + 
-				std::to_string(ongamestat_it->game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " time.");
+				"You have one last chance to select card, as game with id: \'" + 
+				std::to_string(ongamestat_it->game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " time(s)");
 
 
 			// 3. Clear required row fields
@@ -493,10 +494,10 @@ void gpkbattlesco::play(uint64_t game_id) {
 
 			// 2. Send alerts
 			// send alert to player_1
-			send_alert(ongamestat_it->player_1, " The game with id: \'" + std::to_string(game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " times.");
+			send_alert(ongamestat_it->player_1, "Please try again from beginning as the game with id: \'" + std::to_string(game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " time(s).");
 
 			// send alert to player_2
-			send_alert(ongamestat_it->player_2, " The game with id: \'" + std::to_string(game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " times.");
+			send_alert(ongamestat_it->player_2, "Please try again from beginning as the game with id: \'" + std::to_string(game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " time(s).");
 
 
 			// 3. add back the players into the players_list

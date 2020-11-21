@@ -13,13 +13,14 @@ void gpkbatescrow::transferbypl( const name& player,
 		return;
 	}
 
-
 	auto asset_contract_ac = get_first_receiver();
-
 
 	check( (asset_contract_ac == "simpleassets"_n) 
 		|| (asset_contract_ac == "atomicassets"_n), 
 		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
+
+	// TODO: check game_fee balance as "5.00000000 WAX"
+	// check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
 
 	check(memo.size() <= 256, "memo has more than 256 bytes");
 
