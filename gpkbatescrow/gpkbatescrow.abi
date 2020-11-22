@@ -32,7 +32,7 @@
             ]
         },
         {
-            "name": "setgstatus",
+            "name": "setcstatus",
             "base": "",
             "fields": [
                 {
@@ -93,8 +93,8 @@
             "ricardian_contract": ""
         },
         {
-            "name": "setgstatus",
-            "type": "setgstatus",
+            "name": "setcstatus",
+            "type": "setcstatus",
             "ricardian_contract": ""
         },
         {

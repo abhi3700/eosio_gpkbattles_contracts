@@ -36,7 +36,8 @@ using json = nlohmann::json;
 CONTRACT gpkbatescrow : public contract
 {
 private:
-	// const symbol gamefee_token_symbol;
+	const int64_t gamefee_token_amount;
+	const symbol gamefee_token_symbol;
 	const name game_contract_ac;
 	// const name asset_contract_ac;
 	const name card_author;
@@ -46,7 +47,8 @@ public:
 
 	gpkbatescrow(name receiver, name code, datastream<const char*> ds) : 
 				contract(receiver, code, ds), 
-				// gamefee_token_symbol("WAX", 4),
+				gamefee_token_amount(500000000),
+				gamefee_token_symbol("WAX", 8),
 				// game_contract_ac("gpkbattlesco"_n),				// For Mainnet
 				game_contract_ac("gpkbattlesc1"_n),					// For Testnet
 				// asset_contract_ac("simpleassets"_n)
@@ -150,7 +152,8 @@ public:
 			auto idx = assets.find(card_id);
 
 			check(idx != assets.end(), "Asset with id " + std::to_string(card_id) + " not found or not yours");
-			check (idx->author == card_author, "Asset is not from this author");
+			// check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
+			check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
 			check(idx->category == category, "The asset id\'s category must be exotic.");
 
 			auto mdata = json::parse(idx->mdata);
@@ -179,6 +182,19 @@ public:
 			, "the cards chosen are of different combination than (2A,1B) OR (1A,2B)."
 			);
 */	}
+
+	// -----------------------------------------------------------------------------------------------------------------------
+	// check if min. gfeewallet's balance is gamefee_value
+	static void check_gfee_balance(const name& player, const asset& game_fee) {
+		// instantiate the `gfeewallet` table
+		// gfeewallet_index gfeewallet_table("gpkbattlesco"_n, player.value);				// for WAX Mainnet
+		gfeewallet_index gfeewallet_table("gpkbattlesc1"_n, player.value);				// for WAX Testnet
+		auto gfeewallet_it = gfeewallet_table.find(game_fee.symbol.raw());
+
+		check(gfeewallet_it != gfeewallet_table.end(), "the player is not in the gamefee wallet table.");
+		check(gfeewallet_it->balance.amount >= game_fee.amount, "The player has no min. balance i.e. \'" + 
+												game_fee.to_string() + "\' in the gamefee wallet.");
+	}
 
 private:
 	// -----------------------------------------------------------------------------------------------------------------------
@@ -234,6 +250,18 @@ private:
 								indexed_by< "byplayer1"_n, const_mem_fun<ongamestat, uint64_t, &ongamestat::by_player1>>,	
 								indexed_by< "byplayer2"_n, const_mem_fun<ongamestat, uint64_t, &ongamestat::by_player2>>	
 								>;
+
+	// -----------------------------------------------------------------------------------------------------------------------
+	// scope - player name
+	struct gfeewallet
+	{
+		asset balance;
+
+		auto primary_key() const { return balance.symbol.raw(); }
+	};
+
+	using gfeewallet_index = multi_index<"gfeewallet"_n, gfeewallet>;
+
 	// -----------------------------------------------------------------------------------------------------------------------
 	/*
 	* Fungible token accounts table which stores information about balances.
