@@ -296,7 +296,7 @@ public:
 
 	ACTION testdelugame(const name& player, const name& asset_contract_ac) {
 		usergamestat_index usergamestat_table(get_self(), player.value);
-		auto usergamestat_player_it = usergamestat_table.find(asset_contract_ac);
+		auto usergamestat_player_it = usergamestat_table.find(asset_contract_ac.value);
 
 		check(usergamestat_player_it != usergamestat_table.end(), "there is no row created for this asset type.");
 

@@ -172,7 +172,7 @@ void gpkbattlesco::trincomegfee( const name& player,
 	// add player name into `players` table, if not already added
 	action(
 		permission_level{get_self(), "active"_n},
-		game_contract_ac,
+		get_self(),
 		"empifyplayer"_n,
 		std::make_tuple(asset_contract_ac, player)
 	).send();

@@ -21,6 +21,7 @@
 * action
 	- `depositgfee`	[Payable action]
 	- `withdrawgfee`
+	- `trincomegfee` [Internal Inline]
 	- `sel3card`
 		1. check for asset contract name
 		1. check player has deposited game fee - "5 WAX" 
