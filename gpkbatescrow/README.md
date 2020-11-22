@@ -8,16 +8,18 @@
 * contract name - `gpkbatescrow`
 * contract's account name - `gpkbatescrow`
 * action
-	- `transelectpl`
+	- `transferbypl`
     1. check the cards type:
       - valid asset_id
       - author == "gpk.topps"
       - category e.g. exotic
       - quality e.g. a, b
       - variant e.g. base
-    1. set the cards with id & status of each as 'selected'
-    1. add player to players_list
-	- `setgstatus` [External inline]
+      - NOTE: 
+        + No check of `2a1b`/`1a2b`
+        + Any no. of cards can be transferred from 1 to any no.
+    1. set the cards with id & status of each as 'available'
+	- `setcstatus` [External inline]
 	- `withdrawbypl`
 	- `disburse`
 * table

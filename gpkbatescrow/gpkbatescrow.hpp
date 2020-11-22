@@ -141,8 +141,8 @@ public:
 								const name& category,
 								const string& variant ) 
 	{
-		check(card_ids.size() == 3, "the card_ids list chosen must be of size 3");
-		vector<string> cardtypes{};
+		// check(card_ids.size() == 3, "the card_ids list chosen must be of size 3");
+		// vector<string> cardtypes{};
 
 		sassets assets(asset_contract_ac, owner.value);
 
@@ -157,9 +157,9 @@ public:
 			check((mdata["quality"] == "a") || (mdata["quality"] == "b"), "The asset id\'s quality must be either \'a\' or \'b\'."); 
 			check(mdata["variant"] == variant, "The asset id\'s variant must be \'base\'.");
 
-			cardtypes.emplace_back(mdata["quality"]);
+			// cardtypes.emplace_back(mdata["quality"]);
 		}
-
+/*
 		// get the respective card types of the given cards
 		auto cardtype_1 = cardtypes[0];
 		auto cardtype_2 = cardtypes[1];
@@ -178,7 +178,7 @@ public:
 			
 			, "the cards chosen are of different combination than (2A,1B) OR (1A,2B)."
 			);
-	}
+*/	}
 
 private:
 	// -----------------------------------------------------------------------------------------------------------------------

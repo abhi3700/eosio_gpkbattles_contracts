@@ -135,7 +135,7 @@ void gpkbattlesco::trincomegfee( const name& player,
 			std::make_tuple(player, card_id, "selected"_n)
 		).send();
 	}
-
+/*
 	// modify `ongamestat` table with selected cards for respective players
 	ongamestat_index ongamestat_table(get_self(), get_self().value);
 	auto player1_idx = ongamestat_table.get_index<"byplayer1"_n>();
@@ -168,7 +168,7 @@ void gpkbattlesco::trincomegfee( const name& player,
 			row.player2_cards_combo = card_ids_type;
 		});
 	}
-
+*/
 	// add player name into `players` table, if not already added
 	action(
 		permission_level{get_self(), "active"_n},
@@ -262,7 +262,8 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 
 	// Now, check if 3 selected cards are of either (2A,1B) or (1A,2B) with escrow contract as owner.
 	// here check is done after the transfer to the escrow contract
-	check_cards_type(asset_contract_ac, escrow_contract_ac, card_ids_p1, "exotic"_n, "base");
+	// Collect selected cards' type
+	auto card_ids_type_p1 = checkget_cards_type(asset_contract_ac, escrow_contract_ac, card_ids_p1, "exotic"_n, "base");
 
 	check( (asset_contract_ac == "simpleassets"_n) 
 		|| (asset_contract_ac == "atomicassets"_n), 
@@ -311,7 +312,8 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 
 	// Now, check if 3 selected cards are of either (2A,1B) or (1A,2B) with escrow contract as owner.
 	// here check is done after the transfer to the escrow contract
-	check_cards_type(asset_contract_ac, escrow_contract_ac, card_ids_p2, "exotic"_n, "base");
+	// Collect selected cards' type
+	auto card_ids_type_p2 = checkget_cards_type(asset_contract_ac, escrow_contract_ac, card_ids_p2, "exotic"_n, "base");
 
 	// check that the players - p1, p2 are not present in the player_1 column & player_2 column of the table
 	ongamestat_index ongamestat_table(get_self(), get_self().value);
@@ -345,6 +347,12 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 		row.game_id = game_id;
 		row.player_1 = p1;
 		row.player_2 = p2;
+		row.asset_contract_ac = asset_contract_ac;
+		row.game_fee = asset(gamefee_token_amount, gamefee_token_symbol);
+		row.player1_cards = card_ids_p1;
+		row.player1_cards_combo = card_ids_type_p1;
+		row.player2_cards = card_ids_p2;
+		row.player2_cards_combo = card_ids_type_p2;
 	});
 
 	// Now, erase p1, p2 from the `players` table's `players_list`

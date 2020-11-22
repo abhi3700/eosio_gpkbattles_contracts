@@ -432,22 +432,6 @@ public:
 			, "the cards chosen are of different combination than (2A,1B) OR (1A,2B). Please, select again."
 			);
 
-		// if(	// 2A, 1B
-		// 	((cardtype_1 == "a") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
-		// 	((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "a")) || 
-		// 	((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "a"))
-		// 	) {
-		// 	card_ids_type = "2a1b"_n;
-		// }
-		// else if (	// 1A, 2B
-		// 	((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "b")) || 
-		// 	((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
-		// 	((cardtype_1 == "b") && (cardtype_2 == "b") && (cardtype_3 == "a")) 
-		// 	){
-		// 	card_ids_type = "1a2b"_n;
-		// }
-
-		// return card_ids_type;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------
