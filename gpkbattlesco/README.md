@@ -21,11 +21,16 @@
 * action
 	- `depositgfee`	[Payable action]
 	- `withdrawgfee`
-	- `sel3card` [DEPRECATED]
+	- `sel3card`
+		1. check for asset contract name
+		1. check player has deposited game fee - "5 WAX" 
+		1. check if the cards chosen are present in the escrow's cardwallet & are in "available" status
+		1. check cards' type - `2a1b`/`1a2b`
+		1. set each chosen card's status from "available" to "selected" in `cardwallet` table of escrow contract
+		1. add player name into players_list of `players` table in game contract, if not already added
 	- `sel3cardauto` [DEPRECATED]
-	- `drawsel3card`
-		1. 
 	- `pairwplayer`
+		1. check for asset contract	name
 		1. check player has deposited game fee - "5 WAX" 
 		1. Cards transfer & selection
 			- check player has transferred 3 cards of required type
@@ -43,7 +48,7 @@
 	- `play`
 	- `receiverand` [For WAX RNG Oracle service]
 	- `movegameinfo` [Internal inline]
-	- `empifyplayer` [External inline]
+	- `empifyplayer` [Internal inline]
 	- `remplayer` [External inline]
 	- `sendalert` [Internal inline]
 * table

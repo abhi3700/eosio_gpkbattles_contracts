@@ -123,7 +123,7 @@ void gpkbattlesco::trincomegfee( const name& player,
 
 	// check if the card types are either (2A,1B) or (1A,2B) with escrow contract as owner.
 	// here check is done after the transfer to the escrow contract
-	auto card_ids_type = checkget_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
+	check_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
 
 
 	// modify card's status as "selected" in `cardwallet` table of escrow contract
@@ -251,6 +251,10 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 
 	require_auth(player_1);
 
+	check( (asset_contract_ac == "simpleassets"_n) 
+		|| (asset_contract_ac == "atomicassets"_n), 
+		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
+
 	// check player_1 has deposited game fee
 	// check game_fee balance as "5.00000000 WAX" for player_1
 	check_gfee_balance(player_1, asset(gamefee_token_amount, gamefee_token_symbol));
@@ -264,10 +268,6 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 	// here check is done after the transfer to the escrow contract
 	// Collect selected cards' type
 	auto card_ids_type_p1 = checkget_cards_type(asset_contract_ac, escrow_contract_ac, card_ids_p1, "exotic"_n, "base");
-
-	check( (asset_contract_ac == "simpleassets"_n) 
-		|| (asset_contract_ac == "atomicassets"_n), 
-		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
 
 	players_index players_table(get_self(), get_self().value);
 	auto players_it = players_table.find(asset_contract_ac.value);
