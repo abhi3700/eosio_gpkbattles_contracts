@@ -28,7 +28,7 @@
 </p>
 
 ### B. No Draw
-> NOTE: Here, 2 ACTIONs are executed after one's success. `play` >> `disndcards`
+> NOTE: Here, 2 ACTIONs are executed in sequence after 3 sec of first's success. `play` >> `disndcards`
 
 <p align="center">
   <img src="4_2_players_cards_display_after_playing_nodraw.png" alt="" width="" height="">

@@ -12,28 +12,28 @@
 ```
 $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
 {
-  "rows": [{
-      "data": {
-        "asset_contract_ac": "simpleassets",
-        "players_list": [
-          "gbuser111111",
-          "gbuser111114",
-          "gbuser111112",
-          "gbuser111113"
-        ]
-      },
-      "payer": "gpkbattlesc1"
-    }
-  ],
-  "more": false,
-  "next_key": ""
+	"rows": [{
+			"data": {
+				"asset_contract_ac": "simpleassets",
+				"players_list": [
+					"gbuser111111",
+					"gbuser111114",
+					"gbuser111112",
+					"gbuser111113"
+				]
+			},
+			"payer": "gpkbattlesc1"
+		}
+	],
+	"more": false,
+	"next_key": ""
 }
 ```
 	- Here, e.g. requester i.e. player_1 is `gbuser111114` & let's say the player_2 is `gbuser111112`. In this case, the result is already known based on cards.
 	- That's why the shuffle is done among the remaining players except player_1.
 
 1. What if a paired player presses the <kbd>Pair</kbd> button?
-  - Error pops up, as the player is present in either 'player_1' or 'player_2' columns of `ongamestat` table of game contract.
+	- Error pops up, as the player is present in either 'player_1' or 'player_2' columns of `ongamestat` table of game contract.
 ```
 $ cleosw push action gpkbattlesc1 pairwplayer '["gbuser111115", "simpleassets"]' -p gbuser111115@active
 Error 3050003: eosio_assert_message assertion failure
@@ -41,3 +41,8 @@ Error Details:
 assertion failure with message: gbuser111115 is already present with game_id: '10001729600833' in player_2 column of 'ongamestat' table.
 pending console output:
 ```
+
+1. Why `disndcards` ACTION is separate, not merged with `play` ACTION?
+	- This is so because in case of nodraw result, `play` action calls `receiverand` action (by orng.wax service) which should not have any `check` statement.
+	- Unlike, `disndcards` has many `check` code lines. So, it has been kept separate.
+	- And `disndcards` ACTION to be called after 3 secs of success of `play` ACTION. Within this interval the rand ACTION can execute.
