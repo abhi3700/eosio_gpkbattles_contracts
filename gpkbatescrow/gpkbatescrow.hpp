@@ -58,14 +58,14 @@ public:
 
 	/**
 	 * @brief - transfer assets by player
-	 * @details - transfer assets by player
+	 * @details - transfer assets by player. Any no. of cards can be transferred at once to save the CPU, NET resources of player.
 	 * 
 	 * @param player - player who transfers
 	 * @param asset_contract_ac - simpleassets, atomicassets
 	 * @param card_ids - 1 or more cards
 	 * @param memo - a note
 	 * 
-	 * @pre - checked if the cards transferred are of "2a1b" or "1a2b" combo
+	 * NOTE: No check of "2a1b" or "1a2b" card combo as any no. of cards can be transferred at once to save the CPU, NET resources
 	 */
 	
 	[[eosio::on_notify("*::transfer")]]

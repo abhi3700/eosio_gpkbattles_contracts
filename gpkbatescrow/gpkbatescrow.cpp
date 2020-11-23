@@ -26,7 +26,7 @@ void gpkbatescrow::transferbypl( const name& player,
 
 	// check if it has been transferred & also
 	// check cards quantity, type (either a or b), variant (base), category (exotic)
-	// No check of "2a1b" or "1a2b" card combo
+	// No check of "2a1b" or "1a2b" card combo as any no. of cards can be transferred at once to save the CPU, NET resources
 	// here check is done before the transfer to the escrow contract
 	check_cards_type(asset_contract_ac, get_self(), card_ids, "exotic"_n, "base");
 

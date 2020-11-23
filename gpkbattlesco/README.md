@@ -14,6 +14,15 @@
 	- [x] if nodraw, then winner receives 4 cards with 1 as winning reward, whereas the loser receives 2 cards with 1 losing card (any by shuffle)
 
 ### NEW
+* It is a game battle contract where:
+	- [x] players transfer 5 WAX each
+	- [x] select cards
+	- [x] pair with a player
+	- [x] play the game with id
+		+ [x] if draw, then players get 1 more chance. If 2 times draw successively for 1 game_id, then the round is dumped. And the card is available for selection in the cardwallet
+		+ [x] if nodraw, then winner receives 4 cards with 1 as winning reward, whereas the loser receives 2 cards with 1 losing card (any by shuffle)
+	- [x] disburse nodraw cards using `disndcards`
+
 
 ## About
 * contract name - `gpkbattlesco`
@@ -118,6 +127,30 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```
 
 ## Testing
+### Brief
+* deposit gfee
+```
+$ cleosw push action eosio.token transfer '["gbuser111121", "gpkbattlesc1", "5.00000000 WAX", "transfer 5 WAX fee for playing game"]' -p gbuser111121@active
+```
+* sel 3 cards
+```
+$ cleosw push action gpkbattlesc1 sel3card '["gbuser111121", "simpleassets", "100000000007707", "100000000007716", "100000000007728"]' -p gbuser111121@active
+```
+* pair with player for `gbuser111111`
+```
+$ cleosw push action gpkbattlesc1 pairwplayer '["gbuser111111", "simpleassets"]' -p gbuser111111@active
+```
+* play game with id
+```
+$ cleosw push action gpkbattlesc1 play '["10001729600833"]' -p gpkbattlesc1@active
+```
+	- if nodraw, then disburse cards
+```
+$ cleosw push action gpkbattlesc1 disndcards '["10001729600833"]' -p gpkbattlesc1@active
+```
+	- if 2 times draw, then cards are restored & game fee is deducted. Here, another chance to select cards is given to both the players in the same game round.
+	- if 1 Draw & 1 Nodraw, then disburse cards as in 1st step.
+
 ### Action - `depositgfee`
 * Player `gbuser111111` wants to deposit game fee for playing game
 ```console
