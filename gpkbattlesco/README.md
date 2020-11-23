@@ -36,14 +36,16 @@
 		1. Cards transfer & selection
 			- check player has transferred 3 cards of required type
 			- check player has selected those cards
+		1. check player p1 is present in neither of player_1 & player_2 columns of `ongamestat` table
 		1. check player p1 is present in players list
 		1. Select p2 for pairing
 			- Copy original players_list into temp_list
 			- search for p1. if found, remove from temp_list
 			- Now, choose p2 from modified temp_list after shuffle using `temp_list[rand_index], where rand_index = hash(txn_id, curr_timestamp)`
 		1. check players p1 & p2 are not identical
+		1. check player p2 is present in neither of player_1 & player_2 columns of `ongamestat` table
 		1. Add a corresponding row into game table:
-			- check p1 & p2 doesn't have any ongoing game
+			- [x] check p1 & p2 doesn't have any ongoing game (done previously) i.e. present in neither of 2 cols: player_1, player_2
 			- add p1 & p2 into a row with game_id
 		1. Erase 2 players from original players_list
 	- `play`
@@ -66,25 +68,30 @@
 $ eosio-cpp gpkbattlesco.cpp -o gpkbattlesco.wasm
 Warning, empty ricardian clause file
 Warning, empty ricardian clause file
-Warning, action <pair2player> does not have a ricardian contract
-Warning, action <depositgfee> does not have a ricardian contract
 Warning, action <withdrawgfee> does not have a ricardian contract
+Warning, action <trincomegfee> does not have a ricardian contract
 Warning, action <sel3card> does not have a ricardian contract
-Warning, action <sel3cardauto> does not have a ricardian contract
+Warning, action <pairwplayer> does not have a ricardian contract
 Warning, action <play> does not have a ricardian contract
 Warning, action <receiverand> does not have a ricardian contract
-Warning, action <movegameinfo> does not have a ricardian contract
+Warning, action <disndcards> does not have a ricardian contract
+Warning, action <moergameinfo> does not have a ricardian contract
 Warning, action <empifyplayer> does not have a ricardian contract
 Warning, action <remplayer> does not have a ricardian contract
 Warning, action <sendalert> does not have a ricardian contract
-Warning, action <pair2player> does not have a ricardian contract
-Warning, action <depositgfee> does not have a ricardian contract
+Warning, action <testrdescrow> does not have a ricardian contract
+Warning, action <testdelongam> does not have a ricardian contract
+Warning, action <testaddplayr> does not have a ricardian contract
+Warning, action <testremplayr> does not have a ricardian contract
+Warning, action <testdelugame> does not have a ricardian contract
 Warning, action <withdrawgfee> does not have a ricardian contract
+Warning, action <trincomegfee> does not have a ricardian contract
 Warning, action <sel3card> does not have a ricardian contract
-Warning, action <sel3cardauto> does not have a ricardian contract
+Warning, action <pairwplayer> does not have a ricardian contract
 Warning, action <play> does not have a ricardian contract
 Warning, action <receiverand> does not have a ricardian contract
-Warning, action <movegameinfo> does not have a ricardian contract
+Warning, action <disndcards> does not have a ricardian contract
+Warning, action <moergameinfo> does not have a ricardian contract
 Warning, action <empifyplayer> does not have a ricardian contract
 Warning, action <remplayer> does not have a ricardian contract
 Warning, action <sendalert> does not have a ricardian contract
@@ -377,8 +384,8 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
 ```
 
 
-### Action - `pair2player`
-* pair any 2 player of `simpleassets` contract type
+### Action - `pairwplayer`
+* pair with a player of `simpleassets` contract type
 ```console
 $ cleosw push action gpkbattlesc1 pair2player '["simpleassets"]' -p gpkbattlesc1@active
 Error 3050003: eosio_assert_message assertion failure
