@@ -21,6 +21,11 @@
     1. set the cards with id & status of each as 'available'
 	- `setcstatus` [External inline]
 	- `withdrawbypl`
+    1. check asset type
+    1. check the card_id is not selected
+    1. transfer the card using inline action
+    1. erase the card_id from `cardwallet` table
+    1. For safety, if the cardwallet table's size is zero then, if the player is still in the players_list, remove from that list.
 	- `disburse`
 * table
 	- `cardwallet`
@@ -61,39 +66,15 @@ warning: transaction executed locally, but may not be confirmed by the network y
 
 ## Testing
 ### Action - `transferbypl`
-* player `gbuser111121` transfer 3 cards to `gpkbatescrow` contract
+* player `gbuser111111` transfer 3 cards to `gpkbatescrow` contract
 	- views the cards owned from `simpleassets` table
 ```console
-$ cleosw get table simpleassets gbuser111121 sassets --show-payer
+$ cleosw get table simpleassets gbuser111111 sassets --show-payer
 {
   "rows": [{
       "data": {
-        "id": "100000000007707",
-        "owner": "gbuser111121",
-        "author": "gpkbattlesco",
-        "category": "exotic",
-        "idata": "{}",
-        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/1.jpg\",\"cardid\":1,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/1a.jpg\",\"name\":\"Joe Chaotic\",\"quality\":\"a\",\"variant\":\"base\"}",
-        "container": [],
-        "containerf": []
-      },
-      "payer": "gpkbatescrow"
-    },{
-      "data": {
-        "id": "100000000007716",
-        "owner": "gbuser111121",
-        "author": "gpkbattlesco",
-        "category": "exotic",
-        "idata": "{}",
-        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/2.jpg\",\"cardid\":2,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/2a.jpg\",\"name\":\"Jettin' James\",\"quality\":\"a\",\"variant\":\"base\"}",
-        "container": [],
-        "containerf": []
-      },
-      "payer": "gpkbatescrow"
-    },{
-      "data": {
-        "id": "100000000007728",
-        "owner": "gbuser111121",
+        "id": "100000000007690",
+        "owner": "gbuser111111",
         "author": "gpkbattlesco",
         "category": "exotic",
         "idata": "{}",
@@ -104,8 +85,20 @@ $ cleosw get table simpleassets gbuser111121 sassets --show-payer
       "payer": "gpkbatescrow"
     },{
       "data": {
-        "id": "100000000007729",
-        "owner": "gbuser111121",
+        "id": "100000000007691",
+        "owner": "gbuser111111",
+        "author": "gpkbattlesco",
+        "category": "exotic",
+        "idata": "{}",
+        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/3.jpg\",\"cardid\":3,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/3a.jpg\",\"name\":\"Jeff Joke\",\"quality\":\"a\",\"variant\":\"base\"}",
+        "container": [],
+        "containerf": []
+      },
+      "payer": "gpkbatescrow"
+    },{
+      "data": {
+        "id": "100000000007692",
+        "owner": "gbuser111111",
         "author": "gpkbattlesco",
         "category": "exotic",
         "idata": "{}",
@@ -122,57 +115,38 @@ $ cleosw get table simpleassets gbuser111121 sassets --show-payer
 ```
 	- transfers the owned cards to the contract - `gpkbatescrow` using `transfer` action of `simpleassets` contract
 ```console
-$ cleosw push action simpleassets transfer '{"from": "gbuser111121", "to": "gpkbatescrow", "assetids": ["100000000007707", "100000000007716", "100000000007728"], "memo": "transfer cards for gpk.battles playing"}' -p gbuser111121@active
-executed transaction: d7f041322eb2b1fe2e4be070c7daee24ff1b223544acd8d9b065174f84329922  216 bytes  704 us
-#  simpleassets <= simpleassets::transfer       {"from":"gbuser111121","to":"gpkbatescrow","assetids":["100000000007707","100000000007716","10000000...
-#  gbuser111121 <= simpleassets::transfer       {"from":"gbuser111121","to":"gpkbatescrow","assetids":["100000000007707","100000000007716","10000000...
-#  gpkbatescrow <= simpleassets::transfer       {"from":"gbuser111121","to":"gpkbatescrow","assetids":["100000000007707","100000000007716","10000000...
-#  gpkbattlesc1 <= gpkbattlesc1::empifyplayer   {"asset_contract_ac":"simpleassets","player":"gbuser111121"}
+$ cleosw push action simpleassets transfer '{"from": "gbuser111111", "to": "gpkbatescrow", "assetids": ["100000000007690", "100000000007691", "100000000007692"], "memo": "transfer cards for gpk.battles playing"}' -p gbuser111111@active
+executed transaction: 556a1ed174b3db57439f6970fa62c72c9bd1c10eab834c91dfd0108a5b28f37f  216 bytes  544 us
+#  simpleassets <= simpleassets::transfer       {"from":"gbuser111111","to":"gpkbatescrow","assetids":["100000000007690","100000000007691","10000000...
+#  gbuser111111 <= simpleassets::transfer       {"from":"gbuser111111","to":"gpkbatescrow","assetids":["100000000007690","100000000007691","10000000...
+#  gpkbatescrow <= simpleassets::transfer       {"from":"gbuser111111","to":"gpkbatescrow","assetids":["100000000007690","100000000007691","10000000...
 warning: transaction executed locally, but may not be confirmed by the network yet         ]
 ```
 	- view the table `cardwallet` of this contract
 ```console
-$ cleosw get table gpkbatescrow gbuser111121 cardwallet --show-payer
+$ cleosw get table gpkbatescrow gbuser111111 cardwallet --show-payer
 {
   "rows": [{
       "data": {
-        "card_id": "100000000007707",
+        "card_id": "100000000007690",
         "contract_ac": "simpleassets",
         "usage_status": "available"
       },
       "payer": "gpkbatescrow"
     },{
       "data": {
-        "card_id": "100000000007716",
+        "card_id": "100000000007691",
         "contract_ac": "simpleassets",
         "usage_status": "available"
       },
       "payer": "gpkbatescrow"
     },{
       "data": {
-        "card_id": "100000000007728",
+        "card_id": "100000000007692",
         "contract_ac": "simpleassets",
         "usage_status": "available"
       },
       "payer": "gpkbatescrow"
-    }
-  ],
-  "more": false,
-  "next_key": ""
-}
-```
-	- view the table `players` of `gpkbattlesc1` contract
-```console
-$ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
-{
-  "rows": [{
-      "data": {
-        "asset_contract_ac": "simpleassets",
-        "players_list": [
-          "gbuser111121"
-        ]
-      },
-      "payer": "gpkbattlesc1"
     }
   ],
   "more": false,
@@ -486,6 +460,25 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
 ```
 	- Observation:
 		+ the players list gets empty when all it's cards are removed from the `cardwallet`
+
+### Extra
+* withdraw card by player
+```
+$ cleosw push action gpkbatescrow withdrawbypl '["gbuser111111", "simpleassets", "100000000007690"]' -p gbuser111111@active
+executed transaction: 1eac1ccc5cc0c55db87b045206551c38f79f37d09d3336e275b97c911e88e560  160 bytes  435 us
+#  gpkbatescrow <= gpkbatescrow::withdrawbypl   {"player":"gbuser111111","asset_contract_ac":"simpleassets","card_id":"100000000007690"}
+#  simpleassets <= simpleassets::transfer       {"from":"gpkbatescrow","to":"gbuser111111","assetids":["100000000007690"],"memo":"gbuser111111 withd...
+#  gpkbatescrow <= simpleassets::transfer       {"from":"gpkbatescrow","to":"gbuser111111","assetids":["100000000007690"],"memo":"gbuser111111 withd...
+#  gbuser111111 <= simpleassets::transfer       {"from":"gpkbatescrow","to":"gbuser111111","assetids":["100000000007690"],"memo":"gbuser111111 withd...
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+```
+* change the status of a card by game contract
+```
+cleosw push action gpkbatescrow setcstatus '["gbuser111111", "100000000007690", "available"]' -p gpkbattlesc1@active
+executed transaction: dbe8a021158b49aea3ed9723e8a27ac8bbd8c0ff1700a07de58d007dbe61208a  120 bytes  209 us
+#  gpkbatescrow <= gpkbatescrow::setcstatus     {"player":"gbuser111111","card_id":"100000000007690","status":"available"}
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+```
 
 ## TODO
 * [ ] find out way to add `transferbypl` ACTION as `on_notify[["*::transfer"]]` for asset transfer & then add player's details in the `cardwallet` table & `players` table.
