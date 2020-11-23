@@ -29,6 +29,7 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
 	"next_key": ""
 }
 ```
+
 	- Here, e.g. requester i.e. player_1 is `gbuser111114` & let's say the player_2 is `gbuser111112`. In this case, the result is already known based on cards.
 	- That's why the shuffle is done among the remaining players except player_1.
 
