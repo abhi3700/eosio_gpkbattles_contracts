@@ -45,5 +45,5 @@ pending console output:
 
 * Why `disndcards` ACTION is separate, not merged with `play` ACTION?
 	- This is so because in case of nodraw result, `play` action calls `receiverand` action (by orng.wax service) which should not have any `check` statement.
-	- Unlike, `disndcards` has many `check` code lines. So, it has been kept separate.
+	- Unlike, `disndcards` ACTION has many `check` code lines. So, it has been kept separate.
 	- And `disndcards` ACTION to be called after 3 secs of success of `play` ACTION. Within this interval the rand ACTION can execute.
