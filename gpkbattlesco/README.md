@@ -110,6 +110,273 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```
 
 ## Testing
+### Action - `depositgfee`
+* Player `gbuser111111` wants to deposit game fee for playing game
+```console
+$ cleosw push action eosio.token transfer '["gbuser111111", "gpkbattlesc1", "5.00000000 WAX", "transfer 5 WAX fee for playing game"]' -p gbuser111111@active
+executed transaction: e4413215d6e185035c8868467c349afdcc2ad7205005eb956200f9be57110431  160 bytes  287 us
+#   eosio.token <= eosio.token::transfer        {"from":"gbuser111111","to":"gpkbattlesc1","quantity":"5.00000000 WAX","memo":"transfer 5 WAX fee fo...
+#  gbuser111111 <= eosio.token::transfer        {"from":"gbuser111111","to":"gpkbattlesc1","quantity":"5.00000000 WAX","memo":"transfer 5 WAX fee fo...
+#  gpkbattlesc1 <= eosio.token::transfer        {"from":"gbuser111111","to":"gpkbattlesc1","quantity":"5.00000000 WAX","memo":"transfer 5 WAX fee fo...
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+```
+	- view the table `gfeewallet` of this contract
+```console
+$ cleosw get table gpkbattlesc1 gbuser111111 gfeewallet --show-payer
+{
+  "rows": [{
+      "data": {
+        "balance": "5.00000000 WAX"
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+
+### Action - `withdrawgfee`
+* View the `gbuser111111` balance in the `gfeewallet` table
+```console
+$ cleosw get table gpkbattlesc1 gbuser111111 gfeewallet --show-payer
+{
+  "rows": [{
+      "data": {
+        "balance": "5.00000000 WAX"
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+* `gbuser111111` withdraws qty from `gfeewallet` table
+```console
+$ cleosw push action gpkbattlesc1 withdrawgfee '["gbuser111111", "5.00000000 WAX"]' -p gbuser111111@active
+executed transaction: 3985ec3e2814b737d0f6884d9c3a379edf9bf7d708d869db2b82a90a896d8bf6  120 bytes  237 us
+#  gpkbattlesc1 <= gpkbattlesc1::withdrawgfee   {"player":"gbuser111111","qty":"5.00000000 WAX"}
+#   eosio.token <= eosio.token::transfer        {"from":"gpkbattlesc1","to":"gbuser111111","quantity":"5.00000000 WAX","memo":"player withdraws 5.00...
+#  gpkbattlesc1 <= eosio.token::transfer        {"from":"gpkbattlesc1","to":"gbuser111111","quantity":"5.00000000 WAX","memo":"player withdraws 5.00...
+#  gbuser111111 <= eosio.token::transfer        {"from":"gpkbattlesc1","to":"gbuser111111","quantity":"5.00000000 WAX","memo":"player withdraws 5.00...
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+```
+	- view the table `gfeewallet`
+```console
+$ cleosw get table gpkbattlesc1 gbuser111111 gfeewallet --show-payer
+{
+  "rows": [],
+  "more": false,
+  "next_key": ""
+}
+```
+
+### Action - `sel3card`
+* player `gbuser111111` selects 3 cards
+```console
+$ cleosw push action gpkbattlesc1 sel3card '["gbuser111111", "simpleassets", "100000000007690", "100000000007691", "100000000007692"]' -p gbuser111111@active
+Error 3050003: eosio_assert_message assertion failure
+Error Details:
+assertion failure with message: the player is not in the gamefee wallet table.
+pending console output:
+```
+	- here, it is giving error, because there is no token transferred by player. View the table `gfeewallet`:
+```console
+$ cleosw get table gpkbattlesc1 gbuser111111 gfeewallet --show-payer
+{
+	"rows": [],
+	"more": false,
+	"next_key": ""
+}
+```
+	- let's see the available cards
+```console
+$ cleosw get table gpkbatescrow gbuser111111 cardwallet --show-payer
+{
+  "rows": [{
+      "data": {
+        "card_id": "100000000007690",
+        "contract_ac": "simpleassets",
+        "usage_status": "available"
+      },
+      "payer": "gpkbatescrow"
+    },{
+      "data": {
+        "card_id": "100000000007691",
+        "contract_ac": "simpleassets",
+        "usage_status": "available"
+      },
+      "payer": "gpkbatescrow"
+    },{
+      "data": {
+        "card_id": "100000000007692",
+        "contract_ac": "simpleassets",
+        "usage_status": "available"
+      },
+      "payer": "gpkbatescrow"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+	- Now, successfully selected 3 cards after depositing "5 WAX" game fee
+```console
+$ cleosw push action gpkbattlesc1 sel3card '["gbuser111111", "simpleassets", "100000000007690", "100000000007691", "100000000007692"]' -p gbuser111111@active
+executed transaction: b44890961bac95e3552fb13016b59ec8ac9b7644ad87b79efd23cf40188e83af  136 bytes  444 us
+#  gpkbattlesc1 <= gpkbattlesc1::sel3card       {"player":"gbuser111111","asset_contract_ac":"simpleassets","card1_id":"100000000007690","card2_id":...
+#  gpkbatescrow <= gpkbatescrow::setcstatus     {"player":"gbuser111111","card_id":"100000000007690","status":"selected"}
+#  gpkbatescrow <= gpkbatescrow::setcstatus     {"player":"gbuser111111","card_id":"100000000007691","status":"selected"}
+#  gpkbatescrow <= gpkbatescrow::setcstatus     {"player":"gbuser111111","card_id":"100000000007692","status":"selected"}
+#  gpkbattlesc1 <= gpkbattlesc1::empifyplayer   {"asset_contract_ac":"simpleassets","player":"gbuser111111"}
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+```
+	- view the card's status in table `cardwallet`
+```console
+$ cleosw get table gpkbatescrow gbuser111111 cardwallet --show-payer
+{
+  "rows": [{
+      "data": {
+        "card_id": "100000000007690",
+        "contract_ac": "simpleassets",
+        "usage_status": "selected"
+      },
+      "payer": "gpkbatescrow"
+    },{
+      "data": {
+        "card_id": "100000000007691",
+        "contract_ac": "simpleassets",
+        "usage_status": "selected"
+      },
+      "payer": "gpkbatescrow"
+    },{
+      "data": {
+        "card_id": "100000000007692",
+        "contract_ac": "simpleassets",
+        "usage_status": "selected"
+      },
+      "payer": "gpkbatescrow"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+``` 
+	- view the table `players` of `gpkbattlesc1` contract
+```console
+$ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
+{
+  "rows": [{
+      "data": {
+        "asset_contract_ac": "simpleassets",
+        "players_list": [
+          "gbuser111111"
+        ]
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+
+* player `gbuser111114` selects 3 cards 
+	- let's see the cards available
+```console
+$ cleosw get table gpkbatescrow gbuser111114 cardwallet --show-payer
+{
+  "rows": [{
+      "data": {
+        "card_id": "100000000007702",
+        "contract_ac": "simpleassets",
+        "usage_status": "available"
+      },
+      "payer": "gpkbatescrow"
+    },{
+      "data": {
+        "card_id": "100000000007722",
+        "contract_ac": "simpleassets",
+        "usage_status": "available"
+      },
+      "payer": "gpkbatescrow"
+    },{
+      "data": {
+        "card_id": "100000000007727",
+        "contract_ac": "simpleassets",
+        "usage_status": "available"
+      },
+      "payer": "gpkbatescrow"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+	- Now, successfully selected 3 cards after depositing "5 WAX" game fee
+```console
+$ cleosw push action gpkbattlesc1 sel3card '["gbuser111114", "simpleassets", "100000000007702", "100000000007722", "100000000007727"]' -p gbuser111114@active
+executed transaction: 4e378335b4ec04f8e7896d1b5d3af13be86c72e68417c4bac8e3366f3bce4603  136 bytes  473 us
+#  gpkbattlesc1 <= gpkbattlesc1::sel3card       {"player":"gbuser111114","asset_contract_ac":"simpleassets","card1_id":"100000000007702","card2_id":...
+#  gpkbatescrow <= gpkbatescrow::setcstatus     {"player":"gbuser111114","card_id":"100000000007702","status":"selected"}
+#  gpkbatescrow <= gpkbatescrow::setcstatus     {"player":"gbuser111114","card_id":"100000000007722","status":"selected"}
+#  gpkbatescrow <= gpkbatescrow::setcstatus     {"player":"gbuser111114","card_id":"100000000007727","status":"selected"}
+#  gpkbattlesc1 <= gpkbattlesc1::empifyplayer   {"asset_contract_ac":"simpleassets","player":"gbuser111114"}
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+```
+	- view the card's status in table `cardwallet`
+```console
+$ cleosw get table gpkbatescrow gbuser111114 cardwallet --show-payer
+{
+  "rows": [{
+      "data": {
+        "card_id": "100000000007702",
+        "contract_ac": "simpleassets",
+        "usage_status": "selected"
+      },
+      "payer": "gpkbatescrow"
+    },{
+      "data": {
+        "card_id": "100000000007722",
+        "contract_ac": "simpleassets",
+        "usage_status": "selected"
+      },
+      "payer": "gpkbatescrow"
+    },{
+      "data": {
+        "card_id": "100000000007727",
+        "contract_ac": "simpleassets",
+        "usage_status": "selected"
+      },
+      "payer": "gpkbatescrow"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+``` 
+	- view the table `players` of `gpkbattlesc1` contract
+```console
+$ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
+{
+  "rows": [{
+      "data": {
+        "asset_contract_ac": "simpleassets",
+        "players_list": [
+          "gbuser111111",
+          "gbuser111114"
+        ]
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+
+
 ### Action - `pair2player`
 * pair any 2 player of `simpleassets` contract type
 ```console
@@ -324,657 +591,6 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
 		+ A row created with game_id & paired players
 		<!-- + the paired players are notified about getting paired with game_id & to ensure the game fee in the gfeewallet -->
 		+ paired players are removed from the players_list
-
-
-### Action - `depositgfee`
-* Player `gbuser111112` wants to deposit game fee for playing game
-```console
-$ cleosw push action eosio.token transfer '["gbuser111112", "gpkbattlesc1", "5.00000000 WAX", "transfer 5 WAX fee for playing game"]' -p gbuser111112@active
-executed transaction: 50515aeff04448f05af28f01aa4b1020e3df8fe3fed813a971f5638900a1acb2  160 bytes  277 us
-#   eosio.token <= eosio.token::transfer        {"from":"gbuser111112","to":"gpkbattlesc1","quantity":"5.00000000 WAX","memo":"transfer 5 WAX fee fo...
-#  gbuser111112 <= eosio.token::transfer        {"from":"gbuser111112","to":"gpkbattlesc1","quantity":"5.00000000 WAX","memo":"transfer 5 WAX fee fo...
-#  gpkbattlesc1 <= eosio.token::transfer        {"from":"gbuser111112","to":"gpkbattlesc1","quantity":"5.00000000 WAX","memo":"transfer 5 WAX fee fo...
-warning: transaction executed locally, but may not be confirmed by the network yet         ]
-```
-	- view the table `gfeewallet` of this contract
-```console
-$ cleosw get table gpkbattlesc1 gbuser111112 gfeewallet --show-payer
-{
-	"rows": [{
-			"data": {
-				"balance": "5.00000000 WAX"
-			},
-			"payer": "gpkbattlesc1"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-```
-
-### Action - `withdrawgfee`
-* View the `gbuser111112` balance in the `gfeewallet` table
-```console
-$ cleosw get table gpkbattlesc1 gbuser111112 gfeewallet
-{
-	"rows": [{
-			"balance": "5.00000000 WAX"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-```
-* `gbuser111112` withdraws qty from `gfeewallet` table
-```console
-$ cleosw get table gpkbattlesc1 gbuser111112 gfeewallet
-$ cleosw push action gpkbattlesc1 withdrawgfee '["gbuser111112", "5.00000000 WAX"]' -p gbuser111112@active
-executed transaction: 644eec4c5862ad6ce6ed29a6702d594a4c47b200300f577dc7c421fe23d4ce9f  120 bytes  290 us
-#  gpkbattlesc1 <= gpkbattlesc1::withdrawgfee   {"player":"gbuser111112","qty":"5.00000000 WAX"}
-#   eosio.token <= eosio.token::transfer        {"from":"gpkbattlesc1","to":"gbuser111112","quantity":"5.00000000 WAX","memo":"player withdraws 5.00...
-#  gpkbattlesc1 <= eosio.token::transfer        {"from":"gpkbattlesc1","to":"gbuser111112","quantity":"5.00000000 WAX","memo":"player withdraws 5.00...
-#  gbuser111112 <= eosio.token::transfer        {"from":"gpkbattlesc1","to":"gbuser111112","quantity":"5.00000000 WAX","memo":"player withdraws 5.00...
-warning: transaction executed locally, but may not be confirmed by the network yet         ]
-```
-	- view the table `gfeewallet`
-```console
-$ cleosw get table gpkbattlesc1 gbuser111112 gfeewallet
-{
-	"rows": [],
-	"more": false,
-	"next_key": ""
-}
-```
-
-### Action - `sel3card`
-#### Game id:__10001723987390__
-* player `gbuser111111` selects 3 cards
-```console
-$ cleosw push action gpkbattlesc1 sel3card '["gbuser111112", "simpleassets", "100000000007693", "100000000007694", "100000000007695"]' -p gbuser111112@active
-Error 3050003: eosio_assert_message assertion failure
-Error Details:
-assertion failure with message: the player is not in the wallet table.
-pending console output:
-```
-	- here, it is giving error, because there is no token transferred by player. View the table `gfeewallet`:
-```console
-$ cleosw get table gpkbattlesc1 gbuser111112 gfeewallet --show-payer
-{
-	"rows": [],
-	"more": false,
-	"next_key": ""
-}
-```
-	- let's see the cards available
-```console
-$ cleosw get table gpkbatescrow gbuser111112 cardwallet --show-payer
-{
-	"rows": [{
-			"data": {
-				"card_id": "100000000007693",
-				"contract_ac": "simpleassets",
-				"usage_status": "available"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007694",
-				"contract_ac": "simpleassets",
-				"usage_status": "available"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007695",
-				"contract_ac": "simpleassets",
-				"usage_status": "available"
-			},
-			"payer": "gpkbatescrow"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-```
-	- Now, successfully selected 3 cards
-```console
-$ cleosw push action gpkbattlesc1 sel3card '["gbuser111112", "simpleassets", "100000000007693", "100000000007694", "100000000007695"]' -p gbuser111112@active
-executed transaction: 3baa1c2fd3023c9d22f6319b4459fed156dafaeb810cd7d5e7995848ca01efb0  136 bytes  517 us
-#  gpkbattlesc1 <= gpkbattlesc1::sel3card       {"player":"gbuser111112","asset_contract_ac":"simpleassets","card1_id":"100000000007693","card2_id":...
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111112","card_id":"100000000007693","status":"selected"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111112","card_id":"100000000007694","status":"selected"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111112","card_id":"100000000007695","status":"selected"}
-warning: transaction executed locally, but may not be confirmed by the network yet         ]
-```
-	- view the card's status in table `cardwallet`
-```console
-$ cleosw get table gpkbatescrow gbuser111112 cardwallet --show-payer
-{
-	"rows": [{
-			"data": {
-				"card_id": "100000000007693",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007694",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007695",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-``` 
-	- view the card's status in table `ongamestat`
-```console
-$ cleosw get table gpkbattlesc1 gpkbattlesc1 ongamestat --show-payer --lower 10001723987390 --limit 1
-{
-	"rows": [{
-			"data": {
-				"game_id": "10001723987390",
-				"player_1": "gbuser111112",
-				"player_2": "gbuser111114",
-				"game_fee": "5.00000000 WAX",
-				"asset_contract_ac": "simpleassets",
-				"player1_cards": [
-					"100000000007693",
-					"100000000007694",
-					"100000000007695"
-				],
-				"player2_cards": [],
-				"player1_cards_combo": "1a2b",
-				"player2_cards_combo": "",
-				"start_timestamp": 0,
-				"end_timestamp": 0,
-				"result": "",
-				"winner": "",
-				"loser": "",
-				"winner_transfer_cards": [],
-				"loser_transfer_cards": [],
-				"card_won": 0,
-				"status": "",
-				"random_value": "0000000000000000000000000000000000000000000000000000000000000000",
-				"draw_count": 0,
-				"nodraw_count": 0,
-				"total_play_count": 0
-			},
-			"payer": "gpkbattlesc1"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-```
-
-* player `gbuser111114` selects 3 cards
-	- let's see the cards available
-```console
-$ cleosw get table gpkbatescrow gbuser111114 cardwallet --show-payer
-{
-	"rows": [{
-			"data": {
-				"card_id": "100000000007702",
-				"contract_ac": "simpleassets",
-				"usage_status": "available"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007722",
-				"contract_ac": "simpleassets",
-				"usage_status": "available"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007727",
-				"contract_ac": "simpleassets",
-				"usage_status": "available"
-			},
-			"payer": "gpkbatescrow"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-```
-	- Now, successfully selected 3 cards
-```console
-$ cleosw push action gpkbattlesc1 sel3card '["gbuser111114", "simpleassets", "100000000007702", "100000000007722", "100000000007727"]' -p gbuser111114@active
-executed transaction: e4b9a0ee52ea75ed24566e29eca4b76127eb1757b30b965c18aa0796da8dcbf3  136 bytes  439 us
-#  gpkbattlesc1 <= gpkbattlesc1::sel3card       {"player":"gbuser111114","asset_contract_ac":"simpleassets","card1_id":"100000000007702","card2_id":...
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111114","card_id":"100000000007702","status":"selected"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111114","card_id":"100000000007722","status":"selected"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111114","card_id":"100000000007727","status":"selected"}
-warning: transaction executed locally, but may not be confirmed by the network yet         ]
-```
-	- view the card's status in table `cardwallet`
-```console
-$ cleosw get table gpkbatescrow gbuser111114 cardwallet --show-payer
-{
-	"rows": [{
-			"data": {
-				"card_id": "100000000007702",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007722",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007727",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-``` 
-	- view the card's status in table `ongamestat`
-```console
-$ cleosw get table gpkbattlesc1 gpkbattlesc1 ongamestat --show-payer --lower 10001723987390 --limit 1
-{
-	"rows": [{
-			"data": {
-				"game_id": "10001723987390",
-				"player_1": "gbuser111112",
-				"player_2": "gbuser111114",
-				"game_fee": "5.00000000 WAX",
-				"asset_contract_ac": "simpleassets",
-				"player1_cards": [
-					"100000000007693",
-					"100000000007694",
-					"100000000007695"
-				],
-				"player2_cards": [
-					"100000000007702",
-					"100000000007722",
-					"100000000007727"
-				],
-				"player1_cards_combo": "1a2b",
-				"player2_cards_combo": "1a2b",
-				"start_timestamp": 0,
-				"end_timestamp": 0,
-				"result": "",
-				"winner": "",
-				"loser": "",
-				"winner_transfer_cards": [],
-				"loser_transfer_cards": [],
-				"card_won": 0,
-				"status": "",
-				"random_value": "0000000000000000000000000000000000000000000000000000000000000000",
-				"draw_count": 0,
-				"nodraw_count": 0,
-				"total_play_count": 0
-			},
-			"payer": "gpkbattlesc1"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-```
-
-
-
-### Action - `sel3cardauto`
-#### Game id:__10001723968966__
-1. auto select cards for player - `gbuser111115`
-```console
-$ cleosw push action gpkbattlesc1 sel3cardauto '["gbuser111115", "simpleassets"]' -p gpkbattlesc1@active
-executed transaction: 3d227f8b1f3a62ab67344bc17b98aabb30b28302ff996a41a7d83df7036c789e  112 bytes  390 us
-#  gpkbattlesc1 <= gpkbattlesc1::sel3cardauto   {"player":"gbuser111115","asset_contract_ac":"simpleassets"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111115","card_id":"100000000007705","status":"selected"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111115","card_id":"100000000007706","status":"selected"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111115","card_id":"100000000007707","status":"selected"}
-warning: transaction executed locally, but may not be confirmed by the network yet         ]
-```
-	- view the table `ongamestat` if the cards selected
-```console
-$ cleosw get table gpkbattlesc1 gpkbattlesc1 ongamestat --show-payer
-{
-	"rows": [{
-			"data": {
-				"game_id": "10001723968966",
-				"player_1": "gbuser111115",
-				"player_2": "gbuser111113",
-				"game_fee": "5.00000000 WAX",
-				"asset_contract_ac": "simpleassets",
-				"player1_cards": [
-					"100000000007705",
-					"100000000007706",
-					"100000000007707"
-				],
-				"player2_cards": [],
-				"player1_cards_combo": "2a1b",
-				"player2_cards_combo": "",
-				"start_timestamp": 0,
-				"end_timestamp": 0,
-				"result": "",
-				"winner": "",
-				"loser": "",
-				"winner_transfer_cards": [],
-				"loser_transfer_cards": [],
-				"card_won": 0,
-				"status": "",
-				"random_value": "0000000000000000000000000000000000000000000000000000000000000000",
-				"draw_count": 0,
-				"nodraw_count": 0,
-				"total_play_count": 0
-			},
-			"payer": "gpkbattlesc1"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-```
-	- view the table `cardwallet`
-```console
-$ cleosw get table gpkbatescrow gbuser111115 cardwallet --show-payer
-{
-	"rows": [{
-			"data": {
-				"card_id": "100000000007705",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007706",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007707",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-```
-2. auto select cards for player - `gbuser111113`
-```console
-$ cleosw push action gpkbattlesc1 sel3cardauto '["gbuser111113", "simpleassets"]' -p gpkbattlesc1@active
-executed transaction: a146bdc0c05a20e54148f5967a0861fec569a2b1ac4e03cf86c3e339780bd973  112 bytes  373 us
-#  gpkbattlesc1 <= gpkbattlesc1::sel3cardauto   {"player":"gbuser111113","asset_contract_ac":"simpleassets"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111113","card_id":"100000000007697","status":"selected"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111113","card_id":"100000000007710","status":"selected"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111113","card_id":"100000000007721","status":"selected"}
-warning: transaction executed locally, but may not be confirmed by the network yet         ]
-```
-	- view the table `ongamestat` if the cards selected
-```console
-$ cleosw get table gpkbattlesc1 gpkbattlesc1 ongamestat --show-payer
-{
-	"rows": [{
-			"data": {
-				"game_id": "10001723968966",
-				"player_1": "gbuser111115",
-				"player_2": "gbuser111113",
-				"game_fee": "5.00000000 WAX",
-				"asset_contract_ac": "simpleassets",
-				"player1_cards": [
-					"100000000007705",
-					"100000000007706",
-					"100000000007707"
-				],
-				"player2_cards": [
-					"100000000007697",
-					"100000000007710",
-					"100000000007721"
-				],
-				"player1_cards_combo": "2a1b",
-				"player2_cards_combo": "2a1b",
-				"start_timestamp": 0,
-				"end_timestamp": 0,
-				"result": "",
-				"winner": "",
-				"loser": "",
-				"winner_transfer_cards": [],
-				"loser_transfer_cards": [],
-				"card_won": 0,
-				"status": "",
-				"random_value": "0000000000000000000000000000000000000000000000000000000000000000",
-				"draw_count": 0,
-				"nodraw_count": 0,
-				"total_play_count": 0
-			},
-			"payer": "gpkbattlesc1"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-```
-	- view the table `cardwallet`
-```console
-$ cleosw get table gpkbatescrow gbuser111113 cardwallet --show-payer
-{
-	"rows": [{
-			"data": {
-				"card_id": "100000000007697",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007710",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007721",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-```
-
-#### Game id:__10001723970651__
-1. auto select cards for player - `gbuser111111`
-```console
-$ cleosw push action gpkbattlesc1 sel3cardauto '["gbuser111111", "simpleassets"]' -p gpkbattlesc1@active
-executed transaction: 88b7894a2c035ee30897c051360323092bb364e0d736e1ced58b0b222d7fe956  112 bytes  447 us
-#  gpkbattlesc1 <= gpkbattlesc1::sel3cardauto   {"player":"gbuser111111","asset_contract_ac":"simpleassets"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111111","card_id":"100000000007690","status":"selected"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111111","card_id":"100000000007691","status":"selected"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111111","card_id":"100000000007692","status":"selected"}
-warning: transaction executed locally, but may not be confirmed by the network yet         ]
-```
-	- view the table `ongamestat` if the cards selected
-```console
-$ cleosw get table gpkbattlesc1 gpkbattlesc1 ongamestat --show-payer
-{
-	"rows": [{
-			"data": {
-				"game_id": "10001723970651",
-				"player_1": "gbuser111111",
-				"player_2": "gbuser111113",
-				"game_fee": "5.00000000 WAX",
-				"asset_contract_ac": "simpleassets",
-				"player1_cards": [
-					"100000000007690",
-					"100000000007691",
-					"100000000007692"
-				],
-				"player2_cards": [],
-				"player1_cards_combo": "1a2b",
-				"player2_cards_combo": "",
-				"start_timestamp": 0,
-				"end_timestamp": 0,
-				"result": "",
-				"winner": "",
-				"loser": "",
-				"winner_transfer_cards": [],
-				"loser_transfer_cards": [],
-				"card_won": 0,
-				"status": "",
-				"random_value": "0000000000000000000000000000000000000000000000000000000000000000",
-				"draw_count": 0,
-				"nodraw_count": 0,
-				"total_play_count": 0
-			},
-			"payer": "gpkbattlesc1"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-```
-	- view the table `cardwallet`
-```console
-$ cleosw get table gpkbatescrow gbuser111111 cardwallet --show-payer
-{
-	"rows": [{
-			"data": {
-				"card_id": "100000000007690",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007691",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007692",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-```
-2. auto select cards for player - `gbuser111113`
-```console
-$ cleosw push action gpkbattlesc1 sel3cardauto '["gbuser111113", "simpleassets"]' -p gpkbattlesc1@active
-executed transaction: d3d916e92e6e1a81f1ebaf92086cb20f93ecac1d1d26b0500707aaef2ace1cb7  112 bytes  494 us
-#  gpkbattlesc1 <= gpkbattlesc1::sel3cardauto   {"player":"gbuser111113","asset_contract_ac":"simpleassets"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111113","card_id":"100000000007697","status":"selected"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111113","card_id":"100000000007710","status":"selected"}
-#  gpkbatescrow <= gpkbatescrow::setgstatus     {"player":"gbuser111113","card_id":"100000000007721","status":"selected"}
-warning: transaction executed locally, but may not be confirmed by the network yet         ]
-```
-	- view the table `ongamestat` if the cards selected
-```console
-$ cleosw get table gpkbattlesc1 gpkbattlesc1 ongamestat --show-payer
-{
-	"rows": [{
-			"data": {
-				"game_id": "10001723970651",
-				"player_1": "gbuser111111",
-				"player_2": "gbuser111113",
-				"game_fee": "5.00000000 WAX",
-				"asset_contract_ac": "simpleassets",
-				"player1_cards": [
-					"100000000007690",
-					"100000000007691",
-					"100000000007692"
-				],
-				"player2_cards": [
-					"100000000007697",
-					"100000000007710",
-					"100000000007721"
-				],
-				"player1_cards_combo": "1a2b",
-				"player2_cards_combo": "2a1b",
-				"start_timestamp": 0,
-				"end_timestamp": 0,
-				"result": "",
-				"winner": "",
-				"loser": "",
-				"winner_transfer_cards": [],
-				"loser_transfer_cards": [],
-				"card_won": 0,
-				"status": "",
-				"random_value": "0000000000000000000000000000000000000000000000000000000000000000",
-				"draw_count": 0,
-				"nodraw_count": 0,
-				"total_play_count": 0
-			},
-			"payer": "gpkbattlesc1"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-```
-	- view the table `cardwallet`
-```console
-$ cleosw get table gpkbatescrow gbuser111113 cardwallet --show-payer
-{
-	"rows": [{
-			"data": {
-				"card_id": "100000000007697",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007710",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		},{
-			"data": {
-				"card_id": "100000000007721",
-				"contract_ac": "simpleassets",
-				"usage_status": "selected"
-			},
-			"payer": "gpkbatescrow"
-		}
-	],
-	"more": false,
-	"next_key": ""
-}
-```
-
 
 ### Action - `play`
 #### Case-1: 2 times Draw
