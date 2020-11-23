@@ -473,8 +473,12 @@ void gpkbattlesco::play(uint64_t game_id) {
 
 			// 4. move & erase game info to `usergamestat` table. Here also, the game_fee is transferred to income account
 			// For player-1 & player-2
-			moer_game_info(game_id, "your game with id: \'" + std::to_string(game_id) + "\' is moved to \'usergamestat\' table.");
-
+			action(
+				permission_level(get_self(), "active"_n),
+				get_self(),
+				"moergameinfo"_n,
+				std::make_tuple(game_id, "your game with id: \'" + std::to_string(game_id) + "\' is moved to \'usergamestat\' table.")
+			).send();
 		}
 
 		// NOTE: in case of draw (1 or 2 times), the cards are intact with escrow contract for respective players
@@ -623,7 +627,12 @@ void gpkbattlesco::disndcards( uint64_t game_id ) {
 
 	// 2. move & erase game info to `usergamestat` table. Here also, the game_fee is transferred to income account
 	// For player-1 & player-2
-	moer_game_info(game_id, "your game with id: \'" + std::to_string(game_id) + "\' is moved to \'usergamestat\' table.");
+	action(
+		permission_level(get_self(), "active"_n),
+		get_self(),
+		"moergameinfo"_n,
+		std::make_tuple(game_id, "your game with id: \'" + std::to_string(game_id) + "\' is moved to \'usergamestat\' table.")
+	).send();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -714,16 +723,6 @@ void gpkbattlesco::moergameinfo(uint64_t game_id,
 
 }
 
-void gpkbattlesco::moer_game_info(uint64_t game_id, 
-								const string& message) {
-	
-	action(
-		permission_level(get_self(), "active"_n),
-		get_self(),
-		"moergameinfo"_n,
-		std::make_tuple(game_id, message)
-	).send();
-}
 // --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::empifyplayer(const name& asset_contract_ac, 
 								const name& player) {
