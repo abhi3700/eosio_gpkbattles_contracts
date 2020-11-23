@@ -33,5 +33,3 @@
 <p align="center">
   <img src="4_2_players_cards_display_after_playing_nodraw.png" alt="" width="" height="">
 </p>
-
-
