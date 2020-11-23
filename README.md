@@ -22,6 +22,7 @@ This workflow is as per the Game App.
 <p align="center">
   <img src="others/images/pair_player.jpg" alt="" width="" height="">
 </p>
+
 	- where in the front-end the player gets to see the player's display pic (dp), but not eosio-accnt name, cards.
 1. then the game_id is sent to the player & then the player1 presses <kbd>Play</kbd> button [OPTIONAL] with the game_if
 	- Here, the player2 is just notified about the pairing & game status. But, not allowed to press any play button once paired with a player. Otherwise, the 2 players will be  pressing play button at same/different time. Although, nothing will happend but this is not recommended.
