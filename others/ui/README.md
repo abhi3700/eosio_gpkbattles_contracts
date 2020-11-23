@@ -16,3 +16,22 @@
   <img src="2_players_cards_after_sel_cards.png" alt="" width="" height="">
 </p>
 
+## 3. After pairing with a player
+<p align="center">
+  <img src="3_players_cards_display_after_pairing.png" alt="" width="" height="">
+</p>
+
+## 4. After playing
+### A. Draw
+<p align="center">
+  <img src="4_1_players_cards_display_after_playing_draw.png" alt="" width="" height="">
+</p>
+
+### B. No Draw
+> NOTE: Here, 2 ACTIONs are executed after one's success. `play` >> `disndcards`
+
+<p align="center">
+  <img src="4_2_players_cards_display_after_playing_nodraw.png" alt="" width="" height="">
+</p>
+
+
