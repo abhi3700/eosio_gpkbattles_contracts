@@ -65,7 +65,7 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```
 
 ## Testing
-### Action - `transferbypl`
+### Action - `transferbypl` (Payable action)
 * player `gbuser111111` transfer 3 cards to `gpkbatescrow` contract
 	- views the cards owned from `simpleassets` table
 ```console
@@ -155,7 +155,7 @@ $ cleosw get table gpkbatescrow gbuser111111 cardwallet --show-payer
 ```
 * Similarly do it for player-2 info details using `transfer` action of `simpleassets` contract
 ```console
-$ cleosw push action simpleassets transfer '{"from": "gbuser111112", "asset_contract_ac": "simpleassets", "card_ids": ["100000000007693", "100000000007694", "100000000007695"], "memo": "transfer cards for gpk.battles playing"}' -p gbuser111112@active
+$ cleosw push action simpleassets transfer '{"from": "gbuser111112", "to": "gpkbatescrow", "assetids": ["100000000007693", "100000000007694", "100000000007695"], "memo": "transfer cards for gpk.battles playing"}' -p gbuser111112@active
 executed transaction: d626d8d6b2d881c6212adb24b10ebdafdbeeb5a64916b08015468e9e0acecb85  176 bytes  360 us
 #  simpleassets <= simpleassets::transfer       {"from":"gbuser111112","to":"gpkbatescrow","assetids":["100000000007693","100000000007694","10000000...
 #  gbuser111112 <= simpleassets::transfer       {"from":"gbuser111112","to":"gpkbatescrow","assetids":["100000000007693","100000000007694","10000000...
@@ -212,14 +212,6 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
   "more": false,
   "next_key": ""
 }
-```
-* player-3 `gbuser111113` transfers wrong card combo & gets error:
-```console
-$ cleosw push action gpkbatescrow transferbypl '{"player": "gbuser111113", "asset_contract_ac": "simpleassets", "card_ids": ["100000000007697", "100000000007710", "100000000007714"], "memo": "transfer cards for gpk.battles playing"}' -p gpkbatescrow@active
-Error 3050003: eosio_assert_message assertion failure
-Error Details:
-assertion failure with message: the cards chosen are of different combination than (2A,1B) OR (1A,2B).
-pending console output:
 ```
 
 ### Action - `withdrawbypl`
