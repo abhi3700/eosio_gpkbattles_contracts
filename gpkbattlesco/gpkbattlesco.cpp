@@ -195,8 +195,7 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 
 	// check if p1 contain min. 3 cards as selected
 	// collect card_ids for p1 if transferred
-	vector<uint64_t> card_ids_p1{};
-	card_ids_p1 = checkget_3_selected_cards(player_1, asset_contract_ac);
+	auto card_ids_p1 = checkget_3_selected_cards(player_1, asset_contract_ac);
 
 	// Now, check if 3 selected cards are of either (2A,1B) or (1A,2B) with escrow contract as owner.
 	// here check is done after the transfer to the escrow contract
@@ -229,16 +228,16 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 
 	// search the player p1 in the players list for asset_contract_ac
 	auto p1_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), p1);
-	check(p1_it != players_it->players_list.end(), "Either the player_1 has not sent any cards to escrow contract or game is ongoing, that\'s why not added in the players list.");
+	check(p1_it != players_it->players_list.end(), "Either the player_1 has not sent any cards to escrow contract or game is ongoing, that\'s why not added/present in the players list.");
 
-	auto remaining_players_list = players_it->players_list;				// copy the players_list (including player_1)
+	auto remaining_players_list = players_it->players_list;				// copy the original players_list (including player_1)
 	auto remaining_players_list_it = std::find(remaining_players_list.begin(), remaining_players_list.end(), player_1);
 	remaining_players_list.erase(remaining_players_list_it);			// remove the player_1 from the temp list
 
 	// now choose the second player using randomization if rest_players' size > 1
 	name p2 = ""_n;
 	if (remaining_players_list.size() == 1) {
-		p2 = players_it->players_list[0];
+		p2 = remaining_players_list[0];
 	} 
 	else if (remaining_players_list.size() > 1) {
 		auto rand_index = get_random_indexfrmlist(random_value, remaining_players_list);
@@ -253,8 +252,7 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 
 	// check if p2 contain min. 3 cards as selected
 	// collect card_ids for p2 if transferred
-	vector<uint64_t> card_ids_p2{};
-	card_ids_p2 = checkget_3_selected_cards(p2, asset_contract_ac);
+	auto card_ids_p2 = checkget_3_selected_cards(p2, asset_contract_ac);
 
 	// Now, check if 3 selected cards are of either (2A,1B) or (1A,2B) with escrow contract as owner.
 	// here check is done after the transfer to the escrow contract
