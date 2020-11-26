@@ -123,7 +123,7 @@ void gpkbattlesco::trincomegfee( const name& player,
 
 	// check if the card types are either (2A,1B) or (1A,2B) with escrow contract as owner.
 	// here check is done after the transfer to the escrow contract
-	check_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
+	auto card_ids_type = checkget_cards_type(asset_contract_ac, escrow_contract_ac, card_ids, "exotic"_n, "base");
 
 
 	// modify card's status as "selected" in `cardwallet` table of escrow contract
@@ -135,7 +135,7 @@ void gpkbattlesco::trincomegfee( const name& player,
 			std::make_tuple(player, card_id, "selected"_n)
 		).send();
 	}
-/*
+
 	// modify `ongamestat` table with selected cards for respective players
 	ongamestat_index ongamestat_table(get_self(), get_self().value);
 	auto player1_idx = ongamestat_table.get_index<"byplayer1"_n>();
@@ -144,38 +144,38 @@ void gpkbattlesco::trincomegfee( const name& player,
 	// check if the player is present in either of `player_1` or `player_2` columns 
 	auto player1_it = player1_idx.find(player.value);
 	auto player2_it = player2_idx.find(player.value);
-	check((player1_it != player1_idx.end())
-		|| (player2_it != player2_idx.end()), 
-		"the player is present in neither of the \'player_1\' or \'player_2\' columns.");
 
-	if(player1_it != player1_idx.end()) {
-		check(player1_it->player1_cards.empty(), "cards are already present for this player. So, can't select cards again.");
-		
-		player1_idx.modify(player1_it, get_self(), [&](auto& row){
-			row.asset_contract_ac = asset_contract_ac;
-			row.player1_cards = card_ids;
-			row.game_fee = asset(gamefee_token_amount, gamefee_token_symbol);
-			row.player1_cards_combo = card_ids_type;
-		});
+	if ( (player1_it != player1_idx.end()) || (player2_it != player2_idx.end()) ) 					// player found in game_table (after 1 draw)
+	{
+
+		if(player1_it != player1_idx.end()) {
+			check(player1_it->player1_cards.empty(), "cards are already present for this player. So, can't select cards again.");
+			
+			player1_idx.modify(player1_it, get_self(), [&](auto& row){
+				row.player1_cards = card_ids;
+				row.player1_cards_combo = card_ids_type;
+			});
+		}
+		else if(player2_it != player2_idx.end()) {
+			check(player2_it->player2_cards.empty(), "cards are already present for this player. So, can't select cards again.");
+			
+			player2_idx.modify(player2_it, get_self(), [&](auto& row){
+				row.asset_contract_ac = asset_contract_ac;
+				row.player2_cards = card_ids;
+				row.player2_cards_combo = card_ids_type;
+			});
+		}
+
+	} else {											 										// player NOT found in game_table
+		// add player name into `players` table, if not already added
+		action(
+			permission_level{get_self(), "active"_n},
+			get_self(),
+			"empifyplayer"_n,
+			std::make_tuple(asset_contract_ac, player)
+		).send();
+
 	}
-	else if(player2_it != player2_idx.end()) {
-		check(player2_it->player2_cards.empty(), "cards are already present for this player. So, can't select cards again.");
-		
-		player2_idx.modify(player2_it, get_self(), [&](auto& row){
-			row.asset_contract_ac = asset_contract_ac;
-			row.player2_cards = card_ids;
-			row.game_fee = asset(gamefee_token_amount, gamefee_token_symbol);
-			row.player2_cards_combo = card_ids_type;
-		});
-	}
-*/
-	// add player name into `players` table, if not already added
-	action(
-		permission_level{get_self(), "active"_n},
-		get_self(),
-		"empifyplayer"_n,
-		std::make_tuple(asset_contract_ac, player)
-	).send();
 
 }
 
@@ -329,6 +329,10 @@ void gpkbattlesco::play(uint64_t game_id) {
 	// Although not required. Because this is already maintained during `pairwplayer` ACTION during emplace data
 	check(ongamestat_it->player_1 != ongamestat_it->player_2, "Both the players should be different.");
 
+	// especially after 1 draw if tried immediately, that's why it should ensure 'player_cards' & 'player_cards_combo' should not be empty.
+	check( (ongamestat_it->player1_cards.size() == 3) && (ongamestat_it->player1_cards_combo != ""_n),  ongamestat_it->player_1.to_string() + " has not selected the cards after 1 draw.");
+	check( (ongamestat_it->player2_cards.size() == 3) && (ongamestat_it->player2_cards_combo != ""_n),  ongamestat_it->player_2.to_string() + " has not selected the cards after 1 draw.");
+
 	// check game_fee balance as "5 WAX" for each player
 	check_gfee_balance(ongamestat_it->player_1, asset(gamefee_token_amount, gamefee_token_symbol));
 	check_gfee_balance(ongamestat_it->player_2, asset(gamefee_token_amount, gamefee_token_symbol));
@@ -413,9 +417,7 @@ void gpkbattlesco::play(uint64_t game_id) {
 		// =============================
 		// 1. mark the cards as "available" for both players in `cardwallet` table of escrow contract
 		// 2. Alert the players that the game_id is draw.
-		// 3. move info to `usergamestat` table for both players
-		// 4. add back the players into the players_list, as the cards are also marked as available (above)
-		// 5. erase the row
+		// 3. move info to `usergamestat` table for both players & erase the game row
 
 		// if 2 times draw, then dump the row & the add the players back to `players_list` in `players` table, 
 		// & mark the cards as "available" for both players in `cardwallet` table of escrow contract
@@ -450,26 +452,7 @@ void gpkbattlesco::play(uint64_t game_id) {
 			send_alert(ongamestat_it->player_2, "Please try again from beginning as the game with id: \'" + std::to_string(game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " time(s).");
 
 
-			// 3. add back the players into the players_list
-			// instantiate the `players` table
-			players_index players_table(get_self(), get_self().value);
-			auto players_it = players_table.find(ongamestat_it->asset_contract_ac.value);
-
-			check(players_it != players_table.end(), "players_list is not set.");
-
-			std::vector<name> paired_players = {ongamestat_it->player_1, ongamestat_it->player_2};
-
-			for(auto&& p : paired_players) {
-				auto pl_search_it = std::find(players_it->players_list.begin(), players_it->players_list.end(), p);
-				check(pl_search_it == players_it->players_list.end(), p.to_string() + " is already added in the players_list.");
-				players_table.modify(players_it, get_self(), [&](auto& row) {
-					row.players_list.emplace_back(p);
-					// send_alert(p, p.to_string() + " is erased from the players list");			// for debug
-				});
-			}
-			
-
-			// 4. move & erase game info to `usergamestat` table. Here also, the game_fee is transferred to income account
+			// 3. move & erase game info to `usergamestat` table. Here also, the game_fee is transferred to income account
 			// For player-1 & player-2
 			action(
 				permission_level(get_self(), "active"_n),
@@ -479,7 +462,8 @@ void gpkbattlesco::play(uint64_t game_id) {
 			).send();
 		}
 
-		// NOTE: in case of draw (1 or 2 times), the cards are intact with escrow contract for respective players
+		// NOTE: in case of draw (1 or 2 times), the cards are intact with escrow contract for respective players 
+		// & not sent to `simpleassets` contract in order to save CPU, NET resources
 
 
 	}
@@ -772,22 +756,6 @@ void gpkbattlesco::remplayer(const name& asset_contract_ac,
 	}
 }
 
-// --------------------------------------------------------------------------------------------------------------------
-// void gpkbattlesco::sendmsgplyrs(uint64_t game_id, const string& msg) {
-// 	require_auth(get_self());
-
-// 	check(msg.size() <= 256, "message has more than 256 bytes");
-
-
-// 	ongamestat_index ongamestat_table(get_self(), get_self().value);
-// 	auto ongamestat_it = ongamestat_table.find(game_id);
-
-// 	check(ongamestat_it == ongamestat_table.end(), "The game with id: \'" + std::to_string(game_id) + "\' is already present in the table. So, players can't be paired." );
-
-// 	require_recipient(ongamestat_it->player_1);
-// 	require_recipient(ongamestat_it->player_2);
-
-// }
 // --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::sendalert(const name& user,
 							const string& message) {
