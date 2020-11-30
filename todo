@@ -1,7 +1,4 @@
-+ check the `pairwplayer` action where
-  + shuffle remaining players & choose one i.e. player_2
-  + delete player_1 & player_2 from `players` table for asset list
-+ check the draw case where the cards has to be returned back to `simpleassets` contract for each players
+ draw case where the cards has to be returned back to `
 - send_alert game_id, p2 after successful pairwplayer ACTION. Here, p2 is to be notified with game id so that they can check ths track the game
 - add multiple cases of checks params - category, variant, quality, etc..of cards in static function inside .hpp files
    Case-1: exotic, base, A/B
