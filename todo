@@ -5,11 +5,12 @@
 - FAQ
    Q. Is the random no. generated open to the users?
    - Yes
-   Q. How does the random no. finds a player as winner? 
+   Q. How does the random no. finds a player as winner? Is the algorithm used open-source?
    Q. Is the game going to be only based on 3 cards based?
     - No, there are going to be many games in future.
    Q. Is the game fee going to be constant i.e. "5 WAX"?
     - No, it depends on the card's category, variant, quality.
     - But __game fee__ paid for the card that the winner receives shall always be less than the card's actual price in GPK stores.
+  
 
    
