@@ -47,3 +47,17 @@ pending console output:
 	- This is so because in case of nodraw result, `play` action calls `receiverand` action (by orng.wax service) which should not have any `check` statement.
 	- Unlike, `disndcards` ACTION has many `check` code lines. So, it has been kept separate.
 	- And `disndcards` ACTION to be called after 3 secs of success of `play` ACTION. Within this interval the rand ACTION can execute.
+
+* Is the random no. generated open to the users?
+	- Yes, the random no. can be viewed in the game contract's i.e. `gpkbattlesco` transaction history.
+
+* How does the random no. finds a player as winner? Is the algorithm used open-source?
+
+* Is the game going to be only based on 3 cards based?
+	- No, there are going to be many games in future and the corresponding cards type selection, count are different.
+
+* Is the game fee going to be constant i.e. "5 WAX"?
+	- No, it depends on the card's category, variant, quality, based on the game type.
+
+* If anyone gets to buy the card from gpk website, why should I play the game then?
+	- This is because here a player can win a card at a relatively lesser price as __"game fee"__.
