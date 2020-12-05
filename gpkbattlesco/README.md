@@ -135,9 +135,13 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```
 $ cleosw push action eosio.token transfer '["gbuser111121", "gpkbattlesc1", "5.00000000 WAX", "transfer 5 WAX fee for playing game"]' -p gbuser111121@active
 ```
-* [If NOT done] transfer cards (no limit) from simpleassets
+* [If No cards available in cardwallet] transfer cards (no limit) from simpleassets
 ```
 $ cleosw push action simpleassets transfer '{"from": "gbuser111111", "to": "gpkbatescrow", "assetids": ["100000000007690", "100000000007691", "100000000007692"], "memo": "transfer cards for gpk.battles playing"}' -p gbuser111111@active
+```
+* [If a card is short] transfer card(s) (i.e. no limit) from simpleassets
+```
+$ cleosw push action simpleassets transfer '{"from": "gpkbattlesco", "to": "gbuser111113", "assetids": ["100000000007725"], "memo": "transfer cards for gpk.battles playing due to shortage of a card"}' -p gpkbattlesco@active
 ```
 * sel 3 cards
 ```

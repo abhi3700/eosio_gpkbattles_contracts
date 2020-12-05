@@ -297,20 +297,15 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 		check(pl_search_it != players_it->players_list.end(), p.to_string() + " is not in the players_list.");
 		players_table.modify(players_it, get_self(), [&](auto& row) {
 			row.players_list.erase(pl_search_it);
-			// send_alert(p, p.to_string() + " is erased from the players list");			// for debug
 		});
-
-		// send_alert(p, "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
 	}
 	
 
 	// Send the 2 players an alert that they have paired with & ask them to send the game fee if not sent
-	// send_alert(paired_players[0], "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
-	// send_alert(paired_players[1], "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
-
-	// send_alert(p1, "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
-	// send_alert(p2, "You have been paired with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
-	// send_alert(p2, "You have been paired with " + std::to_string(paired_player2_count) + " with game_id: " + std::to_string(game_id) + ". Please ensure the game fee in the gfeewallet.");
+	send_alert(p1, "You have been paired with game_id: " + std::to_string(game_id));
+	send_alert(p2, "You have been paired with game_id: " + std::to_string(game_id));
+	send_alert(p1, "You have been paired with " + p2.to_string() + " with game_id: " + std::to_string(game_id));
+	send_alert(p2, "You have been paired with " + p1.to_string() + " with game_id: " + std::to_string(game_id));
 
 }
 
