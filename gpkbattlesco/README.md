@@ -147,7 +147,7 @@ $ cleosw push action simpleassets transfer '{"from": "gpkbattlesco", "to": "gbus
 ```
 $ cleosw push action gpkbattlesc1 sel3card '["gbuser111121", "simpleassets", "100000000007707", "100000000007716", "100000000007728"]' -p gbuser111121@active
 ```
-* pair with player for `gbuser111111`
+* pair with a player by `gbuser111111`
 ```
 $ cleosw push action gpkbattlesc1 pairwplayer '["gbuser111111", "simpleassets"]' -p gbuser111111@active
 ```

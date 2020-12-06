@@ -250,10 +250,29 @@ public:
 		auto ongamestat_it = ongamestat_table.find(game_id);
 		check(ongamestat_it != ongamestat_table.end(), "The game_id doesn't exist." );
 
-		ongamestat_table.erase(ongamestat_it);
 
-		// add the players back to the players list
-		// mark the cards as available
+		// mark the cards as "available" for both players in `cardwallet` table of escrow contract
+		// modify card's status as "available" in `cardwallet` table of escrow contract
+		// For player_1
+		for(auto&& card_id : ongamestat_it->player1_cards) {
+			action(
+				permission_level{get_self(), "active"_n},
+				escrow_contract_ac,
+				"setcstatus"_n,
+				std::make_tuple(ongamestat_it->player_1, card_id, "available"_n)
+			).send();
+		}
+		// For player_2
+		for(auto&& card_id : ongamestat_it->player2_cards) {
+			action(
+				permission_level{get_self(), "active"_n},
+				escrow_contract_ac,
+				"setcstatus"_n,
+				std::make_tuple(ongamestat_it->player_2, card_id, "available"_n)
+			).send();
+		}
+
+		ongamestat_table.erase(ongamestat_it);
 	}
 
 	ACTION testaddplayr(const name& asset_contract_ac, const name& player) {
