@@ -301,9 +301,9 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 	}
 	
 
-	// Send the 2 players an alert that they have paired with & ask them to send the game fee if not sent
-	send_alert(p1, "You have been paired with game_id: " + std::to_string(game_id));
-	send_alert(p2, "You have been paired with game_id: " + std::to_string(game_id));
+	// Send the 2 players an alert that they have paired w/ & the corresponding game_id
+	// send_alert(p1, "You have been paired with game_id: " + std::to_string(game_id));					// NOT needed
+	// send_alert(p2, "You have been paired with game_id: " + std::to_string(game_id));					// NOT needed
 	send_alert(p1, "You have been paired with " + p2.to_string() + " with game_id: " + std::to_string(game_id));
 	send_alert(p2, "You have been paired with " + p1.to_string() + " with game_id: " + std::to_string(game_id));
 
