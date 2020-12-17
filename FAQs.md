@@ -35,7 +35,7 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
 
 * What if a paired player presses the <kbd>Pair</kbd> button?
 	- Error pops up, as the player is present in either 'player_1' or 'player_2' columns of `ongamestat` table of game contract.
-```
+```console
 $ cleosw push action gpkbattlesc1 pairwplayer '["gbuser111115", "simpleassets"]' -p gbuser111115@active
 Error 3050003: eosio_assert_message assertion failure
 Error Details:

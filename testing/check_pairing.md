@@ -1,3 +1,6 @@
+#### Objective
+The aim is to achieve unique pairing of players in `pairwplayer` ACTION after selecting cards using `sel3card` ACTION. 
+
 1. gbuser111111 pair w/ player
 ```console
 $ cleosw push action gpkbattlesc1 pairwplayer '["gbuser111111", "simpleassets"]' -p gbuser111111@active
