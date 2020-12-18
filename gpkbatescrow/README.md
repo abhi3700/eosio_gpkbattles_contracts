@@ -1,8 +1,10 @@
 # Escrow contract
 ## Brief
 * It is a escrow contract where:
-	- [x] players transfer asset temporarily to the contract 
-	- [x] contract disburses the card to winner, post the game
+	- [x] players transfer asset(s) temporarily to the escrow contract for playing game.
+  - [x] players withdraw asset(s) from the escrow contract for playing game. This can only be done if the card is not used i.e. __"available"__ status.
+  - [x] Here in escrow contract, game contract can set the card's status to __"available"/"selected"__ based on usage. 
+	- [x] From escrow contract, game contract disburses the cards to winner (4) & loser (2) after the result is __nodraw__ 
 
 ## About
 * contract name - `gpkbatescrow`
@@ -26,7 +28,7 @@
     1. transfer the card using inline action
     1. erase the card_id from `cardwallet` table
     1. For safety, if the cardwallet table's size is zero then, if the player is still in the players_list, remove from that list.
-	- `disburse`
+	- `disburse` [External inline]
 * table
 	- `cardwallet`
 

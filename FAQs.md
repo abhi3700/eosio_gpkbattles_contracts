@@ -52,6 +52,28 @@ pending console output:
 	- Yes, the random no. can be viewed in the game contract's i.e. `gpkbattlesco` transaction history.
 
 * How does the random no. finds a player as winner? Is the algorithm used open-source?
+	- the random no. is calculated using this snippet:
+```cpp
+// find game result in "a" or "b"
+	inline name find_game_result(const checksum256& random_value) {
+	    auto byte_array = random_value.extract_as_byte_array();
+
+	    uint64_t random_int = 0;
+	    for (int i = 0; i < 8; i++) {
+	        random_int <<= 8;
+	        random_int |= (uint64_t)byte_array[i];
+	    }
+	    
+	    name res = ""_n;
+	    uint64_t num1 = random_int % 2;				// produces either 0 or 1
+		if(num1 == 0)
+			res = "a"_n;
+		else if(num1 == 1)
+			res = "b"_n;
+
+		return res;
+	}
+```
 
 * Is the game going to be only based on 3 cards based?
 	- No, there are going to be many games in future and the corresponding cards type selection, count are different.
@@ -61,3 +83,6 @@ pending console output:
 
 * If anyone gets to buy the card from gpk website, why should I play the game then?
 	- This is because here a player can win a card at a relatively lesser price as __"game fee"__.
+
+* Can a player play multiple game_ids/game rounds at same time?
+	- Yes, but for different assets type like simpleassets, atomicassets, etc.
