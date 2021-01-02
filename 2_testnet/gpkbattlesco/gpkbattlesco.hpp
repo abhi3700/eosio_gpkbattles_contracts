@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <string>
 
-#include "../libs/nlohmann/json.hpp"
+#include "../../libs/nlohmann/json.hpp"
 
 using eosio::contract;
 using eosio::print;
