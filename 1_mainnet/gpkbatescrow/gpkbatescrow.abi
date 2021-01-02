@@ -1,0 +1,122 @@
+{
+    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
+    "version": "eosio::abi/1.1",
+    "types": [],
+    "structs": [
+        {
+            "name": "cardwallet",
+            "base": "",
+            "fields": [
+                {
+                    "name": "card_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "usage_status",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "disburse",
+            "base": "",
+            "fields": [
+                {
+                    "name": "game_id",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "setcstatus",
+            "base": "",
+            "fields": [
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "card_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "status",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "testsetcstat",
+            "base": "",
+            "fields": [
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "card_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "status",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "withdrawbypl",
+            "base": "",
+            "fields": [
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "card_id",
+                    "type": "uint64"
+                }
+            ]
+        }
+    ],
+    "actions": [
+        {
+            "name": "disburse",
+            "type": "disburse",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "setcstatus",
+            "type": "setcstatus",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "testsetcstat",
+            "type": "testsetcstat",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "withdrawbypl",
+            "type": "withdrawbypl",
+            "ricardian_contract": ""
+        }
+    ],
+    "tables": [
+        {
+            "name": "cardwallet",
+            "type": "cardwallet",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        }
+    ],
+    "ricardian_clauses": [],
+    "variants": []
+}
