@@ -78,7 +78,7 @@ void gpkbatescrow::setcstatus( const name& player,
 // --------------------------------------------------------------------------------------------------------------------
 void gpkbatescrow::withdrawbypl( const name& player,
 								const name& asset_contract_ac,
-								uint64_t card_id ) {
+								const vector<uint64_t>& card_ids ) {
 	require_auth(player);
 
 	check( (asset_contract_ac == "simpleassets"_n) 
@@ -87,24 +87,27 @@ void gpkbatescrow::withdrawbypl( const name& player,
 
 	// instantiate the `cardwallet` table
 	cardwallet_index cardwallet_table(get_self(), player.value);
-	auto card_it = cardwallet_table.find(card_id);
 
-	check(card_it != cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " doesn't exist in the table.");
+	for(auto&& card_id : card_ids) {
+		auto card_it = cardwallet_table.find(card_id);
 
-	// the card should not be in "selected" status
-	check(card_it->usage_status != "selected"_n, "card with id:" + std::to_string(card_id) + " can't be withdrawn as it is \'selected\' for playing.");
+		check(card_it != cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " doesn't exist in the table.");
 
-	action(
-		permission_level{get_self(), "active"_n},
-		asset_contract_ac,
-		"transfer"_n,
-		std::make_tuple(get_self(), player, std::vector<uint64_t>{card_id}, 
-							player.to_string() + " withdraws card with id: " + std::to_string(card_id))
-	).send();
+		// the card should not be in "selected" status
+		check(card_it->usage_status != "selected"_n, "card with id:" + std::to_string(card_id) + " can't be withdrawn as it is \'selected\' for playing.");
 
-	// erase the card from cardwallet table
-	cardwallet_table.erase(card_it);
+		action(
+			permission_level{get_self(), "active"_n},
+			asset_contract_ac,
+			"transfer"_n,
+			std::make_tuple(get_self(), player, std::vector<uint64_t>{card_id}, 
+								player.to_string() + " withdraws card with id: " + std::to_string(card_id))
+		).send();
 
+		// erase the card from cardwallet table
+		cardwallet_table.erase(card_it);
+	}
+	
 	// remove the player from the players_list in `players` table of game contract
 	// if (size == 0) then, use `remplayer` action to remove the player from `players_list` in the `players` table.
 	if (cardwallet_table.begin() == cardwallet_table.end()) { 			// size is zero

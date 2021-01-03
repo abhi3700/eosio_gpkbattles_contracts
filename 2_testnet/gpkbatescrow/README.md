@@ -219,12 +219,17 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
 ### Action - `withdrawbypl`
 * player `gbuser111111` wants to voluntarily withdraw the card id: `100000000007690`
 ```console
-$ cleosw push action gpkbatescrow withdrawbypl '["gbuser111111", "simpleassets", "100000000007690"]' -p gbuser111111@active
-executed transaction: 113d43bc96b87375ba16a8516843b7146c25329728b7fc89c25eac05c233e8f2  160 bytes  416 us
-#  gpkbatescrow <= gpkbatescrow::withdrawbypl   {"player":"gbuser111111","asset_contract_ac":"simpleassets","card_id":"100000000007690"}
-#  simpleassets <= simpleassets::transfer       {"from":"gpkbatescrow","to":"gbuser111111","assetids":["100000000007690"],"memo":"gbuser111111 withd...
-#  gpkbatescrow <= simpleassets::transfer       {"from":"gpkbatescrow","to":"gbuser111111","assetids":["100000000007690"],"memo":"gbuser111111 withd...
-#  gbuser111111 <= simpleassets::transfer       {"from":"gpkbatescrow","to":"gbuser111111","assetids":["100000000007690"],"memo":"gbuser111111 withd...
+$ cleosw push action gpkbatescrow withdrawbypl '{"player": "gbuser111111", "asset_contract_ac": "simpleassets", "card_ids" : ["100000000007691", "100000000007692"]}' -p gbuser111111@active
+
+executed transaction: 1f1c6ac1d81751b47a37d95d443f8bcbc49b07dc984ef5d801df7b71c6d51ea1  216 bytes  626 us
+#  gpkbatescrow <= gpkbatescrow::withdrawbypl   {"player":"gbuser111111","asset_contract_ac":"simpleassets","card_ids":["100000000007691","100000000...
+#  simpleassets <= simpleassets::transfer       {"from":"gpkbatescrow","to":"gbuser111111","assetids":["100000000007691"],"memo":"gbuser111111 withd...
+#  simpleassets <= simpleassets::transfer       {"from":"gpkbatescrow","to":"gbuser111111","assetids":["100000000007692"],"memo":"gbuser111111 withd...
+#  gpkbattlesc1 <= gpkbattlesc1::remplayer      {"asset_contract_ac":"simpleassets","player":"gbuser111111"}
+#  gpkbatescrow <= simpleassets::transfer       {"from":"gpkbatescrow","to":"gbuser111111","assetids":["100000000007691"],"memo":"gbuser111111 withd...
+#  gbuser111111 <= simpleassets::transfer       {"from":"gpkbatescrow","to":"gbuser111111","assetids":["100000000007691"],"memo":"gbuser111111 withd...
+#  gpkbatescrow <= simpleassets::transfer       {"from":"gpkbatescrow","to":"gbuser111111","assetids":["100000000007692"],"memo":"gbuser111111 withd...
+#  gbuser111111 <= simpleassets::transfer       {"from":"gpkbatescrow","to":"gbuser111111","assetids":["100000000007692"],"memo":"gbuser111111 withd...
 warning: transaction executed locally, but may not be confirmed by the network yet         ]
 ```
 	- view the table `sassets` of `simpleassets` contract for `gbuser111111` player
@@ -233,12 +238,24 @@ $ cleosw get table simpleassets gbuser111111 sassets --show-payer
 {
   "rows": [{
       "data": {
-        "id": "100000000007690",
+        "id": "100000000007691",
         "owner": "gbuser111111",
         "author": "gpkbattlesco",
         "category": "exotic",
         "idata": "{}",
-        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/13.jpg\",\"cardid\":13,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/13b.jpg\",\"name\":\"Spiteful Saffery\",\"quality\":\"b\",\"variant\":\"base\"}",
+        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/3.jpg\",\"cardid\":3,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/3a.jpg\",\"name\":\"Jeff Joke\",\"quality\":\"a\",\"variant\":\"base\"}",
+        "container": [],
+        "containerf": []
+      },
+      "payer": "gpkbatescrow"
+    },{
+      "data": {
+        "id": "100000000007692",
+        "owner": "gbuser111111",
+        "author": "gpkbattlesco",
+        "category": "exotic",
+        "idata": "{}",
+        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/1.jpg\",\"cardid\":1,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/1b.jpg\",\"name\":\"Schmo Exotic\",\"quality\":\"b\",\"variant\":\"base\"}",
         "container": [],
         "containerf": []
       },
@@ -253,22 +270,7 @@ $ cleosw get table simpleassets gbuser111111 sassets --show-payer
 ```console
 $ cleosw get table gpkbatescrow gbuser111111 cardwallet --show-payer
 {
-  "rows": [{
-      "data": {
-        "card_id": "100000000007691",
-        "contract_ac": "simpleassets",
-        "usage_status": "available"
-      },
-      "payer": "gpkbatescrow"
-    },{
-      "data": {
-        "card_id": "100000000007692",
-        "contract_ac": "simpleassets",
-        "usage_status": "available"
-      },
-      "payer": "gpkbatescrow"
-    }
-  ],
+  "rows": [],
   "more": false,
   "next_key": ""
 }
@@ -281,7 +283,8 @@ $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
       "data": {
         "asset_contract_ac": "simpleassets",
         "players_list": [
-          "gbuser111111"
+          "gbuser111112",
+          "gbuser111115"
         ]
       },
       "payer": "gpkbattlesc1"
