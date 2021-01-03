@@ -2,8 +2,8 @@
 ## Brief
 * It is a escrow contract where:
 	- [x] players transfer asset(s) temporarily to the escrow contract for playing game.
-  - [x] players withdraw asset(s) from the escrow contract for playing game. This can only be done if the card is not used i.e. __"available"__ status.
-  - [x] Here in escrow contract, game contract can set the card's status to __"available"/"selected"__ based on usage. 
+	- [x] players withdraw asset(s) from the escrow contract for playing game. This can only be done if the card is not used i.e. __"available"__ status.
+	- [x] Here in escrow contract, game contract can set the card's status to __"available"/"selected"__ based on usage. 
 	- [x] From escrow contract, game contract disburses the cards to winner (4) & loser (2) after the result is __nodraw__ 
 
 ## About
@@ -11,23 +11,23 @@
 * contract's account name - `gpkbatescrow`
 * action
 	- `transferbypl`
-    1. check the cards type:
-      - valid asset_id
-      - author == "gpk.topps"
-      - category e.g. exotic
-      - quality e.g. a, b
-      - variant e.g. base
-      - NOTE: 
-        + No check of `2a1b`/`1a2b`
-        + Any no. of cards can be transferred from 1 to any no.
-    1. set the cards with id & status of each as 'available'
+		1. check the cards type:
+			- valid asset_id
+			- author == "gpk.topps"
+			- category e.g. exotic
+			- quality e.g. a, b
+			- variant e.g. base
+			- NOTE: 
+				+ No check of `2a1b`/`1a2b`
+				+ Any no. of cards can be transferred from 1 to any no.
+		1. set the cards with id & status of each as 'available'
 	- `setcstatus` [External inline]
 	- `withdrawbypl`
-    1. check asset type
-    1. check the card_id is not selected
-    1. transfer the card using inline action
-    1. erase the card_id from `cardwallet` table
-    1. For safety, if the cardwallet table's size is zero then, if the player is still in the players_list, remove from that list.
+		1. check asset type
+		1. check the card_id is not selected
+		1. transfer the card using inline action
+		1. erase the card_id from `cardwallet` table
+		1. For safety, if the cardwallet table's size is zero then, if the player is still in the players_list, remove from that list.
 	- `disburse` [External inline]
 * table
 	- `cardwallet`
@@ -73,46 +73,46 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```console
 $ cleosw get table simpleassets gbuser111111 sassets --show-payer
 {
-  "rows": [{
-      "data": {
-        "id": "100000000007690",
-        "owner": "gbuser111111",
-        "author": "gpkbattlesco",
-        "category": "exotic",
-        "idata": "{}",
-        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/13.jpg\",\"cardid\":13,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/13b.jpg\",\"name\":\"Spiteful Saffery\",\"quality\":\"b\",\"variant\":\"base\"}",
-        "container": [],
-        "containerf": []
-      },
-      "payer": "gpkbatescrow"
-    },{
-      "data": {
-        "id": "100000000007691",
-        "owner": "gbuser111111",
-        "author": "gpkbattlesco",
-        "category": "exotic",
-        "idata": "{}",
-        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/3.jpg\",\"cardid\":3,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/3a.jpg\",\"name\":\"Jeff Joke\",\"quality\":\"a\",\"variant\":\"base\"}",
-        "container": [],
-        "containerf": []
-      },
-      "payer": "gpkbatescrow"
-    },{
-      "data": {
-        "id": "100000000007692",
-        "owner": "gbuser111111",
-        "author": "gpkbattlesco",
-        "category": "exotic",
-        "idata": "{}",
-        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/1.jpg\",\"cardid\":1,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/1b.jpg\",\"name\":\"Schmo Exotic\",\"quality\":\"b\",\"variant\":\"base\"}",
-        "container": [],
-        "containerf": []
-      },
-      "payer": "gpkbatescrow"
-    }
-  ],
-  "more": false,
-  "next_key": ""
+	"rows": [{
+			"data": {
+				"id": "100000000007690",
+				"owner": "gbuser111111",
+				"author": "gpkbattlesco",
+				"category": "exotic",
+				"idata": "{}",
+				"mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/13.jpg\",\"cardid\":13,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/13b.jpg\",\"name\":\"Spiteful Saffery\",\"quality\":\"b\",\"variant\":\"base\"}",
+				"container": [],
+				"containerf": []
+			},
+			"payer": "gpkbatescrow"
+		},{
+			"data": {
+				"id": "100000000007691",
+				"owner": "gbuser111111",
+				"author": "gpkbattlesco",
+				"category": "exotic",
+				"idata": "{}",
+				"mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/3.jpg\",\"cardid\":3,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/3a.jpg\",\"name\":\"Jeff Joke\",\"quality\":\"a\",\"variant\":\"base\"}",
+				"container": [],
+				"containerf": []
+			},
+			"payer": "gpkbatescrow"
+		},{
+			"data": {
+				"id": "100000000007692",
+				"owner": "gbuser111111",
+				"author": "gpkbattlesco",
+				"category": "exotic",
+				"idata": "{}",
+				"mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/1.jpg\",\"cardid\":1,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/1b.jpg\",\"name\":\"Schmo Exotic\",\"quality\":\"b\",\"variant\":\"base\"}",
+				"container": [],
+				"containerf": []
+			},
+			"payer": "gpkbatescrow"
+		}
+	],
+	"more": false,
+	"next_key": ""
 }
 ```
 	- transfers the owned cards to the contract - `gpkbatescrow` using `transfer` action of `simpleassets` contract
@@ -128,31 +128,31 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```console
 $ cleosw get table gpkbatescrow gbuser111111 cardwallet --show-payer
 {
-  "rows": [{
-      "data": {
-        "card_id": "100000000007690",
-        "contract_ac": "simpleassets",
-        "usage_status": "available"
-      },
-      "payer": "gpkbatescrow"
-    },{
-      "data": {
-        "card_id": "100000000007691",
-        "contract_ac": "simpleassets",
-        "usage_status": "available"
-      },
-      "payer": "gpkbatescrow"
-    },{
-      "data": {
-        "card_id": "100000000007692",
-        "contract_ac": "simpleassets",
-        "usage_status": "available"
-      },
-      "payer": "gpkbatescrow"
-    }
-  ],
-  "more": false,
-  "next_key": ""
+	"rows": [{
+			"data": {
+				"card_id": "100000000007690",
+				"contract_ac": "simpleassets",
+				"usage_status": "available"
+			},
+			"payer": "gpkbatescrow"
+		},{
+			"data": {
+				"card_id": "100000000007691",
+				"contract_ac": "simpleassets",
+				"usage_status": "available"
+			},
+			"payer": "gpkbatescrow"
+		},{
+			"data": {
+				"card_id": "100000000007692",
+				"contract_ac": "simpleassets",
+				"usage_status": "available"
+			},
+			"payer": "gpkbatescrow"
+		}
+	],
+	"more": false,
+	"next_key": ""
 }
 ```
 * Similarly do it for player-2 info details using `transfer` action of `simpleassets` contract
@@ -169,50 +169,50 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```console
 $ cleosw get table gpkbatescrow gbuser111112 cardwallet --show-payer
 {
-  "rows": [{
-      "data": {
-        "card_id": "100000000007693",
-        "contract_ac": "simpleassets",
-        "usage_status": "available"
-      },
-      "payer": "gpkbatescrow"
-    },{
-      "data": {
-        "card_id": "100000000007694",
-        "contract_ac": "simpleassets",
-        "usage_status": "available"
-      },
-      "payer": "gpkbatescrow"
-    },{
-      "data": {
-        "card_id": "100000000007695",
-        "contract_ac": "simpleassets",
-        "usage_status": "available"
-      },
-      "payer": "gpkbatescrow"
-    }
-  ],
-  "more": false,
-  "next_key": ""
+	"rows": [{
+			"data": {
+				"card_id": "100000000007693",
+				"contract_ac": "simpleassets",
+				"usage_status": "available"
+			},
+			"payer": "gpkbatescrow"
+		},{
+			"data": {
+				"card_id": "100000000007694",
+				"contract_ac": "simpleassets",
+				"usage_status": "available"
+			},
+			"payer": "gpkbatescrow"
+		},{
+			"data": {
+				"card_id": "100000000007695",
+				"contract_ac": "simpleassets",
+				"usage_status": "available"
+			},
+			"payer": "gpkbatescrow"
+		}
+	],
+	"more": false,
+	"next_key": ""
 }
 ```
 	- view the table `players` of `gpkbattlesc1` contract. Here, `gbuser111111` transferred later than `gbuser111112`
 ```console
 $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
 {
-  "rows": [{
-      "data": {
-        "asset_contract_ac": "simpleassets",
-        "players_list": [
-          "gbuser111112",
-          "gbuser111121"
-        ]
-      },
-      "payer": "gpkbattlesc1"
-    }
-  ],
-  "more": false,
-  "next_key": ""
+	"rows": [{
+			"data": {
+				"asset_contract_ac": "simpleassets",
+				"players_list": [
+					"gbuser111112",
+					"gbuser111121"
+				]
+			},
+			"payer": "gpkbattlesc1"
+		}
+	],
+	"more": false,
+	"next_key": ""
 }
 ```
 
@@ -236,62 +236,62 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```console
 $ cleosw get table simpleassets gbuser111111 sassets --show-payer
 {
-  "rows": [{
-      "data": {
-        "id": "100000000007691",
-        "owner": "gbuser111111",
-        "author": "gpkbattlesco",
-        "category": "exotic",
-        "idata": "{}",
-        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/3.jpg\",\"cardid\":3,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/3a.jpg\",\"name\":\"Jeff Joke\",\"quality\":\"a\",\"variant\":\"base\"}",
-        "container": [],
-        "containerf": []
-      },
-      "payer": "gpkbatescrow"
-    },{
-      "data": {
-        "id": "100000000007692",
-        "owner": "gbuser111111",
-        "author": "gpkbattlesco",
-        "category": "exotic",
-        "idata": "{}",
-        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/1.jpg\",\"cardid\":1,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/1b.jpg\",\"name\":\"Schmo Exotic\",\"quality\":\"b\",\"variant\":\"base\"}",
-        "container": [],
-        "containerf": []
-      },
-      "payer": "gpkbatescrow"
-    }
-  ],
-  "more": false,
-  "next_key": ""
+	"rows": [{
+			"data": {
+				"id": "100000000007691",
+				"owner": "gbuser111111",
+				"author": "gpkbattlesco",
+				"category": "exotic",
+				"idata": "{}",
+				"mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/3.jpg\",\"cardid\":3,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/3a.jpg\",\"name\":\"Jeff Joke\",\"quality\":\"a\",\"variant\":\"base\"}",
+				"container": [],
+				"containerf": []
+			},
+			"payer": "gpkbatescrow"
+		},{
+			"data": {
+				"id": "100000000007692",
+				"owner": "gbuser111111",
+				"author": "gpkbattlesco",
+				"category": "exotic",
+				"idata": "{}",
+				"mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/1.jpg\",\"cardid\":1,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/1b.jpg\",\"name\":\"Schmo Exotic\",\"quality\":\"b\",\"variant\":\"base\"}",
+				"container": [],
+				"containerf": []
+			},
+			"payer": "gpkbatescrow"
+		}
+	],
+	"more": false,
+	"next_key": ""
 }
 ```
 	- view the table `cardwallet` of this contract
 ```console
 $ cleosw get table gpkbatescrow gbuser111111 cardwallet --show-payer
 {
-  "rows": [],
-  "more": false,
-  "next_key": ""
+	"rows": [],
+	"more": false,
+	"next_key": ""
 }
 ```
 	- view the table `players` of `gpkbattlesco` contract
 ```console
 $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
 {
-  "rows": [{
-      "data": {
-        "asset_contract_ac": "simpleassets",
-        "players_list": [
-          "gbuser111112",
-          "gbuser111115"
-        ]
-      },
-      "payer": "gpkbattlesc1"
-    }
-  ],
-  "more": false,
-  "next_key": ""
+	"rows": [{
+			"data": {
+				"asset_contract_ac": "simpleassets",
+				"players_list": [
+					"gbuser111112",
+					"gbuser111115"
+				]
+			},
+			"payer": "gpkbattlesc1"
+		}
+	],
+	"more": false,
+	"next_key": ""
 }
 ```
 * player `gbuser111111` wants to voluntarily withdraw the card id: `100000000007691`
@@ -308,69 +308,69 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```console
 $ cleosw get table simpleassets gbuser111111 sassets --show-payer
 {
-  "rows": [{
-      "data": {
-        "id": "100000000007690",
-        "owner": "gbuser111111",
-        "author": "gpkbattlesco",
-        "category": "exotic",
-        "idata": "{}",
-        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/13.jpg\",\"cardid\":13,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/13b.jpg\",\"name\":\"Spiteful Saffery\",\"quality\":\"b\",\"variant\":\"base\"}",
-        "container": [],
-        "containerf": []
-      },
-      "payer": "gpkbatescrow"
-    },{
-      "data": {
-        "id": "100000000007691",
-        "owner": "gbuser111111",
-        "author": "gpkbattlesco",
-        "category": "exotic",
-        "idata": "{}",
-        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/3.jpg\",\"cardid\":3,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/3a.jpg\",\"name\":\"Jeff Joke\",\"quality\":\"a\",\"variant\":\"base\"}",
-        "container": [],
-        "containerf": []
-      },
-      "payer": "gpkbatescrow"
-    }
-  ],
-  "more": false,
-  "next_key": ""
+	"rows": [{
+			"data": {
+				"id": "100000000007690",
+				"owner": "gbuser111111",
+				"author": "gpkbattlesco",
+				"category": "exotic",
+				"idata": "{}",
+				"mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/13.jpg\",\"cardid\":13,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/13b.jpg\",\"name\":\"Spiteful Saffery\",\"quality\":\"b\",\"variant\":\"base\"}",
+				"container": [],
+				"containerf": []
+			},
+			"payer": "gpkbatescrow"
+		},{
+			"data": {
+				"id": "100000000007691",
+				"owner": "gbuser111111",
+				"author": "gpkbattlesco",
+				"category": "exotic",
+				"idata": "{}",
+				"mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/3.jpg\",\"cardid\":3,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/3a.jpg\",\"name\":\"Jeff Joke\",\"quality\":\"a\",\"variant\":\"base\"}",
+				"container": [],
+				"containerf": []
+			},
+			"payer": "gpkbatescrow"
+		}
+	],
+	"more": false,
+	"next_key": ""
 }
 ```
 	- view the table `cardwallet` of this contract
 ```console
 $ cleosw get table gpkbatescrow gbuser111111 cardwallet --show-payer
 {
-  "rows": [{
-      "data": {
-        "card_id": "100000000007692",
-        "contract_ac": "simpleassets",
-        "usage_status": "available"
-      },
-      "payer": "gpkbatescrow"
-    }
-  ],
-  "more": false,
-  "next_key": ""
+	"rows": [{
+			"data": {
+				"card_id": "100000000007692",
+				"contract_ac": "simpleassets",
+				"usage_status": "available"
+			},
+			"payer": "gpkbatescrow"
+		}
+	],
+	"more": false,
+	"next_key": ""
 }
 ```
 	- view the table `players` of `gpkbattlesco` contract
 ```console
 $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
 {
-  "rows": [{
-      "data": {
-        "asset_contract_ac": "simpleassets",
-        "players_list": [
-          "gbuser111111"
-        ]
-      },
-      "payer": "gpkbattlesc1"
-    }
-  ],
-  "more": false,
-  "next_key": ""
+	"rows": [{
+			"data": {
+				"asset_contract_ac": "simpleassets",
+				"players_list": [
+					"gbuser111111"
+				]
+			},
+			"payer": "gpkbattlesc1"
+		}
+	],
+	"more": false,
+	"next_key": ""
 }
 ```
 * player `gbuser111111` wants to voluntarily withdraw the last card id: `100000000007692`
@@ -388,71 +388,71 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```console
 $ cleosw get table simpleassets gbuser111111 sassets --show-payer
 {
-  "rows": [{
-      "data": {
-        "id": "100000000007690",
-        "owner": "gbuser111111",
-        "author": "gpkbattlesco",
-        "category": "exotic",
-        "idata": "{}",
-        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/13.jpg\",\"cardid\":13,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/13b.jpg\",\"name\":\"Spiteful Saffery\",\"quality\":\"b\",\"variant\":\"base\"}",
-        "container": [],
-        "containerf": []
-      },
-      "payer": "gpkbatescrow"
-    },{
-      "data": {
-        "id": "100000000007691",
-        "owner": "gbuser111111",
-        "author": "gpkbattlesco",
-        "category": "exotic",
-        "idata": "{}",
-        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/3.jpg\",\"cardid\":3,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/3a.jpg\",\"name\":\"Jeff Joke\",\"quality\":\"a\",\"variant\":\"base\"}",
-        "container": [],
-        "containerf": []
-      },
-      "payer": "gpkbatescrow"
-    },{
-      "data": {
-        "id": "100000000007692",
-        "owner": "gbuser111111",
-        "author": "gpkbattlesco",
-        "category": "exotic",
-        "idata": "{}",
-        "mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/1.jpg\",\"cardid\":1,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/1b.jpg\",\"name\":\"Schmo Exotic\",\"quality\":\"b\",\"variant\":\"base\"}",
-        "container": [],
-        "containerf": []
-      },
-      "payer": "gpkbatescrow"
-    }
-  ],
-  "more": false,
-  "next_key": ""
+	"rows": [{
+			"data": {
+				"id": "100000000007690",
+				"owner": "gbuser111111",
+				"author": "gpkbattlesco",
+				"category": "exotic",
+				"idata": "{}",
+				"mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/13.jpg\",\"cardid\":13,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/13b.jpg\",\"name\":\"Spiteful Saffery\",\"quality\":\"b\",\"variant\":\"base\"}",
+				"container": [],
+				"containerf": []
+			},
+			"payer": "gpkbatescrow"
+		},{
+			"data": {
+				"id": "100000000007691",
+				"owner": "gbuser111111",
+				"author": "gpkbattlesco",
+				"category": "exotic",
+				"idata": "{}",
+				"mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/3.jpg\",\"cardid\":3,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/3a.jpg\",\"name\":\"Jeff Joke\",\"quality\":\"a\",\"variant\":\"base\"}",
+				"container": [],
+				"containerf": []
+			},
+			"payer": "gpkbatescrow"
+		},{
+			"data": {
+				"id": "100000000007692",
+				"owner": "gbuser111111",
+				"author": "gpkbattlesco",
+				"category": "exotic",
+				"idata": "{}",
+				"mdata": "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/1.jpg\",\"cardid\":1,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/base/1b.jpg\",\"name\":\"Schmo Exotic\",\"quality\":\"b\",\"variant\":\"base\"}",
+				"container": [],
+				"containerf": []
+			},
+			"payer": "gpkbatescrow"
+		}
+	],
+	"more": false,
+	"next_key": ""
 }
 ```
 	- view the table `cardwallet` of this contract
 ```console
 $ cleosw get table gpkbatescrow gbuser111111 cardwallet --show-payer
 {
-  "rows": [],
-  "more": false,
-  "next_key": ""
+	"rows": [],
+	"more": false,
+	"next_key": ""
 }
 ```
 	- view the table `players` of `gpkbattlesco` contract
 ```console
 $ cleosw get table gpkbattlesc1 gpkbattlesc1 players --show-payer
 {
-  "rows": [{
-      "data": {
-        "asset_contract_ac": "simpleassets",
-        "players_list": []
-      },
-      "payer": "gpkbattlesc1"
-    }
-  ],
-  "more": false,
-  "next_key": ""
+	"rows": [{
+			"data": {
+				"asset_contract_ac": "simpleassets",
+				"players_list": []
+			},
+			"payer": "gpkbattlesc1"
+		}
+	],
+	"more": false,
+	"next_key": ""
 }
 ```
 	- Observation:
@@ -482,7 +482,7 @@ warning: transaction executed locally, but may not be confirmed by the network y
 * before deploy to MAINNET,
 	- [ ] change the card owner's name from `gpkbattlesco` to `gpk.topps`
 	- [ ] change the game contract account name from `gpkbattlesc1` to `gpkbattlesco`
-  - [ ] change the game contract account name from `gpkbattlesc1` to `gpkbattlesco` in the check_gfee_balance() func in `gpkbattlesco` contract
+	- [ ] change the game contract account name from `gpkbattlesc1` to `gpkbattlesco` in the check_gfee_balance() func in `gpkbattlesco` contract
 
 ## Troubleshooting
 * Error related to "card not found"
@@ -494,19 +494,19 @@ Error Details:
 assertion failure with message: Asset id: 100000000007727 cannot be found (check ids?)
 pending console output:
 ```
-  - This is an error which means that the card with id "100000000007727" is not owned by the escrow contract from where the player - "gbuser111114" is trying to withdraw.
-  - In this case, just comment these lines in `withdrawbypl` ACTION:
+	- This is an error which means that the card with id "100000000007727" is not owned by the escrow contract from where the player - "gbuser111114" is trying to withdraw.
+	- In this case, just comment these lines in `withdrawbypl` ACTION:
 ```cpp
 ...
 ...
-    // action(
-    //  permission_level{get_self(), "active"_n},
-    //  asset_contract_ac,
-    //  "transfer"_n,
-    //  std::make_tuple(get_self(), player, std::vector<uint64_t>{card_id}, 
-    //            player.to_string() + " withdraws card with id: " + std::to_string(card_id))
-    // ).send();
+		// action(
+		//  permission_level{get_self(), "active"_n},
+		//  asset_contract_ac,
+		//  "transfer"_n,
+		//  std::make_tuple(get_self(), player, std::vector<uint64_t>{card_id}, 
+		//            player.to_string() + " withdraws card with id: " + std::to_string(card_id))
+		// ).send();
 ...
 ...
 ```
-  - Just run the ACTION without this above code snippet. Basically, skipping the `simpleassets::transfer` ACTION & deleting the cards from `cardwallet` table of `gpkbatescrow` contract.
+	- Just run the ACTION without this above code snippet. Basically, skipping the `simpleassets::transfer` ACTION & deleting the cards from `cardwallet` table of `gpkbatescrow` contract.
