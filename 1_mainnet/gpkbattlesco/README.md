@@ -21,7 +21,7 @@
 	- [x] play the game with id
 		+ [x] if draw, then players get 1 more chance. If 2 times draw successively for 1 game_id, then the round is dumped. And the card is available for selection in the cardwallet
 		+ [x] if nodraw, then winner receives 4 cards with 1 as winning reward, whereas the loser receives 2 cards with 1 losing card (any by shuffle)
-	- [x] disburse nodraw cards using `disndcards`
+	- [x] In case of nodraw, disburse nodraw cards using `disndcards` ACTION
 
 
 ## About
