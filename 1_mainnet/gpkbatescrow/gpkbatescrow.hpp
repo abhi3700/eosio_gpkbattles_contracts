@@ -95,13 +95,13 @@ public:
 	 * 
 	 * @param player - player who withdraws
 	 * @param asset_contract_ac - simpleassets, atomicassets
-	 * @param card_id - card id
+	 * @param card_ids - list of card id
 	 * 
 	 * @pre - the card_id should not be "selected" status
 	 */
 	ACTION withdrawbypl( const name& player,
 							const name& asset_contract_ac,
-							uint64_t card_id );
+							const vector<uint64_t>& card_ids );
 
 	/**
 	 * @brief - an inline action for battle contract usage externally

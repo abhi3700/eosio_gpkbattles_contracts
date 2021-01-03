@@ -80,8 +80,8 @@
                     "type": "name"
                 },
                 {
-                    "name": "card_id",
-                    "type": "uint64"
+                    "name": "card_ids",
+                    "type": "uint64[]"
                 }
             ]
         }
