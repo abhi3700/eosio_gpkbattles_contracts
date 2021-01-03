@@ -483,3 +483,30 @@ warning: transaction executed locally, but may not be confirmed by the network y
 	- [ ] change the card owner's name from `gpkbattlesco` to `gpk.topps`
 	- [ ] change the game contract account name from `gpkbattlesc1` to `gpkbattlesco`
   - [ ] change the game contract account name from `gpkbattlesc1` to `gpkbattlesco` in the check_gfee_balance() func in `gpkbattlesco` contract
+
+## Troubleshooting
+* Error related to "card not found"
+```console
+$ cleosw push action gpkbatescrow withdrawbypl '{"player": "gbuser111114", "asset_contract_ac": "simpleassets", "card_ids" : ["100000000007727"]}' -p gbuser111114@active
+
+Error 3050003: eosio_assert_message assertion failure
+Error Details:
+assertion failure with message: Asset id: 100000000007727 cannot be found (check ids?)
+pending console output:
+```
+  - This is an error which means that the card with id "100000000007727" is not owned by the escrow contract from where the player - "gbuser111114" is trying to withdraw.
+  - In this case, just comment these lines in `withdrawbypl` ACTION:
+```cpp
+...
+...
+    // action(
+    //  permission_level{get_self(), "active"_n},
+    //  asset_contract_ac,
+    //  "transfer"_n,
+    //  std::make_tuple(get_self(), player, std::vector<uint64_t>{card_id}, 
+    //            player.to_string() + " withdraws card with id: " + std::to_string(card_id))
+    // ).send();
+...
+...
+```
+  - Just run the ACTION without this above code snippet. Basically, skipping the `simpleassets::transfer` ACTION & deleting the cards from `cardwallet` table of `gpkbatescrow` contract.
