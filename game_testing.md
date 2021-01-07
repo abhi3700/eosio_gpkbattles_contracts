@@ -1,3 +1,4 @@
+## Testnet
 ### 1. Transfer cards from simpleassets to gpkbatescrow contract (if not available in cardwallet table)
 * player transfers the cards from simpleassets to gpkbatescrow (here, 1a2b is chosen)
 ```console
