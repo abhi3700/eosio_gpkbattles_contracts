@@ -312,14 +312,15 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbattlesco::play(uint64_t game_id) {
-	require_auth(get_self());
+void gpkbattlesco::play(const name& player, uint64_t game_id) {
+	require_auth(player);
 
 	// instantiate the `ongamestat` table
 	ongamestat_index ongamestat_table(get_self(), get_self().value);
 	auto ongamestat_it = ongamestat_table.find(game_id);
 
 	check(ongamestat_it != ongamestat_table.end(), "the parsed game_id \'" + std::to_string(game_id) + "\' doesn't exist.");
+	check( (ongamestat_it->player_1 == player) || (ongamestat_it->player_2 == player), "the player doesn\'t seem to have the authority of playing this game_id." );
 
 	// Although not required. Because this is already maintained during `pairwplayer` ACTION during emplace data
 	check(ongamestat_it->player_1 != ongamestat_it->player_2, "Both the players should be different.");
@@ -577,14 +578,15 @@ void gpkbattlesco::receiverand(uint64_t assoc_id, const eosio::checksum256& rand
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbattlesco::disndcards( uint64_t game_id ) {
-	require_auth(get_self());
+void gpkbattlesco::disndcards( const name& player, uint64_t game_id ) {
+	require_auth(player);
 
 	// instantiate the `ongamestat` table
 	ongamestat_index ongamestat_table(get_self(), get_self().value);
 	auto ongamestat_it = ongamestat_table.find(game_id);
 
 	check(ongamestat_it != ongamestat_table.end(), "the parsed game_id \'" + std::to_string(game_id) + "\' doesn't exist.");
+	check( (ongamestat_it->player_1 == player) || (ongamestat_it->player_2 == player), "the player doesn\'t seem to have the authority of playing this game_id." );
 	check(ongamestat_it->result == "nodraw"_n, "For cards to be disbursed, the parsed game_id \'" + std::to_string(game_id) + "\' should be of result: \'nodraw\'");
 	check(ongamestat_it->status == "over"_n, "the game with id \'" + std::to_string(game_id) + "\' is not yet over. So, the cards can\'t be disbursed");
 
