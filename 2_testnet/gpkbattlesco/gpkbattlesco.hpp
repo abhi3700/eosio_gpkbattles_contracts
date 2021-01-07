@@ -161,10 +161,11 @@ public:
 	 * @brief - play the game
 	 * @details - play the game with id
 	 * 
+	 * @param player - player
 	 * @param game_id - game id
 	 */
 
-	ACTION play(uint64_t game_id);
+	ACTION play(const name& player, uint64_t game_id);
 
 	/**
 	 * @brief - For WAX RNG Service from Oracle
@@ -181,9 +182,10 @@ public:
 	 * @brief - disburse nodraw cards after game is over
 	 * @details - disburse nodraw cards after game is over
 	 * 
+	 * @param player - player
 	 * @param game_id - game_id
 	 */
-	ACTION disndcards( uint64_t game_id );
+	ACTION disndcards( const name& player, uint64_t game_id );
 
 	/**
 	 * @brief - move & erase (i.e. moer) the game data for both the players after game in 3 cases: "1 Draw, 1 NoDraw", "2 times Draw" & "NoDraw" 
