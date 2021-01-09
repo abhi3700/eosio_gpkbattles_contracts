@@ -3,6 +3,15 @@ GPK.Battles Game
 
 v0.4 - `07-Jan-2021`
 ----
+* The player can now transfer cards to the escrow contract without having game fee in their wallet.
+* This line removed from `gpkbatescrow::transferbypl` ACTION
+```cpp
+// check game_fee balance as "5.00000000 WAX"
+check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
+```
+
+v0.4 - `07-Jan-2021`
+----
 * Added 'player' param in 2 actions of Game contract i.e. `gpkbattlesco::play`, `gpkbattlesco::disndcards`
 * The security check for the player is mandatory so that only either of the 2 players of the game_id can play that game.
 * permission authority of the ACTION(s) has been modified from `get_self()` to `player`. Also, the check is performed, if the player is either of the 2 players.

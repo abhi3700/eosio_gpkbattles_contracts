@@ -19,9 +19,6 @@ void gpkbatescrow::transferbypl( const name& player,
 		|| (asset_contract_ac == "atomicassets"_n), 
 		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
 
-	// check game_fee balance as "5.00000000 WAX"
-	check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
-
 	check(memo.size() <= 256, "memo has more than 256 bytes");
 
 	// check if it has been transferred & also
