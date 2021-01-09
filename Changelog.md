@@ -1,7 +1,7 @@
 GPK.Battles Game
 ================
 
-v0.4 - `07-Jan-2021`
+v0.5 - `07-Jan-2021`
 ----
 * The player can now transfer cards to the escrow contract without having game fee in their wallet.
 * This line removed from `gpkbatescrow::transferbypl` ACTION
