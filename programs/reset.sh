@@ -4,6 +4,8 @@
 # - clear the players table, 
 # - deselect the cards, if selected (i.e. change the status)
 # - withdraw the cards from gpkbatescrow to simpleassets
+# - remove the row in usergamestat table 
+# - withdraw game fee, if any in the game wallet
 
 # clear the row in game table
 cleosw push action gpkbattlesc1 testdelongam '["10001731423393"]' -p gpkbattlesc1@active
@@ -19,3 +21,6 @@ cleosw push action gpkbatescrow withdrawbypl '{"player": "gbuser111121", "asset_
 
 # remove the row in usergamestat table
 cleosw push action gpkbattlesc1 testdelugame '["gbuser111112", "simpleassets"]' -p gpkbattlesc1@active 
+
+# withdraw game fee, if any in the game wallet
+cleosw push action gpkbattlesc1 withdrawgfee '["gbuser111111", "25.00000000 WAX"]' -p gbuser111111@active
