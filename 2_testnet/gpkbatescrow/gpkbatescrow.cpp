@@ -139,6 +139,7 @@ void gpkbatescrow::disburse( uint64_t game_id )
 	cardwallet_index cardwallet_loser_table(get_self(), ongamestat_it->loser.value);
 
 	auto check_card_ids_winner = ongamestat_it->winner_transfer_cards;
+	auto won_card = check_card_ids_winner[-1];							// capture the last card in winner new card list in game table
 	check_card_ids_winner.erase(check_card_ids_winner.begin() + 3);		// remove the last one which belongs to the loser
 	auto check_card_ids_loser = ongamestat_it->loser_transfer_cards;
 	check_card_ids_loser.emplace_back(ongamestat_it->winner_transfer_cards.back());		// add the last one of winner which belongs to the loser
@@ -151,9 +152,6 @@ void gpkbatescrow::disburse( uint64_t game_id )
 
 		// the card should be in "selected" status
 		check(winner_card_it->usage_status == "selected"_n, "card with id:" + std::to_string(card_id) + " can\'t be disbursed as it was not \'selected\' for playing.");
-
-		// erase the card from cardwallet table
-		cardwallet_winner_table.erase(winner_card_it);
 	}
 
 	// check for loser if 3 cards are marked "selected"
@@ -164,13 +162,50 @@ void gpkbatescrow::disburse( uint64_t game_id )
 
 		// the card should be in "selected" status
 		check(loser_card_it->usage_status == "selected"_n, "card with id:" + std::to_string(card_id) + " can\'t be disbursed as it was not \'selected\' for playing.");
+	}
 
-		// erase the card from cardwallet table
-		cardwallet_loser_table.erase(loser_card_it);
+	// 1. del the won card from loser & add the same to winner in cardwallet
+	// 1_a. del the won card
+	auto won_card_del_it = cardwallet_loser_table.find(won_card);
+	// check the card exists
+	check(won_card_del_it != cardwallet_loser_table.end(), "card with id:" + std::to_string(won_card) + " doesn\'t exist in the loser\'s table.");
+
+	cardwallet_loser_table.erase(won_card_del_it);
+
+	// 1_b. add the won card
+	auto won_card_add_it = cardwallet_winner_table.find(won_card);
+	check(won_card_add_it == cardwallet_winner_table.end(), "card with id:" + std::to_string(won_card) + " already exist in the winner\'s table.");
+
+	cardwallet_winner_table.emplace(get_self(), [&](auto& row) {
+		row.card_id = won_card;
+		row.contract_ac = ongamestat_it->asset_contract_ac;
+		row.usage_status = "available"_n;
+	});
+
+
+	// 2. a. make the cards (4) available by calling inline action `setcstatus` for winner
+	for(auto&& card_id : ongamestat_it->winner_transfer_cards) {
+		action(
+			permission_level{get_self(), "active"_n},
+			get_self(),
+			"setcstatus"_n,
+			std::make_tuple(ongamestat_it->winner, card_id, "available"_n)
+		).send();
+	}
+
+	// 2. b. make the cards (2) available by calling inline action `setcstatus` for loser
+	for(auto&& card_id : ongamestat_it->loser_transfer_cards) {
+		action(
+			permission_level{get_self(), "active"_n},
+			get_self(),
+			"setcstatus"_n,
+			std::make_tuple(ongamestat_it->loser, card_id, "available"_n)
+		).send();
 	}
 
 
-	// escrow contract transfers all cards to winner at a time
+/*
+	// 2. a. escrow contract transfers all cards to winner (in simpleassets contract's `sassets` table) at a time
 	action(
 		permission_level{get_self(), "active"_n},
 		ongamestat_it->asset_contract_ac,
@@ -179,7 +214,7 @@ void gpkbatescrow::disburse( uint64_t game_id )
 			+ " cards for winning the game with id: \'" + std::to_string(game_id) + "\'.")
 	).send();
 
-	// escrow contract transfers all cards to loser at a time
+	// 2. b. escrow contract transfers all cards to loser (in simpleassets contract's `sassets` table) at a time
 	action(
 		permission_level{get_self(), "active"_n},
 		ongamestat_it->asset_contract_ac,
@@ -187,6 +222,6 @@ void gpkbatescrow::disburse( uint64_t game_id )
 		std::make_tuple(get_self(), ongamestat_it->loser, ongamestat_it->loser_transfer_cards, "disburses " + std::to_string(ongamestat_it->loser_transfer_cards.size())
 			+ " cards for losing the game with id: \'" + std::to_string(game_id) + "\'.")
 	).send();
-
+*/
 
 }

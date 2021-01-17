@@ -22,6 +22,7 @@
 		+ [x] if draw, then players get 1 more chance. If 2 times draw successively for 1 game_id, then the round is dumped. And the card is available for selection in the cardwallet
 		+ [x] if nodraw, then winner receives 4 cards with 1 as winning reward, whereas the loser receives 2 cards with 1 losing card (any by shuffle) & the cards are disbursed using `disndcards` ACTION. So, total 2 actions i.e. `play` >> `disndcards`
 
+> NOTE: the cards are disbursed back to the escrow contract itself, not the simpleassets contract because of simplicity in GUI. Here, the player doesn't have to go back to simpleassets wallet table i.e. `sassets` rather in the game screen the player's cards are visible in gpkbatescrow's  `cardwallet` table. 
 
 ## About
 * contract name - `gpkbattlesco`
@@ -61,7 +62,7 @@
 		1. Erase 2 players from original players_list
 	- `play`
 	- `receiverand` [For WAX RNG Oracle service]
-	- `disndcards`: to disburse cards & also transfer each's game_fee i.e. "5 WAX" to income account.
+	- `disndcards`: to disburse cards (to escrow contract, not simpleassets bcoz of GUI simplicity) & also transfer each's game_fee i.e. "5 WAX" to income account.
 	- `moergameinfo` [Internal inline]
 	- `empifyplayer` [Internal inline]
 	- `remplayer` [External inline]

@@ -1,6 +1,19 @@
 GPK.Battles Game
 ================
 
+v0.6 - `17-Jan-2021`
+----
+* [removed] disburse of cards to simpleassets
+* [modified] disburse of cards to escrow contract of respective player
+	- nodraw: won_card is added to winner's cardwallet & removed from loser's cardwallet
+* self permission added to the ACTION(s) - `play`, `disndcards`
+* Total ACTIONS changed:
+	- gpkbatescrow
+		+ `disburse`
+	- gpkbattlesco
+		+ `play`
+		+ `disndcards`
+
 v0.5 - `07-Jan-2021`
 ----
 * The player can now transfer cards to the escrow contract without having game fee in their wallet.

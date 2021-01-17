@@ -8,10 +8,6 @@
             "base": "",
             "fields": [
                 {
-                    "name": "player",
-                    "type": "name"
-                },
-                {
                     "name": "game_id",
                     "type": "uint64"
                 }
@@ -167,10 +163,6 @@
             "name": "play",
             "base": "",
             "fields": [
-                {
-                    "name": "player",
-                    "type": "name"
-                },
                 {
                     "name": "game_id",
                     "type": "uint64"
