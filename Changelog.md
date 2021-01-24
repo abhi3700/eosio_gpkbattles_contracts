@@ -1,6 +1,19 @@
 GPK.Battles Game
 ================
 
+v0.6.1 - `17-Jan-2021`
+----
+* the permission of the `gpkbattlesco::disndcards` ACTION is changed from `gpkbattlesco@active` to `gpkbattlesco@disndcards`
+* Bug resolved for error: `card with id:0 doesn't exist in the loser's table.`
+	- before
+```cpp
+auto won_card = check_card_ids_winner[-1];
+```
+	- after
+```cpp
+auto won_card = ongamestat_it->winner_transfer_cards.back();
+```
+
 v0.6 - `17-Jan-2021`
 ----
 * [removed] disburse of cards to simpleassets

@@ -139,10 +139,9 @@ void gpkbatescrow::disburse( uint64_t game_id )
 	cardwallet_index cardwallet_loser_table(get_self(), ongamestat_it->loser.value);
 
 	auto check_card_ids_winner = ongamestat_it->winner_transfer_cards;
-	auto won_card = check_card_ids_winner[-1];							// capture the last card in winner new card list in game table
 	check_card_ids_winner.erase(check_card_ids_winner.begin() + 3);		// remove the last one which belongs to the loser
 	auto check_card_ids_loser = ongamestat_it->loser_transfer_cards;
-	check_card_ids_loser.emplace_back(ongamestat_it->winner_transfer_cards.back());		// add the last one of winner which belongs to the loser
+	check_card_ids_loser.emplace(check_card_ids_loser.begin(), ongamestat_it->winner_transfer_cards.back());		// add the winner's last one to the loser's front side, which actually belonged to the loser
 
 	// check for winner if 3 cards are marked "selected"
 	for(auto&& card_id : check_card_ids_winner) {
@@ -165,14 +164,15 @@ void gpkbatescrow::disburse( uint64_t game_id )
 	}
 
 	// 1. del the won card from loser & add the same to winner in cardwallet
-	// 1_a. del the won card
+	auto won_card = ongamestat_it->winner_transfer_cards.back();							// capture the last card in winner new card list in game table
+	// 1_a. del the won card from loser
 	auto won_card_del_it = cardwallet_loser_table.find(won_card);
 	// check the card exists
 	check(won_card_del_it != cardwallet_loser_table.end(), "card with id:" + std::to_string(won_card) + " doesn\'t exist in the loser\'s table.");
 
 	cardwallet_loser_table.erase(won_card_del_it);
 
-	// 1_b. add the won card
+	// 1_b. add the won card to winner
 	auto won_card_add_it = cardwallet_winner_table.find(won_card);
 	check(won_card_add_it == cardwallet_winner_table.end(), "card with id:" + std::to_string(won_card) + " already exist in the winner\'s table.");
 
@@ -183,24 +183,27 @@ void gpkbatescrow::disburse( uint64_t game_id )
 	});
 
 
-	// 2. a. make the cards (4) available by calling inline action `setcstatus` for winner
-	for(auto&& card_id : ongamestat_it->winner_transfer_cards) {
-		action(
-			permission_level{get_self(), "active"_n},
-			get_self(),
-			"setcstatus"_n,
-			std::make_tuple(ongamestat_it->winner, card_id, "available"_n)
-		).send();
+	// 2. a. make the cards (3) available for winner
+	// NOTE: the won card is added beforehand
+	for(auto&& card_id : check_card_ids_winner) {
+		auto winner_card_it = cardwallet_winner_table.find(card_id);
+
+		check(winner_card_it != cardwallet_winner_table.end(), "card with id:" + std::to_string(card_id) + " doesn\'t exist in the winner\'s table for setting as available.");
+
+		cardwallet_winner_table.modify(winner_card_it, get_self(), [&](auto& row) {
+			row.usage_status = "available"_n;
+		});
 	}
 
-	// 2. b. make the cards (2) available by calling inline action `setcstatus` for loser
+	// 2. b. make the cards (2) available for loser
 	for(auto&& card_id : ongamestat_it->loser_transfer_cards) {
-		action(
-			permission_level{get_self(), "active"_n},
-			get_self(),
-			"setcstatus"_n,
-			std::make_tuple(ongamestat_it->loser, card_id, "available"_n)
-		).send();
+		auto loser_card_it = cardwallet_loser_table.find(card_id);
+
+		check(loser_card_it != cardwallet_loser_table.end(), "card with id:" + std::to_string(card_id) + " doesn\'t exist in the loser\'s table for setting as available.");
+
+		cardwallet_loser_table.modify(loser_card_it, get_self(), [&](auto& row) {
+			row.usage_status = "available"_n;
+		});
 	}
 
 
