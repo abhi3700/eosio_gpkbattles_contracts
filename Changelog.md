@@ -4,6 +4,18 @@ GPK.Battles Game
 v0.6.1 - `17-Jan-2021`
 ----
 * the permission of the `gpkbattlesco::disndcards` ACTION is changed from `gpkbattlesco@active` to `gpkbattlesco@disndcards`
+	- Reason
+		+ The reason is to call it from the frontend so having a separate custom permission will not comprise the security of the whole account
+	- view permission of gpkbattlesco account
+```console
+$ cleosw get account gpkbattlesco
+created: 2020-09-15T15:50:01.000
+permissions:
+     owner     1:    1 EOS89GjKGPBDuNaMXaThD4te7qPacaQaL9iBGFBLqbPD7d78TqkZc
+        active     1:    1 EOS89GjKGPBDuNaMXaThD4te7qPacaQaL9iBGFBLqbPD7d78TqkZc, 1 gpkbattlesco@eosio.code
+        disndcards     1:    1 EOS89GjKGPBDuNaMXaThD4te7qPacaQaL9iBGFBLqbPD7d78TqkZc
+        playaction     1:    1 EOS89GjKGPBDuNaMXaThD4te7qPacaQaL9iBGFBLqbPD7d78TqkZc
+```
 * Bug resolved for error: `card with id:0 doesn't exist in the loser's table.`
 	- before
 ```cpp
