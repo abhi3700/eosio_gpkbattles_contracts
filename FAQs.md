@@ -86,3 +86,8 @@ pending console output:
 
 * Can a player play multiple game_ids/game rounds at same time?
 	- Yes, but for different assets type like simpleassets, atomicassets, etc.
+
+* Why the permission for execution of `play`, `disndcards` ACTION has been changed from `gpkbattlesco@active` to `gpkbattlesco@play`, `gpkbattlesco@disndcards`?
+	- First of all, the permission is not changed inside the contract, but has been linked externally.
+	- Reason: As the private key has to be used inside the front-end code, that's why custom key has been created for 2 different ACTION(s) - `play`, `disndcards`.
+	- [Reference](https://developers.eos.io/welcome/v2.0/getting-started/smart-contract-development/linking-custom-permission)
