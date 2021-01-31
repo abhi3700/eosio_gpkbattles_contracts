@@ -5,7 +5,8 @@ v0.6.1 - `17-Jan-2021`
 ----
 * the permission of the `gpkbattlesco::disndcards` ACTION is changed from `gpkbattlesco@active` to `gpkbattlesco@disndcards`
 	- Reason
-		+ The reason is to call it from the frontend so having a separate custom permission will not comprise the security of the whole account
+		+ The reason is to call it from the frontend with the custom permission (e.g. `gpkbattlesco@disndcards`), so having a separate custom permission will not compromise the security of the whole account
+		+ the private key of the `@disndcards` will be embedded into the front-end code & the package will be distributed in encrypted form. 
 	- view permission of gpkbattlesco account
 ```console
 $ cleosw get account gpkbattlesco
@@ -16,6 +17,7 @@ permissions:
         disndcards     1:    1 EOS89GjKGPBDuNaMXaThD4te7qPacaQaL9iBGFBLqbPD7d78TqkZc
         playaction     1:    1 EOS89GjKGPBDuNaMXaThD4te7qPacaQaL9iBGFBLqbPD7d78TqkZc
 ```
+	- The custom (`@disndcards`) key pair shouldn't be same as active/owner key pair(s) as the whole purpose of this is to grant the permission by not showing active/owner key pair(s). 
 * Bug resolved for error: `card with id:0 doesn't exist in the loser's table.`
 	- before
 ```cpp
