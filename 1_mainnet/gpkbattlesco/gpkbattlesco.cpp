@@ -312,15 +312,14 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbattlesco::play(const name& player, uint64_t game_id) {
-	require_auth(player);
+void gpkbattlesco::play(uint64_t game_id) {
+	require_auth(get_self());
 
 	// instantiate the `ongamestat` table
 	ongamestat_index ongamestat_table(get_self(), get_self().value);
 	auto ongamestat_it = ongamestat_table.find(game_id);
 
 	check(ongamestat_it != ongamestat_table.end(), "the parsed game_id \'" + std::to_string(game_id) + "\' doesn't exist.");
-	check( (ongamestat_it->player_1 == player) || (ongamestat_it->player_2 == player), "the player doesn\'t seem to have the authority of playing this game_id." );
 
 	// Although not required. Because this is already maintained during `pairwplayer` ACTION during emplace data
 	check(ongamestat_it->player_1 != ongamestat_it->player_2, "Both the players should be different.");
@@ -578,15 +577,14 @@ void gpkbattlesco::receiverand(uint64_t assoc_id, const eosio::checksum256& rand
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbattlesco::disndcards( const name& player, uint64_t game_id ) {
-	require_auth(player);
+void gpkbattlesco::disndcards(uint64_t game_id ) {
+	require_auth(get_self());
 
 	// instantiate the `ongamestat` table
 	ongamestat_index ongamestat_table(get_self(), get_self().value);
 	auto ongamestat_it = ongamestat_table.find(game_id);
 
 	check(ongamestat_it != ongamestat_table.end(), "the parsed game_id \'" + std::to_string(game_id) + "\' doesn't exist.");
-	check( (ongamestat_it->player_1 == player) || (ongamestat_it->player_2 == player), "the player doesn\'t seem to have the authority of playing this game_id." );
 	check(ongamestat_it->result == "nodraw"_n, "For cards to be disbursed, the parsed game_id \'" + std::to_string(game_id) + "\' should be of result: \'nodraw\'");
 	check(ongamestat_it->status == "over"_n, "the game with id \'" + std::to_string(game_id) + "\' is not yet over. So, the cards can\'t be disbursed");
 
@@ -595,14 +593,13 @@ void gpkbattlesco::disndcards( const name& player, uint64_t game_id ) {
 	check_gfee_balance(ongamestat_it->player_2, asset(gamefee_token_amount, gamefee_token_symbol));
 
 
-	// 1. disburse (check & then transfer) the card to winner & loser at a time
+	// 1. disburse the card to winner & loser at a time
 	action(
 		permission_level{get_self(), "active"_n},
 		escrow_contract_ac,
 		"disburse"_n,
 		std::make_tuple(game_id)
 	).send();
-
 
 	// 2. move & erase game info to `usergamestat` table. Here also, the game_fee is transferred to income account
 	// For player-1 & player-2

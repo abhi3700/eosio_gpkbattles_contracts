@@ -60,8 +60,8 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```
 * Adding eosio.code to permissions (for inline actions)
 ```console
-$ cleosw set account permission gpkbatescrow active --add-code
-executed transaction: a313929d58e7b07cb4fe2627ad6c25d36d263d462cd264feae12ce485a35e021  184 bytes  173 us
+$ cleoswm set account permission gpkbatescrow active --add-code
+executed transaction: 1a359402b1ab8cbde826ee2ccd6073218b2c4c868eb13ac45f874cb1391009ec  184 bytes  918 us
 #         eosio <= eosio::updateauth            {"account":"gpkbatescrow","permission":"active","parent":"owner","auth":{"threshold":1,"keys":[{"key...
 warning: transaction executed locally, but may not be confirmed by the network yet         ]
 ```

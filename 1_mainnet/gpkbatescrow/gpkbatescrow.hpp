@@ -39,6 +39,7 @@ private:
 	const int64_t gamefee_token_amount;
 	const symbol gamefee_token_symbol;
 	const name game_contract_ac;
+	// const name asset_contract_ac;
 	const name card_author;
 
 public:
@@ -50,6 +51,7 @@ public:
 				gamefee_token_symbol("WAX", 8),
 				game_contract_ac("gpkbattlesco"_n),				// For Mainnet
 				// game_contract_ac("gpkbattlesc1"_n),					// For Testnet
+				// asset_contract_ac("simpleassets"_n)
 				card_author("gpk.topps"_n)							// For Mainnet
 				// card_author("gpkbattlesco"_n)						// For Testnet
 				{}
