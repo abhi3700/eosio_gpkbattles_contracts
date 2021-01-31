@@ -1,8 +1,8 @@
 Wallet (locally)
 ================
 name: gbeos
-password: "PW5KfijmsiGokeYD4b5ink9ReT4c6cukeWsMtYVJ8F2fHxmVBxRec"
-command: `cleos wallet unlock -n gbeos --password PW5KfijmsiGokeYD4b5ink9ReT4c6cukeWsMtYVJ8F2fHxmVBxRec`
+password: "PW5K3MiySt4SD95s9yZMPH1GGNFZzc8jrhWi9UsUHR7a8SxMHW2Vb"
+command: `cleos wallet unlock -n gbeos --password PW5K3MiySt4SD95s9yZMPH1GGNFZzc8jrhWi9UsUHR7a8SxMHW2Vb`
 ########################################################################
 WAX Mainnet
 ************************************************************************************
