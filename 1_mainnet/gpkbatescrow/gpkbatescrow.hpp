@@ -305,5 +305,15 @@ private:
 			eosio::indexed_by< "author"_n, eosio::const_mem_fun<sasset, uint64_t, &sasset::by_author> >
 	> sassets;
 
+	// ==================================================================================
+	bool hasDuplicates(const std::vector<uint64_t>& arr) {
+	    for (std::size_t i = 0; i < arr.size(); ++i) {
+	        for (std::size_t j = i + 1; j < arr.size(); ++j) {
+	            if (arr[i] == arr[j])
+	                return true;
+	        }
+	    }
+	    return false;
+	}
 
 };

@@ -13,6 +13,9 @@ void gpkbatescrow::transferbypl( const name& player,
 		return;
 	}
 
+	// check if the cards are unique
+	check( hasDuplicates(card_ids) == false, "there are duplicate card_ids.");
+
 	auto asset_contract_ac = get_first_receiver();
 
 	check( (asset_contract_ac == "simpleassets"_n) 
@@ -81,6 +84,9 @@ void gpkbatescrow::withdrawbypl( const name& player,
 	check( (asset_contract_ac == "simpleassets"_n) 
 		|| (asset_contract_ac == "atomicassets"_n), 
 		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
+
+	// check if the cards are unique
+	check( hasDuplicates(card_ids) == false, "there are duplicate card_ids.");
 
 	// instantiate the `cardwallet` table
 	cardwallet_index cardwallet_table(get_self(), player.value);

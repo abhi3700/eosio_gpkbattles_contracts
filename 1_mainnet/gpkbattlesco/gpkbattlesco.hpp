@@ -815,6 +815,17 @@ private:
 		
 	}
 
+	// -----------------------------------------------------------------------------------------------------------------------
+	bool hasDuplicates(const std::vector<uint64_t>& arr) {
+	    for (std::size_t i = 0; i < arr.size(); ++i) {
+	        for (std::size_t j = i + 1; j < arr.size(); ++j) {
+	            if (arr[i] == arr[j])
+	                return true;
+	        }
+	    }
+	    return false;
+	}
+
 	// ==================================================================================
 	// Adding inline action for `setgstatus` action in the ridex contract   
 	// void set_gstatus( const name& player, 

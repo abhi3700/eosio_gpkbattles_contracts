@@ -1,6 +1,14 @@
 GPK.Battles Game
 ================
 
+v0.7 - `10-Feb-2021`
+----
+* <u>No duplication:</u> check if the cards transferred, withdrawn, selected are unique.
+```cpp
+// check if the cards are unique
+check( hasDuplicates(card_ids) == false, "there are duplicate card_ids.");
+```
+
 v0.6.1 - `17-Jan-2021`
 ----
 * the permission of the `gpkbattlesco::disndcards` ACTION is changed from `gpkbattlesco@active` to `gpkbattlesco@disndcards`

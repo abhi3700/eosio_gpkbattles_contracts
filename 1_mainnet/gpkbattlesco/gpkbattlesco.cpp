@@ -103,13 +103,15 @@ void gpkbattlesco::trincomegfee( const name& player,
 		|| (asset_contract_ac == "atomicassets"_n), 
 		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
 
+	auto card_ids = std::vector<uint64_t>{card1_id, card2_id, card3_id};
+	// check if the cards are unique
+	check( hasDuplicates(card_ids) == false, "there are duplicate card_ids.");
+
 	// check game_fee balance as "5.00000000 WAX"
 	check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
 
 	// check if the cards are present in the escrow's cardwallet & are in "available" status
 	cardwallet_index cardwallet_table(escrow_contract_ac, player.value);
-
-	vector<uint64_t> card_ids{card1_id, card2_id, card3_id};
 	
 	for(auto&& card_id : card_ids) {
 		auto card_it = cardwallet_table.find(card_id);
