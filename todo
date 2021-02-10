@@ -1,3 +1,4 @@
+- a program for resetting the game in bash
 - add multiple cases of checks params - category, variant, quality, etc..of cards in static function inside .hpp files
    Case-1: exotic, base, A/B
    Case-2: exotic, prism, A/B
