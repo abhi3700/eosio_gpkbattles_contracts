@@ -478,11 +478,10 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```
 
 ## TODO
-* [ ] find out way to add `transferbypl` ACTION as `on_notify[["*::transfer"]]` for asset transfer & then add player's details in the `cardwallet` table & `players` table.
 * before deploy to MAINNET,
-	- [ ] change the card owner's name from `gpkbattlesco` to `gpk.topps`
-	- [ ] change the game contract account name from `gpkbattlesc1` to `gpkbattlesco`
-	- [ ] change the game contract account name from `gpkbattlesc1` to `gpkbattlesco` in the check_gfee_balance() func in `gpkbattlesco` contract
+	- [x] change the card owner's name from `gpkbattlesco` to `gpk.topps`
+	- [x] change the game contract account name from `gpkbattlesc1` to `gpkbattlesco`
+	- [x] change the game contract account name from `gpkbattlesc1` to `gpkbattlesco` in the check_gfee_balance() func in `gpkbattlesco` contract
 
 ## Troubleshooting
 * Error related to "card not found"
