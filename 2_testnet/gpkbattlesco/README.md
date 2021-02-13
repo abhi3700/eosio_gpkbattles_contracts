@@ -61,6 +61,10 @@
 			- add p1 & p2 into a row with game_id
 		1. Erase 2 players from original players_list
 	- `play`
+	- `del1drawgame`
+		1. check for elapsed_time > 180s
+		1. add/sub fees to/from the good/bad player
+		1. del game_id from the `ongamestat` TABLE
 	- `receiverand` [For WAX RNG Oracle service]
 	- `disndcards`: to disburse cards (to escrow contract, not simpleassets bcoz of GUI simplicity) & also transfer each's game_fee i.e. "5 WAX" to income account.
 	- `moergameinfo` [Internal inline]

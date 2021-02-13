@@ -25,6 +25,27 @@ This workflow is as per the Game App.
 	- Case-1: if draw, then players get 1 more chance. If 2 times draw successively for 1 game_id, then the round is dumped. And the card is available for selection in the cardwallet
 	- Case-2: if nodraw, then winner receives 4 cards with 1 as winning reward, whereas the loser receives 2 cards with 1 losing card (any by shuffle)
 
+## Game result
+* There are 3 main possibilities in game results of GPK.Battles.
+
+#### Case-1: <u>1-draw >> Bad</u>: where either of the players has not selected cards (qty. 3)
+* __ACTION sequence__: `play` >> `del1drawgame`
+* __Money sequence__: deduct money >> add/deduct money to/from good/bad player
+
+#### Case-2: <u>1-draw >> Good</u>: where both of the players have selected cards (each qty. 3)
+* Case-2.1: <u>1-draw >> nodraw</u>
+	- __ACTION sequence__: `play` >> `play`
+	- __Money sequence__: deduct money >> deduct money from both players
+* Case-2.2: <u>1-draw >> 2-draw</u>
+	- __ACTION sequence__: `play` >> `play`
+	- __Money sequence__: deduct money >> deduct money from both players
+
+#### Case-3: <u>nodraw</u>
+* __ACTION sequence__: `play`
+* __Money sequence__: deduct money from both players
+
+
+
 ## References
 * simpleassets - https://wax.bloks.io/account/simpleassets?loadContract=true&tab=Tables&table=sassets&account=simpleassets&scope=simpleassets&limit=100
 * [How to Create a Random Number Generator in C++](https://www.bitdegree.org/learn/random-number-generator-cpp)
