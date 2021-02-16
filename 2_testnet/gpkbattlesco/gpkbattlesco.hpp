@@ -237,6 +237,7 @@ public:
 
 	// for testing the escrow table by reading the cards for `select3cardauto` ACTION
 	ACTION testrdescrow( const name& player, const name& asset_contract_ac ) {
+		require_auth(get_self());
 		auto card_ids = checkget_3_available_cards(player, asset_contract_ac);
 
 		for(auto&& card_id : card_ids) {
@@ -246,6 +247,7 @@ public:
 	}
 
 	ACTION testdelongam( uint64_t game_id ) {
+		require_auth(get_self());
 		ongamestat_index ongamestat_table(get_self(), get_self().value);
 		auto ongamestat_it = ongamestat_table.find(game_id);
 		check(ongamestat_it != ongamestat_table.end(), "The game_id doesn't exist." );
@@ -276,6 +278,7 @@ public:
 	}
 
 	ACTION testaddplayr(const name& asset_contract_ac, const name& player) {
+		require_auth(get_self());
 		// add player to the players_list, if not added
 		players_index players_table(get_self(), get_self().value);
 		auto players_it = players_table.find(asset_contract_ac.value);
@@ -299,6 +302,7 @@ public:
 
 
 	ACTION testremplayr(const name& asset_contract_ac, const name& player) {
+		require_auth(get_self());
 		// remove player to the players_list, if present
 		players_index players_table(get_self(), get_self().value);
 		auto players_it = players_table.find(asset_contract_ac.value);
@@ -314,6 +318,7 @@ public:
 	}
 
 	ACTION testdelugame(const name& player, const name& asset_contract_ac) {
+		require_auth(get_self());
 		usergamestat_index usergamestat_table(get_self(), player.value);
 		auto usergamestat_player_it = usergamestat_table.find(asset_contract_ac.value);
 

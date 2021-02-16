@@ -121,6 +121,7 @@ public:
 	ACTION disburse( uint64_t game_id );
 
 	ACTION testsetcstat( const name& player, uint64_t card_id, const name& status ) {
+		require_auth(get_self());
 		// instantiate the `cardwallet` table
 		cardwallet_index cardwallet_table(get_self(), player.value);
 		auto card_it = cardwallet_table.find(card_id);
