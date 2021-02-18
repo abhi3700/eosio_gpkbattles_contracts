@@ -163,8 +163,19 @@ public:
 	 * 
 	 * @param game_id - game id
 	 */
-
 	ACTION play(uint64_t game_id);
+
+	/**
+	 * @brief - play the game if both the player doesn't select cards within 180s of time.
+	 * @details - activities:
+	 * 				- return the deducted money during 1-draw to the non-defaulter
+	 * 				- delete the game_id from ongamestat table
+	 * 
+	 * @param game_id - game id
+	 * @param defaulter_pl - defaulter player
+	 */
+	ACTION del1drawgame( uint64_t game_id,
+						const name& defaulter_pl );
 
 	/**
 	 * @brief - For WAX RNG Service from Oracle
@@ -172,8 +183,6 @@ public:
 	 * 
 	 * @param assoc_id - any no. (not necessarily random), 3700 here.
 	 * @param random_value - get transaction from 
-	 * 
-	 * @return [description]
 	 */
 	ACTION receiverand(uint64_t assoc_id, const eosio::checksum256& random_value);
 
@@ -540,6 +549,8 @@ private:
 		name player_1;
 		name player_2;
 		asset game_fee;
+		name p1_gfee_deducted;		// y or n
+		name p2_gfee_deducted;		// y or n
 		name asset_contract_ac;
 		vector<uint64_t> player1_cards;
 		vector<uint64_t> player2_cards;

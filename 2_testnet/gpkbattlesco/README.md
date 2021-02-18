@@ -65,6 +65,15 @@
 		1. check for elapsed_time > 180s
 		1. add/sub fees to/from the good/bad player
 		1. del game_id from the `ongamestat` TABLE
+		1. From front-end call like this:
+```code
+if (both players selected cards  within 180s):
+    play()
+else if (one of them selects cards within 180s):
+    del1drawgame()
+else if (none selects cards within 180s):
+    del1drawgame()
+```
 	- `receiverand` [For WAX RNG Oracle service]
 	- `disndcards`: to disburse cards (to escrow contract, not simpleassets bcoz of GUI simplicity) & also transfer each's game_fee i.e. "5 WAX" to income account.
 	- `moergameinfo` [Internal inline]

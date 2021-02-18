@@ -91,3 +91,11 @@ pending console output:
 	- First of all, the permission is not changed inside the contract, but has been linked externally.
 	- Reason: As the private key has to be used inside the front-end code, that's why custom key has been created for 2 different ACTION(s) - `play`, `disndcards`.
 	- [Reference](https://developers.eos.io/welcome/v2.0/getting-started/smart-contract-development/linking-custom-permission)
+
+* What if the other player in a game's round doesn't select cards for 2nd time after 1 time draw?
+	- There is a time limit of 180 secs within which both the players should select cards to continue further.
+	- if either of the player selects cards, then the game_fee shall only be deducted from the defaulter player
+
+* What if the none player in a game's round select cards for 2nd time after 1 time draw?
+	- game_fee will be deducted from both the players.
+	- So, this is a motivation for both the players to select cards quickly within 180s of time.
