@@ -102,6 +102,30 @@ public:
 							const asset& qty);
 
 	/**
+	 * @brief - add game fee to player account by qty
+	 * @details - add game fee to player account by qty
+	 * 			- mainly used during play, del1drawgame ACTION
+	 * 
+	 * @param player - player
+	 * @param qty - quantity
+	 * 
+	 */
+	ACTION inliincplbal( const name& player,
+							const asset& qty );
+
+	/**
+	 * @brief - deduct game fee to player account by qty
+	 * @details - deduct game fee to player account by qty
+	 * 			- mainly used during play, del1drawgame ACTION
+	 * 
+	 * @param player - player
+	 * @param qty - quantity
+	 * 
+	 */
+	ACTION inlidecplbal( const name& player,
+							const asset& qty );
+
+	/**
 	 * @brief - transfer game fee to income account
 	 * @details - transfer game fee to income account
 	 * 

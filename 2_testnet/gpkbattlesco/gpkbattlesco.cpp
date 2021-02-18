@@ -551,19 +551,20 @@ void gpkbattlesco::del1drawgame( uint64_t game_id, const vector<name>& defaulter
 	// check if elapsed time > 180 seconds
 	check( ( ( now() - ongamestat_it->start_timestamp ) > 180 ), "the elapsed time is less than or equal to 180 secs." );
 
+	// if one of the players selected the cards => 1 defaulter
 	if (defaulter_pl_list.size() == 1) {
 		defaulter_pl = defaulter_pl_list.front();
 
 		// check if the defaulter_pl exist in the game_id
 		check( ( (ongamestat_it->player_1 == defaulter_pl) || (ongamestat_it->player_2 == defaulter_pl) ), "defaulter_pl doesn\'t exist either as player_1 or player_2");
 
-		// check defaulter_pl has not selected cards & its card_combo is empty
 		if (ongamestat_it->player_1 == defaulter_pl) {
-			check( ongamestat_it->player1_cards == {}, "defaulter player has selected cards. So, it\'s not a defaulter.");
-			check( ongamestat_it->player1_cards_combo == ""_n, "defaulter player has a selected card combo. So, it\'s not a defaulter.");
-			check( p1_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter");
+			// check defaulter_pl has not selected cards & its card_combo is empty & game_fee is deducted
+			check( ongamestat_it->player1_cards == {}, "defaulter player has selected cards. So, " + ongamestat_it->player_1.to_string() + " is not a defaulter.");
+			check( ongamestat_it->player1_cards_combo == ""_n, "defaulter player has a selected card combo. So, " + ongamestat_it->player_1.to_string() + " is not a defaulter.");
+			check( p1_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter: " + ongamestat_it->player_1.to_string());
 		
-			// return money to the other player
+			// 1-a. add money to the defrayer player
 			action(
 				permission_level(get_self(), "active"_n),
 				get_self(),
@@ -571,23 +572,25 @@ void gpkbattlesco::del1drawgame( uint64_t game_id, const vector<name>& defaulter
 				std::make_tuple(ongamestat_it->player_2, ongamestat_it->game_fee);
 			).send();
 
-			// deduct money from the defaulter to "gpkbatincome" account
+			// 1-b. transfer deducted money (from the defaulter) from "gpkbattlesco" to "gpkbatincome" account
 			action(
-				permission_level(get_self(), "active"_n),
-				get_self(),
-				"trincomegfee"_n,
-				std::make_tuple(ongamestat_it->player_1, ongamestat_it->game_fee)
+				permission_level{get_self(), "active"_n},
+				"eosio.token"_n,
+				"transfer"_n,
+				std::make_tuple(get_self(), income_contract_ac, ongamestat_it->game_fee, std::string("transfer game fee for defaulter"))
 			).send();
 
-			// erase the game_id
+
+			// 2. Lastly, erase the game_id
 			ongamestat_table.erase(ongamestat_it);
 
 		} else if (ongamestat_it->player_2 == defaulter_pl) {
-			check( ongamestat_it->player2_cards == {}, "defaulter player has selected cards. So, it\'s not a defaulter.");
-			check( ongamestat_it->player2_cards_combo == ""_n, "defaulter player has a selected card combo. So, it\'s not a defaulter.");
-			check( p2_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter");
+			// check defaulter_pl has not selected cards & its card_combo is empty & game_fee is deducted
+			check( ongamestat_it->player2_cards == {}, "defaulter player has selected cards. So, " + ongamestat_it->player_2.to_string() + " is not a defaulter.");
+			check( ongamestat_it->player2_cards_combo == ""_n, "defaulter player has a selected card combo. So, " + ongamestat_it->player_2.to_string() + " is not a defaulter.");
+			check( p2_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter: " + ongamestat_it->player_2.to_string());
 
-			// return money to the other player
+			// 1-a. add money to the defrayer player
 			action(
 				permission_level(get_self(), "active"_n),
 				get_self(),
@@ -595,76 +598,57 @@ void gpkbattlesco::del1drawgame( uint64_t game_id, const vector<name>& defaulter
 				std::make_tuple(ongamestat_it->player_1, ongamestat_it->game_fee);
 			).send();
 
-			// deduct money from the defaulter to "gpkbatincome" account
+			// 1-b. transfer deducted money (from the defaulter) from "gpkbattlesco" to "gpkbatincome" account
 			action(
-				permission_level(get_self(), "active"_n),
-				get_self(),
-				"trincomegfee"_n,
-				std::make_tuple(ongamestat_it->player_2, ongamestat_it->game_fee)
+				permission_level{get_self(), "active"_n},
+				"eosio.token"_n,
+				"transfer"_n,
+				std::make_tuple(get_self(), income_contract_ac, ongamestat_it->game_fee, std::string("transfer game fee for defaulter"))
 			).send();
 
-			// erase the game_id
+			// 2. Lastly, erase the game_id
 			ongamestat_table.erase(ongamestat_it);
 		}
-	} else if(defaulter_pl_list.size() == 2) {
-		defaulter_pl_1 = defaulter_pl_list.front();
+	} 
+	// if none of the players selected the cards => 2 defaulters
+	else if(defaulter_pl_list.size() == 2) {
+		// defaulter_pl_1 = defaulter_pl_list.front();
+		// defaulter_pl_2 = defaulter_pl_list.back();
 
-		defaulter_pl_2 = defaulter_pl_list.back();
+		// check if the defaulter_pl_1 exist in the game_id as either player_1 or player_2
+		check( ( (ongamestat_it->player_1 == defaulter_pl_list.front()) || (ongamestat_it->player_2 == defaulter_pl_list.front()) ), defaulter_pl_list.front().to_string() + " doesn\'t exist either as player_1 or player_2");
+		// check if the defaulter_pl_2 exist in the game_id as either player_1 or player_2
+		check( ( (ongamestat_it->player_1 == defaulter_pl_list.back()) || (ongamestat_it->player_2 == defaulter_pl_list.back()) ), defaulter_pl_list.back().to_string() + " doesn\'t exist either as player_1 or player_2");
 
-		// check if the defaulter_pl_1 exist in the game_id
-		check( ( (ongamestat_it->player_1 == defaulter_pl_1) || (ongamestat_it->player_2 == defaulter_pl_1) ), "defaulter_pl doesn\'t exist either as player_1 or player_2");
-		// check if the defaulter_pl_2 exist in the game_id
-		check( ( (ongamestat_it->player_1 == defaulter_pl_2) || (ongamestat_it->player_2 == defaulter_pl_2) ), "defaulter_pl doesn\'t exist either as player_1 or player_2");
+		// check defaulter_pl has not selected cards & its card_combo is empty & game_fee is deducted
+		// for player_1
+		check( ongamestat_it->player1_cards == {}, "defaulter player has selected cards. So, " + ongamestat_it->player_1.to_string() + " is not a defaulter.");
+		check( ongamestat_it->player1_cards_combo == ""_n, "defaulter player has a selected card combo. So, " + ongamestat_it->player_1.to_string() + " is not a defaulter.");
+		check( p1_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter: " + ongamestat_it->player_1.to_string());
+	
+		// 1-a. transfer deducted money (from the defaulter) from "gpkbattlesco" to "gpkbatincome" account
+		action(
+			permission_level{get_self(), "active"_n},
+			"eosio.token"_n,
+			"transfer"_n,
+			std::make_tuple(get_self(), income_contract_ac, ongamestat_it->game_fee, std::string("transfer game fee for defaulter"))
+		).send();
 
-		// check defaulter_pl has not selected cards & its card_combo is empty
-		if (ongamestat_it->player_1 == defaulter_pl) {
-			check( ongamestat_it->player1_cards == {}, "defaulter player has selected cards. So, it\'s not a defaulter.");
-			check( ongamestat_it->player1_cards_combo == ""_n, "defaulter player has a selected card combo. So, it\'s not a defaulter.");
-			check( p1_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter");
-		
-			// return money to the other player
-			action(
-				permission_level(get_self(), "active"_n),
-				get_self(),
-				"inliincplbal"_n,
-				std::make_tuple(ongamestat_it->player_2, ongamestat_it->game_fee);
-			).send();
+		// for player_2
+		check( ongamestat_it->player2_cards == {}, "defaulter player has selected cards. So, " + ongamestat_it->player_2.to_string() + " is not a defaulter.");
+		check( ongamestat_it->player2_cards_combo == ""_n, "defaulter player has a selected card combo. So, " + ongamestat_it->player_2.to_string() + " is not a defaulter.");
+		check( p2_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter: " + ongamestat_it->player_2.to_string());
 
-			// deduct money from the defaulter to "gpkbatincome" account
-			action(
-				permission_level(get_self(), "active"_n),
-				get_self(),
-				"trincomegfee"_n,
-				std::make_tuple(ongamestat_it->player_1, ongamestat_it->game_fee)
-			).send();
+		// 1-b. transfer deducted money (from the defaulter) from "gpkbattlesco" to "gpkbatincome" account
+		action(
+			permission_level{get_self(), "active"_n},
+			"eosio.token"_n,
+			"transfer"_n,
+			std::make_tuple(get_self(), income_contract_ac, ongamestat_it->game_fee, std::string("transfer game fee for defaulter"))
+		).send();
 
-			// erase the game_id
-			ongamestat_table.erase(ongamestat_it);
-
-		} else if (ongamestat_it->player_2 == defaulter_pl) {
-			check( ongamestat_it->player2_cards == {}, "defaulter player has selected cards. So, it\'s not a defaulter.");
-			check( ongamestat_it->player2_cards_combo == ""_n, "defaulter player has a selected card combo. So, it\'s not a defaulter.");
-			check( p2_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter");
-
-			// return money to the other player
-			action(
-				permission_level(get_self(), "active"_n),
-				get_self(),
-				"inliincplbal"_n,
-				std::make_tuple(ongamestat_it->player_1, ongamestat_it->game_fee);
-			).send();
-
-			// deduct money from the defaulter to "gpkbatincome" account
-			action(
-				permission_level(get_self(), "active"_n),
-				get_self(),
-				"trincomegfee"_n,
-				std::make_tuple(ongamestat_it->player_2, ongamestat_it->game_fee)
-			).send();
-
-			// erase the game_id
-			ongamestat_table.erase(ongamestat_it);
-		}
+		// 2. Lastly, erase the game_id
+		ongamestat_table.erase(ongamestat_it);
 	}
 	
 
