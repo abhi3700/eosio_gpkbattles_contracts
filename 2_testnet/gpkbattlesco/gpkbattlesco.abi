@@ -4,6 +4,20 @@
     "types": [],
     "structs": [
         {
+            "name": "del1drawgame",
+            "base": "",
+            "fields": [
+                {
+                    "name": "game_id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "defaulter_pl_list",
+                    "type": "name[]"
+                }
+            ]
+        },
+        {
             "name": "disndcards",
             "base": "",
             "fields": [
@@ -33,6 +47,34 @@
             "fields": [
                 {
                     "name": "balance",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
+            "name": "inlidecplbal",
+            "base": "",
+            "fields": [
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "qty",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
+            "name": "inliincplbal",
+            "base": "",
+            "fields": [
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "qty",
                     "type": "asset"
                 }
             ]
@@ -70,6 +112,14 @@
                 {
                     "name": "game_fee",
                     "type": "asset"
+                },
+                {
+                    "name": "p1_gfee_deducted",
+                    "type": "name"
+                },
+                {
+                    "name": "p2_gfee_deducted",
+                    "type": "name"
                 },
                 {
                     "name": "asset_contract_ac",
@@ -318,20 +368,6 @@
             ]
         },
         {
-            "name": "trincomegfee",
-            "base": "",
-            "fields": [
-                {
-                    "name": "player",
-                    "type": "name"
-                },
-                {
-                    "name": "qty",
-                    "type": "asset"
-                }
-            ]
-        },
-        {
             "name": "usergamestat",
             "base": "",
             "fields": [
@@ -382,6 +418,11 @@
     ],
     "actions": [
         {
+            "name": "del1drawgame",
+            "type": "del1drawgame",
+            "ricardian_contract": ""
+        },
+        {
             "name": "disndcards",
             "type": "disndcards",
             "ricardian_contract": ""
@@ -389,6 +430,16 @@
         {
             "name": "empifyplayer",
             "type": "empifyplayer",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "inlidecplbal",
+            "type": "inlidecplbal",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "inliincplbal",
+            "type": "inliincplbal",
             "ricardian_contract": ""
         },
         {
@@ -449,11 +500,6 @@
         {
             "name": "testremplayr",
             "type": "testremplayr",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "trincomegfee",
-            "type": "trincomegfee",
             "ricardian_contract": ""
         },
         {

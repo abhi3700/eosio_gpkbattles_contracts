@@ -28,17 +28,21 @@ This workflow is as per the Game App.
 ## Game result
 * There are 3 main possibilities in game results of GPK.Battles.
 
-#### Case-1: <u>1-draw >> Bad</u>: where either of the players has not selected cards (qty. 3)
-* __ACTION sequence__: `play` >> `del1drawgame`
-* __Money sequence__: deduct money >> add/deduct money to/from good/bad player
+#### Case-1: <u>1-draw >> Bad</u>: where either or both of the players has not selected cards (qty. 3)
+* Case-1.1: when 1 player selects cards => 1 defaulter
+	- __ACTION sequence__: `play` >> `del1drawgame`
+	- __Money sequence__: deduct money from both players >> add money to defrayer player, & transfer deducted money from gpkbattlesco (i.e defaulter player) to gpkbatincome
+* Case-1.2: when no player select cards => 2 defaulters
+	- __ACTION sequence__: `play` >> `del1drawgame`
+	- __Money sequence__: deduct money from both players >> transfer deducted money from gpkbattlesco (i.e defaulter players) to gpkbatincome
 
 #### Case-2: <u>1-draw >> Good</u>: where both of the players have selected cards (each qty. 3)
-* Case-2.1: <u>1-draw >> nodraw</u>
+* Case-2.1: <u>1-draw >> 2-draw</u>
 	- __ACTION sequence__: `play` >> `play`
-	- __Money sequence__: deduct money >> deduct money from both players
-* Case-2.2: <u>1-draw >> 2-draw</u>
+	- __Money sequence__: deduct money from both players >> transfer deducted money from gpkbattlesco (i.e on behalf of both players) to gpkbatincome
+* Case-2.2: <u>1-draw >> nodraw</u>
 	- __ACTION sequence__: `play` >> `play`
-	- __Money sequence__: deduct money >> deduct money from both players
+	- __Money sequence__: deduct money from both players >> transfer deducted money from gpkbattlesco (i.e on behalf of both players) to gpkbatincome
 
 #### Case-3: <u>nodraw</u>
 * __ACTION sequence__: `play`

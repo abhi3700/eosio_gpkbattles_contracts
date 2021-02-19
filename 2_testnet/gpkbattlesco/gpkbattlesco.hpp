@@ -133,9 +133,9 @@ public:
 	 * @param qty - quantity
 	 * 
 	 */
-	ACTION trincomegfee( const name& player, 
+/*	ACTION trincomegfee( const name& player, 
 							const asset& qty );
-
+*/
 	/**
 	 * @brief - player select cards
 	 * @details - player select cards
@@ -199,7 +199,7 @@ public:
 	 * @param defaulter_pl - defaulter player
 	 */
 	ACTION del1drawgame( uint64_t game_id,
-						const name& defaulter_pl );
+						const vector<name>& defaulter_pl_list );
 
 	/**
 	 * @brief - For WAX RNG Service from Oracle
