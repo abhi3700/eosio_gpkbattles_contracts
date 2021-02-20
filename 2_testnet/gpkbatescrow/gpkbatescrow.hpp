@@ -133,6 +133,18 @@ public:
 		});
 	}
 
+	// test clear cardwallet
+	ACTION testccwallet( const name& player, const vector<uint64_t>& card_ids ) {
+		require_auth(get_self());
+
+		cardwallet_index cardwallet_table(get_self(), player.value);
+		for(auto&& card_id : card_ids) {
+			auto card_it = cardwallet_table.find(card_id);
+			check(card_it != cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " doesn't exist in the table.");
+			cardwallet_table.erase(card_it);			
+		}
+	}
+
 	using setcstatus_action  = action_wrapper<"setcstatus"_n, &gpkbatescrow::setcstatus>;
 	using disburse_action  = action_wrapper<"disburse"_n, &gpkbatescrow::disburse>;
 

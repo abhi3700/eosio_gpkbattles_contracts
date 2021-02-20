@@ -50,6 +50,20 @@
             ]
         },
         {
+            "name": "testccwallet",
+            "base": "",
+            "fields": [
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "card_ids",
+                    "type": "uint64[]"
+                }
+            ]
+        },
+        {
             "name": "testsetcstat",
             "base": "",
             "fields": [
@@ -95,6 +109,11 @@
         {
             "name": "setcstatus",
             "type": "setcstatus",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "testccwallet",
+            "type": "testccwallet",
             "ricardian_contract": ""
         },
         {
