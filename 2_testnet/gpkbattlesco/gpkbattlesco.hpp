@@ -856,7 +856,8 @@ private:
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------
-	bool hasDuplicates(const std::vector<uint64_t>& arr) {
+	template<typename T>
+	bool hasDuplicates(const std::vector<T>& arr) {
 	    for (std::size_t i = 0; i < arr.size(); ++i) {
 	        for (std::size_t j = i + 1; j < arr.size(); ++j) {
 	            if (arr[i] == arr[j])

@@ -582,10 +582,14 @@ void gpkbattlesco::del1drawgame( uint64_t game_id, const vector<name>& defaulter
 	// Hence, during this ACTION run, we need to check if the defaulters are 1 or 2
 	// the matching of the defaulter(s) happens in the if-else logic below.
 	auto computed_defaulter_pl_list_count = 0;
-	if( ongamestat_it->player1_cards.empty() || ongamestat_it->player2_cards.empty() )
-		computed_defaulter_pl_list_count = 1;
-	else if ( ongamestat_it->player1_cards.empty() && ongamestat_it->player2_cards.empty() )
+	if ( ongamestat_it->player1_cards.empty() && ongamestat_it->player2_cards.empty() ) {
 		computed_defaulter_pl_list_count = 2;
+		// check if the players in the defaulter_pl_list are unique
+		check( hasDuplicates(defaulter_pl_list) == false, "there are duplicate players parsed.");
+	}
+	else if( (ongamestat_it->player1_cards.empty() && !ongamestat_it->player2_cards.empty()) 
+		|| (!ongamestat_it->player1_cards.empty() && ongamestat_it->player2_cards.empty()) )
+		computed_defaulter_pl_list_count = 1;
 
 	// check both computed_defaulter_pl_list_count & parsed defaulter_pl_list is same
 	check( (computed_defaulter_pl_list_count == defaulter_pl_list.size()), "The parsed defaulter_pl_list count doesn\'t match with that of the computed_defaulter_pl_list. Please parse the actual no. of defaulter players." );
