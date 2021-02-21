@@ -138,11 +138,11 @@ void gpkbattlesco::inlidecplbal( const name& player,
 }
 */
 // --------------------------------------------------------------------------------------------------------------------
-	void gpkbattlesco::sel3card( const name& player,
-										const name& asset_contract_ac,
-										uint64_t card1_id,
-										uint64_t card2_id,
-										uint64_t card3_id ) {
+void gpkbattlesco::sel3card( const name& player,
+								const name& asset_contract_ac,
+								uint64_t card1_id,
+								uint64_t card2_id,
+								uint64_t card3_id ) {
 	require_auth(player);
 
 	check( (asset_contract_ac == "simpleassets"_n) 
@@ -153,8 +153,25 @@ void gpkbattlesco::inlidecplbal( const name& player,
 	// check if the cards are unique
 	check( hasDuplicates(card_ids) == false, "there are duplicate card_ids.");
 
-	// check game_fee balance as "5.00000000 WAX"
-	check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
+	// instantiate the ongamestat table
+	ongamestat_index ongamestat_table(get_self(), get_self().value);
+	auto player1_idx = ongamestat_table.get_index<"byplayer1"_n>();
+	auto player2_idx = ongamestat_table.get_index<"byplayer2"_n>();
+
+	// check if the player is present in either of `player_1` or `player_2` columns 
+	auto player1_it = player1_idx.find(player.value);
+	auto player2_it = player2_idx.find(player.value);
+
+	if ( (player1_it != player1_idx.end()) || (player2_it != player2_idx.end()) ) 					// player found in game_table (after 1 draw)
+	{
+		if( !((player1_it->status == "waitdue1draw"_n) || (player2_it->status == "waitdue1draw"_n)) ) {		// if status of game_id is NOT "waitdue1draw"
+			// check game_fee balance as "5.00000000 WAX"
+			check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
+		}
+	} else {											 										// player NOT found in game_table
+		// check game_fee balance as "5.00000000 WAX"
+		check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
+	}
 
 	// check if the cards are present in the escrow's cardwallet & are in "available" status
 	cardwallet_index cardwallet_table(escrow_contract_ac, player.value);
@@ -184,15 +201,8 @@ void gpkbattlesco::inlidecplbal( const name& player,
 		).send();
 	}
 
+
 	// modify `ongamestat` table with selected cards for respective players
-	ongamestat_index ongamestat_table(get_self(), get_self().value);
-	auto player1_idx = ongamestat_table.get_index<"byplayer1"_n>();
-	auto player2_idx = ongamestat_table.get_index<"byplayer2"_n>();
-
-	// check if the player is present in either of `player_1` or `player_2` columns 
-	auto player1_it = player1_idx.find(player.value);
-	auto player2_it = player2_idx.find(player.value);
-
 	if ( (player1_it != player1_idx.end()) || (player2_it != player2_idx.end()) ) 					// player found in game_table (after 1 draw)
 	{
 
@@ -226,6 +236,7 @@ void gpkbattlesco::inlidecplbal( const name& player,
 	}
 
 }
+
 
 // --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::pairwplayer(const name& player_1, 
