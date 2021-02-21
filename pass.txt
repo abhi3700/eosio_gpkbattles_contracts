@@ -29,6 +29,11 @@ Private key: 5JzkR2vHT9So1ZLyrD5193A5CDMh1ZJjGeqrRUVMj39Vi7TbGAs
 Public key: EOS4xAM3CntMpBsKq1oLTDgmEvcXEMre4eNFT6cjZYoWEEDLoFHH6
 -------------------------------------------------------------
 
+systemkeys
+Private key: 5K3WXVoRMGsCr8szYhKseQxRtmqUhXVVxQWC91387UTGZJYd3xv
+Public key: EOS89GjKGPBDuNaMXaThD4te7qPacaQaL9iBGFBLqbPD7d78TqkZc
+
+
 GPKBattles Admin
 ==================
 gpkbattlsadm
@@ -102,6 +107,11 @@ Public key: EOS6swMs1bu2axNG19s2LmbGfbsBotbLEWkmBetZCL7vt8ci176MM
 randomtestco
 Private key: 5KVVa88d3rGYDEJ3ZAPEgg7CtnLsCq5NtjzR2RWe9bQFFXXNsJY
 Public key: EOS6qKcGDJWYNKuxcCYnPnCKpoHPYq97KpVGoY7tgsfKPbJQcAbVZ
+
+systemkeys
+Private key: 5JBpWYjb4hqSHRce3fkLiNbzXde8ubHqonTUdZnSCosVdKY3yky
+Public key: EOS8LPDf5SwLEuyBbnNjAt7DMjhWRnxMfgSZJMvGoqxnMSpLpc3Mu
+
 
 GPKBattles Players
 ==================
