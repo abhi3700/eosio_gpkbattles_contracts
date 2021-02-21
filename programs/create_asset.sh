@@ -1,3 +1,3 @@
 # copy the asset details from `simpleassets` contract in WAX Mainnet in `sassets` TABLE, scope - gpk.topps
 # Create like this
-cleosw push action simpleassets create '["gpkbattlesco", "exotic", "gpkbattlesco", "", "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/4.jpg\",\"cardid\":4,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/prism/4b.gif\",\"name\":\"Batty Baskin\",\"quality\":\"b\",\"variant\":\"prism\"}", "100000000007699"]' -p gpkbattlesco@active
+cleoswt push action simpleassets create '["gpkbattlesco", "exotic", "gpkbattlesco", "", "{\"backimg\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/back/4.jpg\",\"cardid\":4,\"img\":\"QmYkMDkB1d8ToHNHnFwpeESF3Npfid671NrfbPKiKG8e25/prism/4b.gif\",\"name\":\"Batty Baskin\",\"quality\":\"b\",\"variant\":\"prism\"}", "100000000007699"]' -p gpkbattlesco@active
