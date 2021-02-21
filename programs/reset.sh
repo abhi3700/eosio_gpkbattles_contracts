@@ -1,17 +1,15 @@
 # RESET 
 # means 
 # - clearing the game table, 
-# - clear the players table, 
 # - deselect the cards, if selected (i.e. change the status)
 # - withdraw the cards from gpkbatescrow to simpleassets
 # - remove the row in usergamestat table 
 # - withdraw game fee, if any in the game wallet
+# - clear the players table, if needed
+
 
 # clear the row in game table
 cleoswt push action gpkbattlesc1 testdelongam '["10001731423393"]' -p gpkbattlesc1@active
-
-# remove the player from players table
-cleoswt push action gpkbattlesc1 remplayer '["simpleassets", "gbuser111112"]' -p gpkbatescrow@active
 
 # change the status of the cards (if selected)
 cleoswt push action gpkbatescrow setcstatus '["gbuser111111", "100000000007692", "available"]' -p gpkbattlesc1@active
@@ -24,3 +22,6 @@ cleoswt push action gpkbattlesc1 testdelugame '["gbuser111112", "simpleassets"]'
 
 # withdraw game fee, if any in the game wallet
 cleoswt push action gpkbattlesc1 withdrawgfee '["gbuser111111", "25.00000000 WAX"]' -p gbuser111111@active
+
+# remove the player from players table
+cleoswt push action gpkbattlesc1 remplayer '["simpleassets", "gbuser111112"]' -p gpkbatescrow@active
