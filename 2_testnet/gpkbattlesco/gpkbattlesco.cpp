@@ -70,11 +70,16 @@ void gpkbattlesco::inliincplbal( const name& player,
 	gfeewallet_index gfeewallet_table(get_self(), player.value);
 	auto gfeewallet_it = gfeewallet_table.find(qty.symbol.raw());
 
-	check(gfeewallet_it != gfeewallet_table.end(), "the player is not in the gamefee wallet table.");
-
-	gfeewallet_table.modify(gfeewallet_it, get_self(), [&](auto& row){
-		row.balance += qty;
-	});
+	if(gfeewallet_it == gfeewallet_table.end()) {
+		gfeewallet_table.emplace(get_self(), [&](auto& row){
+			row.balance = qty;
+		});
+	}
+	else {
+		gfeewallet_table.modify(gfeewallet_it, get_self(), [&](auto& row){
+			row.balance += qty;
+		});
+	}
 
 }
 
@@ -572,6 +577,19 @@ void gpkbattlesco::del1drawgame( uint64_t game_id, const vector<name>& defaulter
 	// check if elapsed time > 180 seconds
 	check( ( ( now() - ongamestat_it->start_timestamp ) > 180 ), "the elapsed time is less than or equal to 180 secs." );
 
+	// check if actually, there is 1 defaulter or 2 defaulters
+	// E.g. if there are actually 2 defaulters, then passing 1 defaulter's name shall be a fraud in terms of returning the money to another defaulter
+	// Hence, during this ACTION run, we need to check if the defaulters are 1 or 2
+	// the matching of the defaulter(s) happens in the if-else logic below.
+	auto computed_defaulter_pl_list_count = 0;
+	if( ongamestat_it->player1_cards.empty() || ongamestat_it->player2_cards.empty() )
+		computed_defaulter_pl_list_count = 1;
+	else if ( ongamestat_it->player1_cards.empty() && ongamestat_it->player2_cards.empty() )
+		computed_defaulter_pl_list_count = 2;
+
+	// check both computed_defaulter_pl_list_count & parsed defaulter_pl_list is same
+	check( (computed_defaulter_pl_list_count == defaulter_pl_list.size()), "The parsed defaulter_pl_list count doesn\'t match with that of the computed_defaulter_pl_list. Please parse the actual no. of defaulter players." );
+
 	// if one of the players selected the cards => 1 defaulter
 	if (defaulter_pl_list.size() == 1) {
 		auto defaulter_pl = defaulter_pl_list.front();
@@ -671,9 +689,6 @@ void gpkbattlesco::del1drawgame( uint64_t game_id, const vector<name>& defaulter
 		// 2. Lastly, erase the game_id
 		ongamestat_table.erase(ongamestat_it);
 	}
-	
-
-
 }
 // --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::receiverand(uint64_t assoc_id, const eosio::checksum256& random_value) 
