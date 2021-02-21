@@ -99,3 +99,42 @@ pending console output:
 * What if the none player in a game's round select cards for 2nd time after 1 time draw?
 	- game_fee will be deducted from both the players.
 	- So, this is a motivation for both the players to select cards quickly within 180s of time.
+
+* As we know, when a player selects cards, the player is added into the players_list. Does it also happen in case of post 1-draw?
+	- No.
+	- There is a check in the contract that if the player is not found in the ongamestat table, then it is added.
+	- Please, see this inside `gpkbattlesco::sel3card ACTION`
+```cpp
+	// modify `ongamestat` table with selected cards for respective players
+	if ( (player1_it != player1_idx.end()) || (player2_it != player2_idx.end()) ) 					// player found in game_table (after 1 draw)
+	{
+
+		if(player1_it != player1_idx.end()) {
+			check(player1_it->player1_cards.empty(), "cards are already present for this player. So, can't select cards again.");
+			
+			player1_idx.modify(player1_it, get_self(), [&](auto& row){
+				row.player1_cards = card_ids;
+				row.player1_cards_combo = card_ids_type;
+			});
+		}
+		else if(player2_it != player2_idx.end()) {
+			check(player2_it->player2_cards.empty(), "cards are already present for this player. So, can't select cards again.");
+			
+			player2_idx.modify(player2_it, get_self(), [&](auto& row){
+				row.asset_contract_ac = asset_contract_ac;
+				row.player2_cards = card_ids;
+				row.player2_cards_combo = card_ids_type;
+			});
+		}
+
+	} else {											 										// player NOT found in game_table
+		// add player name into `players` table, if not already added
+		action(
+			permission_level{get_self(), "active"_n},
+			get_self(),
+			"empifyplayer"_n,
+			std::make_tuple(asset_contract_ac, player)
+		).send();
+
+	}
+```
