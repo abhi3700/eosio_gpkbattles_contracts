@@ -634,8 +634,17 @@ void gpkbattlesco::del1drawgame( uint64_t game_id, const vector<name>& defaulter
 				std::make_tuple(get_self(), income_contract_ac, ongamestat_it->game_fee, std::string("transfer game fee for defaulter"))
 			).send();
 
+			// 2. set the defrayer's cards available
+			for(auto&& card_id : ongamestat_it->player2_cards) {
+				action(
+					permission_level{get_self(), "active"_n},
+					escrow_contract_ac,
+					"setcstatus"_n,
+					std::make_tuple(ongamestat_it->player_2, card_id, "available"_n)
+				).send();
+			}
 
-			// 2. Lastly, erase the game_id
+			// 3. Lastly, erase the game_id
 			ongamestat_table.erase(ongamestat_it);
 
 		} else if (ongamestat_it->player_2 == defaulter_pl) {
@@ -660,7 +669,18 @@ void gpkbattlesco::del1drawgame( uint64_t game_id, const vector<name>& defaulter
 				std::make_tuple(get_self(), income_contract_ac, ongamestat_it->game_fee, std::string("transfer game fee for defaulter"))
 			).send();
 
-			// 2. Lastly, erase the game_id
+
+			// 2. set the defrayer's cards available
+			for(auto&& card_id : ongamestat_it->player1_cards) {
+				action(
+					permission_level{get_self(), "active"_n},
+					escrow_contract_ac,
+					"setcstatus"_n,
+					std::make_tuple(ongamestat_it->player_1, card_id, "available"_n)
+				).send();
+			}
+
+			// 3. Lastly, erase the game_id
 			ongamestat_table.erase(ongamestat_it);
 		}
 	} 
