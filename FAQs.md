@@ -138,3 +138,6 @@ pending console output:
 
 	}
 ```
+* In case of post 1-draw, when only 1 player selects cards, then the defrayer's cards remain selected. And in this situation, ofcourse they are not added in the players_list as well (because the defrayer already exists in one of the game_ids). So, will the cards remain selected?
+	- No.
+	- After `play` (result: 1-draw) >> `del1drawgame` (the defrayer's cards are also made available) 
