@@ -149,3 +149,7 @@ pending console output:
 			a. cloud-based triggering of `requestrand`-`receiverrand` ACTION pair.
 			b. & then execution of of `disndcards` ACTION for disbursing cards to winner & loser. This disndcards is kept separate i.e. not put inside `receiverrand` ACTION because:
 				- no `check()` condition can't be put inside. `check` is needed for verifying multiple conditions (put inside the code).
+
+* Why a player is not able to see the games like Case-1 in `usergamestat` TABLE?
+	- Because those games were not played successfully.
+	- Hence, the games of Case-2 & Case-3 are added, but not Case-1.
