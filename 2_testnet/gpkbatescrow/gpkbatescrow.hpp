@@ -235,6 +235,8 @@ private:
 		name player_1;
 		name player_2;
 		asset game_fee;
+		name p1_gfee_deducted;		// y or n
+		name p2_gfee_deducted;		// y or n
 		name asset_contract_ac;
 		vector<uint64_t> player1_cards;
 		vector<uint64_t> player2_cards;
