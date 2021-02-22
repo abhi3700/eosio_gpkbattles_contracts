@@ -1,5 +1,35 @@
 GPK.Battles Game
 ================
+v0.8 - `22-Feb-2021`
+----
+* <u>temporarily deduction of game_fee</u> Now, the game_fee is deducted temporarily (kept with `gpkbattlesco` contract) at the `play` ACTION level is the game is played for 1st time.
+* BUG observed & noted in `pairwplayer` ACTION. So, the alert has been stopped.
+* check of game_fee is not done when the player has ongoing game_id, as the game_fee is already deducted in the 1st attempt (in case of 1-draw).
+* `trincomegfee` ACTION is removed.
+* `del1drawgame` ACTION is added to handle 2 cases:
+	- either of players selects cards => 1 defaulter
+	- none of players selects cards => 2 defaulters
+* Total 5 game results possibilities listed:
+	* #### Case-1: <u>1-draw >> Bad</u>: where either or both of the players has not selected cards (qty. 3)
+		* Case-1.1: when 1 player selects cards => 1 defaulter
+			- __ACTION sequence__: `play` >> `del1drawgame`
+			- __Money sequence__: deduct money from both players >> add money to defrayer player, & transfer deducted money from gpkbattlesco (i.e defaulter player) to gpkbatincome
+		* Case-1.2: when no player select cards => 2 defaulters
+			- __ACTION sequence__: `play` >> `del1drawgame`
+			- __Money sequence__: deduct money from both players >> transfer deducted money from gpkbattlesco (i.e defaulter players) to gpkbatincome
+
+	* #### Case-2: <u>1-draw >> Good</u>: where both of the players have selected cards (each qty. 3)
+		* Case-2.1: <u>1-draw >> 2-draw</u>
+			- __ACTION sequence__: `play` >> `play`
+			- __Money sequence__: deduct money from both players >> transfer deducted money from gpkbattlesco (i.e on behalf of both players) to gpkbatincome
+		* Case-2.2: <u>1-draw >> nodraw</u>
+			- __ACTION sequence__: `play` >> `play`
+			- __Money sequence__: deduct money from both players >> transfer deducted money from gpkbattlesco (i.e on behalf of both players) to gpkbatincome
+
+	* #### Case-3: <u>nodraw</u>
+		* __ACTION sequence__: `play`
+		* __Money sequence__: deduct money from both players
+* Security improvement: So, that no player is able to withdraw game_fee in the interim of each of the game results possibilities listed above.
 
 v0.7 - `10-Feb-2021`
 ----
