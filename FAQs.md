@@ -140,4 +140,12 @@ pending console output:
 ```
 * In case of post 1-draw, when only 1 player selects cards, then the defrayer's cards remain selected. And in this situation, ofcourse they are not added in the players_list as well (because the defrayer already exists in one of the game_ids). So, will the cards remain selected?
 	- No.
-	- After `play` (result: 1-draw) >> `del1drawgame` (the defrayer's cards are also made available) 
+	- After `play` (result: 1-draw) >> `del1drawgame` (the defrayer's cards are also made available)
+
+* In case of no-draw, inside `play` ACTION, why there is a temporary deduction of game_fee, when the game_fee is permanently deducted during `disndcards` ACTION?
+	- First of all, the game_fee is temporarily (remains with `gpkbattlesco` contract) deducted & permanently transferred to `gpkbatincome` account.
+	- This is due to security reason:
+		+ the player(s) could withdraw game_fee in the time they get b/w post `play` & pre `disndcards` ACTION(s) execution. This wait time (around 3-5 sec. max. 3 mins) has to be given because of 
+			a. cloud-based triggering of `requestrand`-`receiverrand` ACTION pair.
+			b. & then execution of of `disndcards` ACTION for disbursing cards to winner & loser. This disndcards is kept separate i.e. not put inside `receiverrand` ACTION because:
+				- no `check()` condition can't be put inside. `check` is needed for verifying multiple conditions (put inside the code).
