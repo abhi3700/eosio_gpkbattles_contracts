@@ -363,9 +363,93 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 	// Send the 2 players an alert that they have paired w/ & the corresponding game_id
 	// send_alert(p1, "You have been paired with game_id: " + std::to_string(game_id));					// NOT needed
 	// send_alert(p2, "You have been paired with game_id: " + std::to_string(game_id));					// NOT needed
+/*	
+* 			NOTE: There is a bug here.
+* 			Need to find out the reason.
+* 			- Observation: 
+* 				+ [NOT Ok] the alert is going to a wrong person out of 2 players, the other player not the requester.
+* 				+ [Ok] paired players are added into the game_id.
+* 				+ [Ok] paired players are removed from the players_list.
+* 			- `pairwplayer` ACTION
+```console
+$ cleoswt push action gpkbattlesc1 pairwplayer '["gbuser111115", "simpleassets"]' -p gbuser111115@active
+executed transaction: 3c90ea18b9cc966e4abfea4c15255963b8e4b1993bf6bc6f6eba03ab4e109a40  112 bytes  645 us
+#  gpkbattlesc1 <= gpkbattlesc1::pairwplayer    {"player_1":"gbuser111115","asset_contract_ac":"simpleassets"}
+#  gpkbattlesc1 <= gpkbattlesc1::sendalert      {"user":"gbuser111115","message":"You have been paired with gbuser111122 with game_id: 1000173745350...
+#  gpkbattlesc1 <= gpkbattlesc1::sendalert      {"user":"gbuser111122","message":"You have been paired with gbuser111115 with game_id: 1000173745350...
+#  gbuser111115 <= gpkbattlesc1::sendalert      {"user":"gbuser111115","message":"You have been paired with gbuser111122 with game_id: 1000173745350...
+#  gbuser111122 <= gpkbattlesc1::sendalert      {"user":"gbuser111122","message":"You have been paired with gbuser111115 with game_id: 1000173745350...
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+```
+* 			- view the ongamestat table after...
+```console
+$ cleoswt get table gpkbattlesc1 gpkbattlesc1 ongamestat --show-payer
+{
+  "rows": [{
+      "data": {
+        "game_id": "10001737453502",
+        "player_1": "gbuser111115",
+        "player_2": "gbuser111121",
+        "game_fee": "5.00000000 WAX",
+        "p1_gfee_deducted": "",
+        "p2_gfee_deducted": "",
+        "asset_contract_ac": "simpleassets",
+        "player1_cards": [
+          "100000000007705",
+          "100000000007712",
+          "100000000007721"
+        ],
+        "player2_cards": [
+          "100000000007694",
+          "100000000007707",
+          "100000000007727"
+        ],
+        "player1_cards_combo": "1a2b",
+        "player2_cards_combo": "2a1b",
+        "start_timestamp": 0,
+        "end_timestamp": 0,
+        "result": "",
+        "winner": "",
+        "loser": "",
+        "winner_transfer_cards": [],
+        "loser_transfer_cards": [],
+        "card_won": 0,
+        "status": "",
+        "random_value": "0000000000000000000000000000000000000000000000000000000000000000",
+        "draw_count": 0,
+        "nodraw_count": 0,
+        "total_play_count": 0
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+* 			- view the players table after...
+```console
+$ cleoswt get table gpkbattlesc1 gpkbattlesc1 players --show-payer
+{
+  "rows": [{
+      "data": {
+        "asset_contract_ac": "simpleassets",
+        "players_list": [
+          "gbuser111122"
+        ]
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+* 
+
 	send_alert(p1, "You have been paired with " + p2.to_string() + " with game_id: " + std::to_string(game_id));
 	send_alert(p2, "You have been paired with " + p1.to_string() + " with game_id: " + std::to_string(game_id));
-
+*/
 }
 
 
