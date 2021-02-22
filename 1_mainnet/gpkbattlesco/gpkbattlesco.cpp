@@ -61,7 +61,53 @@ void gpkbattlesco::withdrawgfee( const name& player,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void gpkbattlesco::trincomegfee( const name& player, 
+void gpkbattlesco::inliincplbal( const name& player,
+									const asset& qty ) {
+	require_auth(get_self());
+
+	check_quantity(qty);
+
+	gfeewallet_index gfeewallet_table(get_self(), player.value);
+	auto gfeewallet_it = gfeewallet_table.find(qty.symbol.raw());
+
+	if(gfeewallet_it == gfeewallet_table.end()) {
+		gfeewallet_table.emplace(get_self(), [&](auto& row){
+			row.balance = qty;
+		});
+	}
+	else {
+		gfeewallet_table.modify(gfeewallet_it, get_self(), [&](auto& row){
+			row.balance += qty;
+		});
+	}
+
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::inlidecplbal( const name& player,
+									const asset& qty ) {
+	require_auth(get_self());
+
+	check_quantity(qty);
+
+	gfeewallet_index gfeewallet_table(get_self(), player.value);
+	auto gfeewallet_it = gfeewallet_table.find(qty.symbol.raw());
+
+	check(gfeewallet_it != gfeewallet_table.end(), "the player is not in the gamefee wallet table.");
+	check(gfeewallet_it->balance.amount >= qty.amount, "The player is overdrawing from the gamefee wallet.");
+
+	gfeewallet_table.modify(gfeewallet_it, get_self(), [&](auto& row){
+		row.balance -= qty;
+	});
+
+	// check if zero balance, then delete the data
+	if( (gfeewallet_it->balance).amount == 0 ) {
+		gfeewallet_table.erase(gfeewallet_it);
+	}
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+/*void gpkbattlesco::trincomegfee( const name& player, 
 									const asset& qty ) {
 	require_auth(get_self());
 
@@ -90,13 +136,13 @@ void gpkbattlesco::trincomegfee( const name& player,
 	}
 
 }
-
+*/
 // --------------------------------------------------------------------------------------------------------------------
-	void gpkbattlesco::sel3card( const name& player,
-										const name& asset_contract_ac,
-										uint64_t card1_id,
-										uint64_t card2_id,
-										uint64_t card3_id ) {
+void gpkbattlesco::sel3card( const name& player,
+								const name& asset_contract_ac,
+								uint64_t card1_id,
+								uint64_t card2_id,
+								uint64_t card3_id ) {
 	require_auth(player);
 
 	check( (asset_contract_ac == "simpleassets"_n) 
@@ -107,8 +153,25 @@ void gpkbattlesco::trincomegfee( const name& player,
 	// check if the cards are unique
 	check( hasDuplicates(card_ids) == false, "there are duplicate card_ids.");
 
-	// check game_fee balance as "5.00000000 WAX"
-	check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
+	// instantiate the ongamestat table
+	ongamestat_index ongamestat_table(get_self(), get_self().value);
+	auto player1_idx = ongamestat_table.get_index<"byplayer1"_n>();
+	auto player2_idx = ongamestat_table.get_index<"byplayer2"_n>();
+
+	// check if the player is present in either of `player_1` or `player_2` columns 
+	auto player1_it = player1_idx.find(player.value);
+	auto player2_it = player2_idx.find(player.value);
+
+	if ( (player1_it != player1_idx.end()) || (player2_it != player2_idx.end()) ) 					// player found in game_table (after 1 draw)
+	{
+		if( !((player1_it->status == "waitdue1draw"_n) || (player2_it->status == "waitdue1draw"_n)) ) {		// if status of game_id is NOT "waitdue1draw"
+			// check game_fee balance as "5.00000000 WAX"
+			check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
+		}
+	} else {											 										// player NOT found in game_table
+		// check game_fee balance as "5.00000000 WAX"
+		check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
+	}
 
 	// check if the cards are present in the escrow's cardwallet & are in "available" status
 	cardwallet_index cardwallet_table(escrow_contract_ac, player.value);
@@ -138,15 +201,8 @@ void gpkbattlesco::trincomegfee( const name& player,
 		).send();
 	}
 
+
 	// modify `ongamestat` table with selected cards for respective players
-	ongamestat_index ongamestat_table(get_self(), get_self().value);
-	auto player1_idx = ongamestat_table.get_index<"byplayer1"_n>();
-	auto player2_idx = ongamestat_table.get_index<"byplayer2"_n>();
-
-	// check if the player is present in either of `player_1` or `player_2` columns 
-	auto player1_it = player1_idx.find(player.value);
-	auto player2_it = player2_idx.find(player.value);
-
 	if ( (player1_it != player1_idx.end()) || (player2_it != player2_idx.end()) ) 					// player found in game_table (after 1 draw)
 	{
 
@@ -180,6 +236,7 @@ void gpkbattlesco::trincomegfee( const name& player,
 	}
 
 }
+
 
 // --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::pairwplayer(const name& player_1, 
@@ -306,9 +363,93 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 	// Send the 2 players an alert that they have paired w/ & the corresponding game_id
 	// send_alert(p1, "You have been paired with game_id: " + std::to_string(game_id));					// NOT needed
 	// send_alert(p2, "You have been paired with game_id: " + std::to_string(game_id));					// NOT needed
+/*	
+* 			NOTE: There is a bug here.
+* 			Need to find out the reason.
+* 			- Observation: 
+* 				+ [NOT Ok] the alert is going to a wrong person out of 2 players, the other player not the requester.
+* 				+ [Ok] paired players are added into the game_id.
+* 				+ [Ok] paired players are removed from the players_list.
+* 			- `pairwplayer` ACTION
+```console
+$ cleoswt push action gpkbattlesc1 pairwplayer '["gbuser111115", "simpleassets"]' -p gbuser111115@active
+executed transaction: 3c90ea18b9cc966e4abfea4c15255963b8e4b1993bf6bc6f6eba03ab4e109a40  112 bytes  645 us
+#  gpkbattlesc1 <= gpkbattlesc1::pairwplayer    {"player_1":"gbuser111115","asset_contract_ac":"simpleassets"}
+#  gpkbattlesc1 <= gpkbattlesc1::sendalert      {"user":"gbuser111115","message":"You have been paired with gbuser111122 with game_id: 1000173745350...
+#  gpkbattlesc1 <= gpkbattlesc1::sendalert      {"user":"gbuser111122","message":"You have been paired with gbuser111115 with game_id: 1000173745350...
+#  gbuser111115 <= gpkbattlesc1::sendalert      {"user":"gbuser111115","message":"You have been paired with gbuser111122 with game_id: 1000173745350...
+#  gbuser111122 <= gpkbattlesc1::sendalert      {"user":"gbuser111122","message":"You have been paired with gbuser111115 with game_id: 1000173745350...
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+```
+* 			- view the ongamestat table after...
+```console
+$ cleoswt get table gpkbattlesc1 gpkbattlesc1 ongamestat --show-payer
+{
+  "rows": [{
+      "data": {
+        "game_id": "10001737453502",
+        "player_1": "gbuser111115",
+        "player_2": "gbuser111121",
+        "game_fee": "5.00000000 WAX",
+        "p1_gfee_deducted": "",
+        "p2_gfee_deducted": "",
+        "asset_contract_ac": "simpleassets",
+        "player1_cards": [
+          "100000000007705",
+          "100000000007712",
+          "100000000007721"
+        ],
+        "player2_cards": [
+          "100000000007694",
+          "100000000007707",
+          "100000000007727"
+        ],
+        "player1_cards_combo": "1a2b",
+        "player2_cards_combo": "2a1b",
+        "start_timestamp": 0,
+        "end_timestamp": 0,
+        "result": "",
+        "winner": "",
+        "loser": "",
+        "winner_transfer_cards": [],
+        "loser_transfer_cards": [],
+        "card_won": 0,
+        "status": "",
+        "random_value": "0000000000000000000000000000000000000000000000000000000000000000",
+        "draw_count": 0,
+        "nodraw_count": 0,
+        "total_play_count": 0
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+* 			- view the players table after...
+```console
+$ cleoswt get table gpkbattlesc1 gpkbattlesc1 players --show-payer
+{
+  "rows": [{
+      "data": {
+        "asset_contract_ac": "simpleassets",
+        "players_list": [
+          "gbuser111122"
+        ]
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+* 
+
 	send_alert(p1, "You have been paired with " + p2.to_string() + " with game_id: " + std::to_string(game_id));
 	send_alert(p2, "You have been paired with " + p1.to_string() + " with game_id: " + std::to_string(game_id));
-
+*/
 }
 
 
@@ -330,25 +471,48 @@ void gpkbattlesco::play(uint64_t game_id) {
 	check( (ongamestat_it->player1_cards.size() == 3) && (ongamestat_it->player1_cards_combo != ""_n),  ongamestat_it->player_1.to_string() + " has not selected the cards after 1 draw.");
 	check( (ongamestat_it->player2_cards.size() == 3) && (ongamestat_it->player2_cards_combo != ""_n),  ongamestat_it->player_2.to_string() + " has not selected the cards after 1 draw.");
 
-	// check game_fee balance as "5 WAX" for each player
-	check_gfee_balance(ongamestat_it->player_1, asset(gamefee_token_amount, gamefee_token_symbol));
-	check_gfee_balance(ongamestat_it->player_2, asset(gamefee_token_amount, gamefee_token_symbol));
+	// check game_fee when the game is NEW/Fresh or not played at all 
+	if (ongamestat_it->status == ""_n) {
+		// check game_fee balance as "5 WAX" for each player
+		check_gfee_balance(ongamestat_it->player_1, ongamestat_it->game_fee);
+		check_gfee_balance(ongamestat_it->player_2, ongamestat_it->game_fee);
+
+		// deduct money from both the players
+		action(
+			permission_level(get_self(), "active"_n),
+			get_self(),
+			"inlidecplbal"_n,
+			std::make_tuple(ongamestat_it->player_1, ongamestat_it->game_fee)
+		).send();
+
+		action(
+			permission_level(get_self(), "active"_n),
+			get_self(),
+			"inlidecplbal"_n,
+			std::make_tuple(ongamestat_it->player_2, ongamestat_it->game_fee)
+		).send();
+	}
 	
 	// check if draw or nodraw
 	if(ongamestat_it->player1_cards_combo == ongamestat_it->player2_cards_combo) {			// Draw
 		check((ongamestat_it->draw_count < 2), "this game can't be proceeded further, as this game is draw & already played for min. 2 times.");
 
 		ongamestat_table.modify(ongamestat_it, get_self(), [&](auto& row){
-			row.start_timestamp = now();
+			if (ongamestat_it->status == ""_n) {		// fresh/new game
+				row.start_timestamp = now();
+				row.p1_gfee_deducted = "y"_n;
+				row.p2_gfee_deducted = "y"_n;
+			}
 			row.result = "draw"_n;
-			row.end_timestamp = now();
-			row.draw_count += 1;
-			row.total_play_count += 1;
+			++row.draw_count;
+			++row.total_play_count;
 
 			if(ongamestat_it->draw_count == 1)
 				row.status = "waitdue1draw"_n;
-			else if(ongamestat_it->draw_count == 2)
+			else if(ongamestat_it->draw_count == 2) {
+				row.end_timestamp = now();
 				row.status = "over"_n;
+			}
 		});
 
 		// Instructions for 1 time draw:
@@ -397,14 +561,12 @@ void gpkbattlesco::play(uint64_t game_id) {
 				std::to_string(ongamestat_it->game_id) + "\' is draw for " + std::to_string(ongamestat_it->draw_count) + " time(s)");
 
 
-			// 3. Clear required row fields
+			// 3. Clear already filled & required row fields
 			ongamestat_table.modify(ongamestat_it, get_self(), [&](auto& row){
 				row.player1_cards = vector<uint64_t>{};
 				row.player2_cards = vector<uint64_t>{};
 				row.player1_cards_combo = ""_n;
 				row.player2_cards_combo = ""_n;
-				row.start_timestamp = 0;
-				row.end_timestamp = 0;
 			});
 
 
@@ -489,6 +651,164 @@ void gpkbattlesco::play(uint64_t game_id) {
 	}
 
 }
+
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::del1drawgame( uint64_t game_id, const vector<name>& defaulter_pl_list )
+{
+	require_auth(get_self());
+
+	// instantiate the `ongamestat` table
+	ongamestat_index ongamestat_table(get_self(), get_self().value);
+	auto ongamestat_it = ongamestat_table.find(game_id);
+
+	check(ongamestat_it != ongamestat_table.end(), "the parsed game_id \'" + std::to_string(game_id) + "\' doesn't exist.");
+
+	// check if the list size is max. 2
+	check(defaulter_pl_list.size() <= 2, "the max length of the list can be 2.");
+
+	// check if this ACTION is after 1-draw i.e. status is "waitdue1draw" meaning wait due to 1-draw
+	check( ongamestat_it->status == "waitdue1draw"_n, "this action is not triggerable except after 1-draw");
+
+	// check if elapsed time > 180 seconds
+	check( ( ( now() - ongamestat_it->start_timestamp ) > 180 ), "the elapsed time is less than or equal to 180 secs." );
+
+	// check if actually, there is 1 defaulter or 2 defaulters
+	// E.g. if there are actually 2 defaulters, then passing 1 defaulter's name shall be a fraud in terms of returning the money to another defaulter
+	// Hence, during this ACTION run, we need to check if the defaulters are 1 or 2
+	// the matching of the defaulter(s) happens in the if-else logic below.
+	auto computed_defaulter_pl_list_count = 0;
+	if ( ongamestat_it->player1_cards.empty() && ongamestat_it->player2_cards.empty() ) {
+		computed_defaulter_pl_list_count = 2;
+		// check if the players in the defaulter_pl_list are unique
+		check( hasDuplicates(defaulter_pl_list) == false, "there are duplicate players parsed.");
+	}
+	else if( (ongamestat_it->player1_cards.empty() && !ongamestat_it->player2_cards.empty()) 
+		|| (!ongamestat_it->player1_cards.empty() && ongamestat_it->player2_cards.empty()) )
+		computed_defaulter_pl_list_count = 1;
+
+	// check both computed_defaulter_pl_list_count & parsed defaulter_pl_list is same
+	check( (computed_defaulter_pl_list_count == defaulter_pl_list.size()), "The parsed defaulter_pl_list count doesn\'t match with that of the computed_defaulter_pl_list. Please parse the actual no. of defaulter players." );
+
+	// if one of the players selected the cards => 1 defaulter
+	if (defaulter_pl_list.size() == 1) {
+		auto defaulter_pl = defaulter_pl_list.front();
+
+		// check if the defaulter_pl exist in the game_id
+		check( ( (ongamestat_it->player_1 == defaulter_pl) || (ongamestat_it->player_2 == defaulter_pl) ), "defaulter_pl doesn\'t exist either as player_1 or player_2");
+
+		if (ongamestat_it->player_1 == defaulter_pl) {
+			// check defaulter_pl has not selected cards & its card_combo is empty & game_fee is deducted
+			check( ongamestat_it->player1_cards.empty(), "defaulter player has selected cards. So, " + ongamestat_it->player_1.to_string() + " is not a defaulter.");
+			check( ongamestat_it->player1_cards_combo == ""_n, "defaulter player has a selected card combo. So, " + ongamestat_it->player_1.to_string() + " is not a defaulter.");
+			check( ongamestat_it->p1_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter: " + ongamestat_it->player_1.to_string());
+		
+			// 1-a. add money to the defrayer player
+			action(
+				permission_level(get_self(), "active"_n),
+				get_self(),
+				"inliincplbal"_n,
+				std::make_tuple(ongamestat_it->player_2, ongamestat_it->game_fee)
+			).send();
+
+			// 1-b. transfer deducted money (from the defaulter) from "gpkbattlesco" to "gpkbatincome" account
+			action(
+				permission_level{get_self(), "active"_n},
+				"eosio.token"_n,
+				"transfer"_n,
+				std::make_tuple(get_self(), income_contract_ac, ongamestat_it->game_fee, std::string("transfer game fee for defaulter"))
+			).send();
+
+			// 2. set the defrayer's cards available
+			for(auto&& card_id : ongamestat_it->player2_cards) {
+				action(
+					permission_level{get_self(), "active"_n},
+					escrow_contract_ac,
+					"setcstatus"_n,
+					std::make_tuple(ongamestat_it->player_2, card_id, "available"_n)
+				).send();
+			}
+
+			// 3. Lastly, erase the game_id
+			ongamestat_table.erase(ongamestat_it);
+
+		} else if (ongamestat_it->player_2 == defaulter_pl) {
+			// check defaulter_pl has not selected cards & its card_combo is empty & game_fee is deducted
+			check( ongamestat_it->player2_cards.empty(), "defaulter player has selected cards. So, " + ongamestat_it->player_2.to_string() + " is not a defaulter.");
+			check( ongamestat_it->player2_cards_combo == ""_n, "defaulter player has a selected card combo. So, " + ongamestat_it->player_2.to_string() + " is not a defaulter.");
+			check( ongamestat_it->p2_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter: " + ongamestat_it->player_2.to_string());
+
+			// 1-a. add money to the defrayer player
+			action(
+				permission_level(get_self(), "active"_n),
+				get_self(),
+				"inliincplbal"_n,
+				std::make_tuple(ongamestat_it->player_1, ongamestat_it->game_fee)
+			).send();
+
+			// 1-b. transfer deducted money (from the defaulter) from "gpkbattlesco" to "gpkbatincome" account
+			action(
+				permission_level{get_self(), "active"_n},
+				"eosio.token"_n,
+				"transfer"_n,
+				std::make_tuple(get_self(), income_contract_ac, ongamestat_it->game_fee, std::string("transfer game fee for defaulter"))
+			).send();
+
+
+			// 2. set the defrayer's cards available
+			for(auto&& card_id : ongamestat_it->player1_cards) {
+				action(
+					permission_level{get_self(), "active"_n},
+					escrow_contract_ac,
+					"setcstatus"_n,
+					std::make_tuple(ongamestat_it->player_1, card_id, "available"_n)
+				).send();
+			}
+
+			// 3. Lastly, erase the game_id
+			ongamestat_table.erase(ongamestat_it);
+		}
+	} 
+	// if none of the players selected the cards => 2 defaulters
+	else if(defaulter_pl_list.size() == 2) {
+		// auto defaulter_pl_1 = defaulter_pl_list.front();
+		// auto defaulter_pl_2 = defaulter_pl_list.back();
+
+		// check if the defaulter_pl_1 exist in the game_id as either player_1 or player_2
+		check( ( (ongamestat_it->player_1 == defaulter_pl_list.front()) || (ongamestat_it->player_2 == defaulter_pl_list.front()) ), defaulter_pl_list.front().to_string() + " doesn\'t exist either as player_1 or player_2");
+		// check if the defaulter_pl_2 exist in the game_id as either player_1 or player_2
+		check( ( (ongamestat_it->player_1 == defaulter_pl_list.back()) || (ongamestat_it->player_2 == defaulter_pl_list.back()) ), defaulter_pl_list.back().to_string() + " doesn\'t exist either as player_1 or player_2");
+
+		// check defaulter_pl has not selected cards & its card_combo is empty & game_fee is deducted
+		// for player_1
+		check( ongamestat_it->player1_cards.empty(), "defaulter player has selected cards. So, " + ongamestat_it->player_1.to_string() + " is not a defaulter.");
+		check( ongamestat_it->player1_cards_combo == ""_n, "defaulter player has a selected card combo. So, " + ongamestat_it->player_1.to_string() + " is not a defaulter.");
+		check( ongamestat_it->p1_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter: " + ongamestat_it->player_1.to_string());
+	
+		// 1-a. transfer deducted money (from the defaulter) from "gpkbattlesco" to "gpkbatincome" account
+		action(
+			permission_level{get_self(), "active"_n},
+			"eosio.token"_n,
+			"transfer"_n,
+			std::make_tuple(get_self(), income_contract_ac, ongamestat_it->game_fee, std::string("transfer game fee for defaulter"))
+		).send();
+
+		// for player_2
+		check( ongamestat_it->player2_cards.empty(), "defaulter player has selected cards. So, " + ongamestat_it->player_2.to_string() + " is not a defaulter.");
+		check( ongamestat_it->player2_cards_combo == ""_n, "defaulter player has a selected card combo. So, " + ongamestat_it->player_2.to_string() + " is not a defaulter.");
+		check( ongamestat_it->p2_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter: " + ongamestat_it->player_2.to_string());
+
+		// 1-b. transfer deducted money (from the defaulter) from "gpkbattlesco" to "gpkbatincome" account
+		action(
+			permission_level{get_self(), "active"_n},
+			"eosio.token"_n,
+			"transfer"_n,
+			std::make_tuple(get_self(), income_contract_ac, ongamestat_it->game_fee, std::string("transfer game fee for defaulter"))
+		).send();
+
+		// 2. Lastly, erase the game_id
+		ongamestat_table.erase(ongamestat_it);
+	}
+}
 // --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::receiverand(uint64_t assoc_id, const eosio::checksum256& random_value) 
 {
@@ -572,8 +892,8 @@ void gpkbattlesco::receiverand(uint64_t assoc_id, const eosio::checksum256& rand
 		row.loser_transfer_cards = loser_transfer_cards;
 		row.status = "over"_n;
 		row.end_timestamp = now();
-		row.nodraw_count += 1;
-		row.total_play_count += 1;
+		++row.nodraw_count;
+		++row.total_play_count;
 	});
 	
 }
@@ -589,11 +909,6 @@ void gpkbattlesco::disndcards(uint64_t game_id ) {
 	check(ongamestat_it != ongamestat_table.end(), "the parsed game_id \'" + std::to_string(game_id) + "\' doesn't exist.");
 	check(ongamestat_it->result == "nodraw"_n, "For cards to be disbursed, the parsed game_id \'" + std::to_string(game_id) + "\' should be of result: \'nodraw\'");
 	check(ongamestat_it->status == "over"_n, "the game with id \'" + std::to_string(game_id) + "\' is not yet over. So, the cards can\'t be disbursed");
-
-	// check game_fee balance as "5 WAX" for each player
-	check_gfee_balance(ongamestat_it->player_1, asset(gamefee_token_amount, gamefee_token_symbol));
-	check_gfee_balance(ongamestat_it->player_2, asset(gamefee_token_amount, gamefee_token_symbol));
-
 
 	// 1. disburse the card to winner & loser at a time
 	action(
@@ -630,18 +945,18 @@ void gpkbattlesco::moergameinfo(uint64_t game_id,
 	// transfer money to income account so that the player can't take the money out.
 	// of player_1
 	action(
-		permission_level(get_self(), "active"_n),
-		get_self(),
-		"trincomegfee"_n,
-		std::make_tuple(ongamestat_it->player_1, asset(gamefee_token_amount, gamefee_token_symbol))
+		permission_level{get_self(), "active"_n},
+		"eosio.token"_n,
+		"transfer"_n,
+		std::make_tuple(get_self(), income_contract_ac, ongamestat_it->game_fee, std::string("transfer game fee"))
 	).send();
 
 	// of player_2
 	action(
-		permission_level(get_self(), "active"_n),
-		get_self(),
-		"trincomegfee"_n,
-		std::make_tuple(ongamestat_it->player_2, asset(gamefee_token_amount, gamefee_token_symbol))
+		permission_level{get_self(), "active"_n},
+		"eosio.token"_n,
+		"transfer"_n,
+		std::make_tuple(get_self(), income_contract_ac, ongamestat_it->game_fee, std::string("transfer game fee"))
 	).send();
 
 
@@ -659,15 +974,15 @@ void gpkbattlesco::moergameinfo(uint64_t game_id,
 
 				// for wins, loses, draws
 				if ((ongamestat_it->result == "nodraw"_n) && (ongamestat_it->winner == player)) {
-					row.wins += 1;
+					++row.wins;
 					row.cards_won = vector<uint64_t>{ongamestat_it->card_won};
 				} else if((ongamestat_it->result == "nodraw"_n) && (ongamestat_it->loser == player)) {
-					row.loses += 1;
+					++row.loses;
 				} else if((ongamestat_it->result == "draw"_n)) {
-					row.draws += 1;
+					++row.draws;
 				}
 
-				row.games += 1;
+				++row.games;
 			});
 
 		}
@@ -678,15 +993,15 @@ void gpkbattlesco::moergameinfo(uint64_t game_id,
 				// for wins, loses, draws
 				if ((ongamestat_it->result == "nodraw"_n) && (ongamestat_it->winner == player))
 				{
-					row.wins += 1;
+					++row.wins;
 					row.cards_won.emplace_back(ongamestat_it->card_won);		// it will duplicate the asset_id. So, no search using `std::find()`
 				} else if((ongamestat_it->result == "nodraw"_n) && (ongamestat_it->loser == player)) {
-					row.loses += 1;
+					++row.loses;
 				} else if((ongamestat_it->result == "draw"_n)) {
-					row.draws += 1;
+					++row.draws;
 				}
 
-				row.games += 1;
+				++row.games;
 
 			});
 		}

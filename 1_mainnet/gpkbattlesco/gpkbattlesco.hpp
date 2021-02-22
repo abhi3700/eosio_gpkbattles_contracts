@@ -102,6 +102,30 @@ public:
 							const asset& qty);
 
 	/**
+	 * @brief - add game fee to player account by qty
+	 * @details - add game fee to player account by qty
+	 * 			- mainly used during play, del1drawgame ACTION
+	 * 
+	 * @param player - player
+	 * @param qty - quantity
+	 * 
+	 */
+	ACTION inliincplbal( const name& player,
+							const asset& qty );
+
+	/**
+	 * @brief - deduct game fee to player account by qty
+	 * @details - deduct game fee to player account by qty
+	 * 			- mainly used during play, del1drawgame ACTION
+	 * 
+	 * @param player - player
+	 * @param qty - quantity
+	 * 
+	 */
+	ACTION inlidecplbal( const name& player,
+							const asset& qty );
+
+	/**
 	 * @brief - transfer game fee to income account
 	 * @details - transfer game fee to income account
 	 * 
@@ -109,9 +133,9 @@ public:
 	 * @param qty - quantity
 	 * 
 	 */
-	ACTION trincomegfee( const name& player, 
+/*	ACTION trincomegfee( const name& player, 
 							const asset& qty );
-
+*/
 	/**
 	 * @brief - player select cards
 	 * @details - player select cards
@@ -163,8 +187,19 @@ public:
 	 * 
 	 * @param game_id - game id
 	 */
-
 	ACTION play(uint64_t game_id);
+
+	/**
+	 * @brief - play the game if both the player doesn't select cards within 180s of time.
+	 * @details - activities:
+	 * 				- return the deducted money during 1-draw to the non-defaulter
+	 * 				- delete the game_id from ongamestat table
+	 * 
+	 * @param game_id - game id
+	 * @param defaulter_pl - defaulter player
+	 */
+	ACTION del1drawgame( uint64_t game_id,
+						const vector<name>& defaulter_pl_list );
 
 	/**
 	 * @brief - For WAX RNG Service from Oracle
@@ -172,8 +207,6 @@ public:
 	 * 
 	 * @param assoc_id - any no. (not necessarily random), 3700 here.
 	 * @param random_value - get transaction from 
-	 * 
-	 * @return [description]
 	 */
 	ACTION receiverand(uint64_t assoc_id, const eosio::checksum256& random_value);
 
@@ -237,6 +270,7 @@ public:
 
 	// for testing the escrow table by reading the cards for `select3cardauto` ACTION
 	ACTION testrdescrow( const name& player, const name& asset_contract_ac ) {
+		require_auth(get_self());
 		auto card_ids = checkget_3_available_cards(player, asset_contract_ac);
 
 		for(auto&& card_id : card_ids) {
@@ -246,6 +280,7 @@ public:
 	}
 
 	ACTION testdelongam( uint64_t game_id ) {
+		require_auth(get_self());
 		ongamestat_index ongamestat_table(get_self(), get_self().value);
 		auto ongamestat_it = ongamestat_table.find(game_id);
 		check(ongamestat_it != ongamestat_table.end(), "The game_id doesn't exist." );
@@ -276,6 +311,7 @@ public:
 	}
 
 	ACTION testaddplayr(const name& asset_contract_ac, const name& player) {
+		require_auth(get_self());
 		// add player to the players_list, if not added
 		players_index players_table(get_self(), get_self().value);
 		auto players_it = players_table.find(asset_contract_ac.value);
@@ -299,6 +335,7 @@ public:
 
 
 	ACTION testremplayr(const name& asset_contract_ac, const name& player) {
+		require_auth(get_self());
 		// remove player to the players_list, if present
 		players_index players_table(get_self(), get_self().value);
 		auto players_it = players_table.find(asset_contract_ac.value);
@@ -314,6 +351,7 @@ public:
 	}
 
 	ACTION testdelugame(const name& player, const name& asset_contract_ac) {
+		require_auth(get_self());
 		usergamestat_index usergamestat_table(get_self(), player.value);
 		auto usergamestat_player_it = usergamestat_table.find(asset_contract_ac.value);
 
@@ -535,6 +573,8 @@ private:
 		name player_1;
 		name player_2;
 		asset game_fee;
+		name p1_gfee_deducted;		// y or n
+		name p2_gfee_deducted;		// y or n
 		name asset_contract_ac;
 		vector<uint64_t> player1_cards;
 		vector<uint64_t> player2_cards;
@@ -816,7 +856,8 @@ private:
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------
-	bool hasDuplicates(const std::vector<uint64_t>& arr) {
+	template<typename T>
+	bool hasDuplicates(const std::vector<T>& arr) {
 	    for (std::size_t i = 0; i < arr.size(); ++i) {
 	        for (std::size_t j = i + 1; j < arr.size(); ++j) {
 	            if (arr[i] == arr[j])

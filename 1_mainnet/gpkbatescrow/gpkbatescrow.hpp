@@ -121,6 +121,7 @@ public:
 	ACTION disburse( uint64_t game_id );
 
 	ACTION testsetcstat( const name& player, uint64_t card_id, const name& status ) {
+		require_auth(get_self());
 		// instantiate the `cardwallet` table
 		cardwallet_index cardwallet_table(get_self(), player.value);
 		auto card_it = cardwallet_table.find(card_id);
@@ -130,6 +131,18 @@ public:
 		cardwallet_table.modify(card_it, get_self(), [&](auto& row) {
 			row.usage_status = status;
 		});
+	}
+
+	// test clear cardwallet
+	ACTION testccwallet( const name& player, const vector<uint64_t>& card_ids ) {
+		require_auth(get_self());
+
+		cardwallet_index cardwallet_table(get_self(), player.value);
+		for(auto&& card_id : card_ids) {
+			auto card_it = cardwallet_table.find(card_id);
+			check(card_it != cardwallet_table.end(), "card with id:" + std::to_string(card_id) + " doesn't exist in the table.");
+			cardwallet_table.erase(card_it);			
+		}
 	}
 
 	using setcstatus_action  = action_wrapper<"setcstatus"_n, &gpkbatescrow::setcstatus>;
@@ -222,6 +235,8 @@ private:
 		name player_1;
 		name player_2;
 		asset game_fee;
+		name p1_gfee_deducted;		// y or n
+		name p2_gfee_deducted;		// y or n
 		name asset_contract_ac;
 		vector<uint64_t> player1_cards;
 		vector<uint64_t> player2_cards;
