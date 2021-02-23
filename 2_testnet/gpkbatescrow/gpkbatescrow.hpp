@@ -36,8 +36,8 @@ using json = nlohmann::json;
 CONTRACT gpkbatescrow : public contract
 {
 private:
-	const int64_t gamefee_token_amount;
-	const symbol gamefee_token_symbol;
+	// const int64_t gamefee_token_amount;
+	// const symbol gamefee_token_symbol;
 	const name game_contract_ac;
 	// const name asset_contract_ac;
 	const name card_author;
@@ -47,8 +47,8 @@ public:
 
 	gpkbatescrow(name receiver, name code, datastream<const char*> ds) : 
 				contract(receiver, code, ds), 
-				gamefee_token_amount(500000000),
-				gamefee_token_symbol("WAX", 8),
+				// gamefee_token_amount(500000000),
+				// gamefee_token_symbol("WAX", 8),
 				// game_contract_ac("gpkbattlesco"_n),				// For Mainnet
 				game_contract_ac("gpkbattlesc1"_n),					// For Testnet
 				// asset_contract_ac("simpleassets"_n)
@@ -194,7 +194,8 @@ public:
 			
 			, "the cards chosen are of different combination than (2A,1B) OR (1A,2B)."
 			);
-*/	}
+*/	
+	}
 
 	// -----------------------------------------------------------------------------------------------------------------------
 	// check if min. gfeewallet's balance is gamefee_value

@@ -1,4 +1,4 @@
-- associate game_fee with card type. Create a utility func 
++ associate game_fee with card type. Create a utility func 
 ```cpp
 asset compute_gamefee(card_id) {
   if (cardid->category == exotic && cardid->variant == base)
@@ -9,7 +9,7 @@ asset compute_gamefee(card_id) {
   return game_fee;  
 }
 ```
-  - this `game_fee` variable can be further added as game_fee required during `pairwplayer()` ACTION i.e. while adding the `game_fee` as one of the fields in `ongamestat` table row.
+  + this `game_fee` variable can be further added as game_fee required during `pairwplayer()` ACTION i.e. while adding the `game_fee` as one of the fields in `ongamestat` table row.
 - a ACTION program `resetall` (in cpp) for resetting the game in bash
   - if there is any game_id, then 
     - capture the players, card ids

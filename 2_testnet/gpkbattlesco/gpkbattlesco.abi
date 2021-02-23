@@ -340,20 +340,6 @@
             ]
         },
         {
-            "name": "testrdescrow",
-            "base": "",
-            "fields": [
-                {
-                    "name": "player",
-                    "type": "name"
-                },
-                {
-                    "name": "asset_contract_ac",
-                    "type": "name"
-                }
-            ]
-        },
-        {
             "name": "testremplayr",
             "base": "",
             "fields": [
@@ -490,11 +476,6 @@
         {
             "name": "testdelugame",
             "type": "testdelugame",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "testrdescrow",
-            "type": "testrdescrow",
             "ricardian_contract": ""
         },
         {
