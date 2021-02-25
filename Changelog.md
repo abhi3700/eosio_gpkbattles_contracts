@@ -1,5 +1,9 @@
 GPK.Battles Game
 ================
+v0.8.1 - `25-Feb-2021`
+* compute game_fee based on cards type e.g. "exotic | base | A/B", etc.
+* tokens added back for defrayer to their `eosio.token::accounts` TABLE instead of previously into `gpkbattlesco::gfeewallet`.
+
 v0.8 - `22-Feb-2021`
 ----
 * <u>temporarily deduction of game_fee</u> Now, the game_fee is deducted temporarily (kept with `gpkbattlesco` contract) at the `play` ACTION level is the game is played for 1st time.
