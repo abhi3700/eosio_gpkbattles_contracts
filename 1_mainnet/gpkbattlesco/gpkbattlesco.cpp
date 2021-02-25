@@ -166,11 +166,13 @@ void gpkbattlesco::sel3card( const name& player,
 	{
 		if( !((player1_it->status == "waitdue1draw"_n) || (player2_it->status == "waitdue1draw"_n)) ) {		// if status of game_id is NOT "waitdue1draw"
 			// check game_fee balance as "5.00000000 WAX"
-			check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
+			// check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
+			check_gfee_balance(player, compute_gamefee(asset_contract_ac, escrow_contract_ac, player, card_ids));
 		}
 	} else {											 										// player NOT found in game_table
 		// check game_fee balance as "5.00000000 WAX"
-		check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
+			// check_gfee_balance(player, asset(gamefee_token_amount, gamefee_token_symbol));
+			check_gfee_balance(player, compute_gamefee(asset_contract_ac, escrow_contract_ac, player, card_ids));
 	}
 
 	// check if the cards are present in the escrow's cardwallet & are in "available" status
@@ -248,13 +250,14 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 		|| (asset_contract_ac == "atomicassets"_n), 
 		"asset contract can either be \'simpleassets\' or \'atomicassets\'");
 
-	// check player_1 has deposited game fee
-	// check game_fee balance as "5.00000000 WAX" for player_1
-	check_gfee_balance(player_1, asset(gamefee_token_amount, gamefee_token_symbol));
-
 	// check if p1 contain min. 3 cards as selected
 	// collect card_ids for p1 if transferred
 	auto card_ids_p1 = checkget_3_selected_cards(player_1, asset_contract_ac);
+
+	// check player_1 has deposited game fee
+	// check game_fee balance as "5.00000000 WAX" for player_1
+	// check_gfee_balance(player_1, asset(gamefee_token_amount, gamefee_token_symbol));
+	check_gfee_balance(player_1, compute_gamefee(asset_contract_ac, escrow_contract_ac, player_1, card_ids_p1));
 
 	// Now, check if 3 selected cards are of either (2A,1B) or (1A,2B) with escrow contract as owner.
 	// here check is done after the transfer to the escrow contract
@@ -312,6 +315,11 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 	// check if p2 contain min. 3 cards as selected
 	// collect card_ids for p2 if transferred
 	auto card_ids_p2 = checkget_3_selected_cards(p2, asset_contract_ac);
+
+	// check player_2 has deposited game fee
+	// check game_fee balance as "5.00000000 WAX" for player_2
+	// check_gfee_balance(player_2, asset(gamefee_token_amount, gamefee_token_symbol));
+	check_gfee_balance(p2, compute_gamefee(asset_contract_ac, escrow_contract_ac, p2, card_ids_p2));
 
 	// Now, check if 3 selected cards are of either (2A,1B) or (1A,2B) with escrow contract as owner.
 	// here check is done after the transfer to the escrow contract
@@ -703,12 +711,22 @@ void gpkbattlesco::del1drawgame( uint64_t game_id, const vector<name>& defaulter
 			check( ongamestat_it->p1_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter: " + ongamestat_it->player_1.to_string());
 		
 			// 1-a. add money to the defrayer player
-			action(
+			// tranfer money to the defrayer's `gpkbattlesco::gfeewallet` TABLE
+/*			action(
 				permission_level(get_self(), "active"_n),
 				get_self(),
 				"inliincplbal"_n,
 				std::make_tuple(ongamestat_it->player_2, ongamestat_it->game_fee)
 			).send();
+*/			
+			// tranfer money to the defrayer's `eosio.tokne::accounts` TABLE
+			action(
+				permission_level{get_self(), "active"_n},
+				"eosio.token"_n,
+				"transfer"_n,
+				std::make_tuple(get_self(), ongamestat_it->player_2, ongamestat_it->game_fee, std::string("transfer game fee to defrayer"))
+			).send();
+
 
 			// 1-b. transfer deducted money (from the defaulter) from "gpkbattlesco" to "gpkbatincome" account
 			action(
@@ -738,11 +756,20 @@ void gpkbattlesco::del1drawgame( uint64_t game_id, const vector<name>& defaulter
 			check( ongamestat_it->p2_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter: " + ongamestat_it->player_2.to_string());
 
 			// 1-a. add money to the defrayer player
-			action(
+			// tranfer money to the defrayer's `gpkbattlesco::gfeewallet` TABLE
+/*			action(
 				permission_level(get_self(), "active"_n),
 				get_self(),
 				"inliincplbal"_n,
 				std::make_tuple(ongamestat_it->player_1, ongamestat_it->game_fee)
+			).send();
+*/			
+			// tranfer money to the defrayer's `eosio.tokne::accounts` TABLE
+			action(
+				permission_level{get_self(), "active"_n},
+				"eosio.token"_n,
+				"transfer"_n,
+				std::make_tuple(get_self(), ongamestat_it->player_1, ongamestat_it->game_fee, std::string("transfer game fee to defrayer"))
 			).send();
 
 			// 1-b. transfer deducted money (from the defaulter) from "gpkbattlesco" to "gpkbatincome" account

@@ -269,7 +269,7 @@ public:
 
 
 	// for testing the escrow table by reading the cards for `select3cardauto` ACTION
-	ACTION testrdescrow( const name& player, const name& asset_contract_ac ) {
+/*	ACTION testrdescrow( const name& player, const name& asset_contract_ac ) {
 		require_auth(get_self());
 		auto card_ids = checkget_3_available_cards(player, asset_contract_ac);
 
@@ -278,7 +278,7 @@ public:
 			// print(std::to_string(card_id), " | ");
 		}
 	}
-
+*/
 	ACTION testdelongam( uint64_t game_id ) {
 		require_auth(get_self());
 		ongamestat_index ongamestat_table(get_self(), get_self().value);
@@ -380,33 +380,33 @@ public:
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------
-	static vector<uint64_t> checkget_3_available_cards(const name& player, const name& asset_contract_ac) {
-		// create an empty vector of card
-		vector<uint64_t> card_ids{};
+	// static vector<uint64_t> checkget_3_available_cards(const name& player, const name& asset_contract_ac) {
+	// 	// create an empty vector of card
+	// 	vector<uint64_t> card_ids{};
 
-		// read the `cardwallet` table & collect 3 available cards of `asset_contract_ac`
-		cardwallet_index cardwallet_table("gpkbatescrow"_n, player.value);
-		auto usagstatus_idx = cardwallet_table.get_index<"byusagstatus"_n>();
-		auto cardwallet_it = usagstatus_idx.find("available"_n.value);
+	// 	// read the `cardwallet` table & collect 3 available cards of `asset_contract_ac`
+	// 	cardwallet_index cardwallet_table("gpkbatescrow"_n, player.value);
+	// 	auto usagstatus_idx = cardwallet_table.get_index<"byusagstatus"_n>();
+	// 	auto cardwallet_it = usagstatus_idx.find("available"_n.value);
 
-		check( (cardwallet_it != usagstatus_idx.end()) &&
-				(cardwallet_it->contract_ac == asset_contract_ac)
-				, "player has no cards of asset contract: \'" + asset_contract_ac.to_string() + "\' available for selection.");
+	// 	check( (cardwallet_it != usagstatus_idx.end()) &&
+	// 			(cardwallet_it->contract_ac == asset_contract_ac)
+	// 			, "player has no cards of asset contract: \'" + asset_contract_ac.to_string() + "\' available for selection.");
 		
-		// capture the 1st card 
-		card_ids.emplace_back(cardwallet_it->card_id);	
+	// 	// capture the 1st card 
+	// 	card_ids.emplace_back(cardwallet_it->card_id);	
 		
-		// capture the 2 more cards 
-		while(card_ids.size() < 3) {
-			++cardwallet_it;
-			check( (cardwallet_it != usagstatus_idx.end()) && 
-				(cardwallet_it->contract_ac == asset_contract_ac)
-				, "player has less than 3 available cards. Please ensure min. 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
-			card_ids.emplace_back(cardwallet_it->card_id);
-		}
+	// 	// capture the 2 more cards 
+	// 	while(card_ids.size() < 3) {
+	// 		++cardwallet_it;
+	// 		check( (cardwallet_it != usagstatus_idx.end()) && 
+	// 			(cardwallet_it->contract_ac == asset_contract_ac)
+	// 			, "player has less than 3 available cards. Please ensure min. 3 cards available for selection of asset contract: \'" + asset_contract_ac.to_string() + "\'");
+	// 		card_ids.emplace_back(cardwallet_it->card_id);
+	// 	}
 
-		return card_ids;
-	}
+	// 	return card_ids;
+	// }
 
 
 	// -----------------------------------------------------------------------------------------------------------------------
@@ -438,6 +438,54 @@ public:
 		return card_ids;
 	}
 
+/**
+ 	compute game fee if cards are of a type-1
+	1. type-1: exotic | base | A or B
+	2. // todo
+ */
+	static asset compute_gamefee( 
+									const name& asset_contract_ac,
+									const name& owner,
+									const name& player,
+									const vector<uint64_t> card_ids
+								) 
+	{
+
+		// auto selected_card_ids = checkget_3_selected_cards(const name& player, const name& asset_contract_ac);
+
+		sassets assets(asset_contract_ac, owner.value);
+
+		// initialize game_fee
+		asset game_fee = asset(0, symbol("WAX", 8));		// represents "0.00000000 WAX"
+		// initialize game_fee_list
+		vector<asset> game_fee_list = {};
+
+		for(auto&& card_id : card_ids) {
+			auto idx = assets.find(card_id);
+
+			check(idx != assets.end(), "Asset with id " + std::to_string(card_id) + " not found or not yours");
+			check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
+			// check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
+
+			auto mdata = json::parse(idx->mdata);
+
+			// type-1
+			if( (idx->category == "exotic"_n)  && (mdata["variant"] == "base") && ( (mdata["quality"] == "a") || (mdata["quality"] == "b") ) ) {
+				game_fee_list.emplace_back(asset(500000000, symbol("WAX", 8)));			// inserts "5.00000000 WAX"
+			}
+			// add other combinations of cards like prism, etc..
+		}
+
+		// check the game_fee_list has to be of size 3 in order to proceed further for playing
+		check(game_fee_list.size() == 3, "the game_fee can\'t be computed because the 3 selected cards by " + player.to_string() + " are of different types, defined for this game.");
+
+		if ( std::adjacent_find( game_fee_list.begin(), game_fee_list.end(), std::not_equal_to<>() ) == game_fee_list.end() )
+		{
+		    game_fee = game_fee_list.front();
+		}
+
+		return game_fee;
+	}
 
 	// -----------------------------------------------------------------------------------------------------------------------
 	// check cards' category, quality, variant & 2A,1B or 1A,2B before/after the transfer to the contract

@@ -711,12 +711,22 @@ void gpkbattlesco::del1drawgame( uint64_t game_id, const vector<name>& defaulter
 			check( ongamestat_it->p1_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter: " + ongamestat_it->player_1.to_string());
 		
 			// 1-a. add money to the defrayer player
-			action(
+			// tranfer money to the defrayer's `gpkbattlesco::gfeewallet` TABLE
+/*			action(
 				permission_level(get_self(), "active"_n),
 				get_self(),
 				"inliincplbal"_n,
 				std::make_tuple(ongamestat_it->player_2, ongamestat_it->game_fee)
 			).send();
+*/			
+			// tranfer money to the defrayer's `eosio.tokne::accounts` TABLE
+			action(
+				permission_level{get_self(), "active"_n},
+				"eosio.token"_n,
+				"transfer"_n,
+				std::make_tuple(get_self(), ongamestat_it->player_2, ongamestat_it->game_fee, std::string("transfer game fee to defrayer"))
+			).send();
+
 
 			// 1-b. transfer deducted money (from the defaulter) from "gpkbattlesco" to "gpkbatincome" account
 			action(
@@ -746,11 +756,20 @@ void gpkbattlesco::del1drawgame( uint64_t game_id, const vector<name>& defaulter
 			check( ongamestat_it->p2_gfee_deducted == "y"_n, "the game_fee is NOT deducted for the defaulter: " + ongamestat_it->player_2.to_string());
 
 			// 1-a. add money to the defrayer player
-			action(
+			// tranfer money to the defrayer's `gpkbattlesco::gfeewallet` TABLE
+/*			action(
 				permission_level(get_self(), "active"_n),
 				get_self(),
 				"inliincplbal"_n,
 				std::make_tuple(ongamestat_it->player_1, ongamestat_it->game_fee)
+			).send();
+*/			
+			// tranfer money to the defrayer's `eosio.tokne::accounts` TABLE
+			action(
+				permission_level{get_self(), "active"_n},
+				"eosio.token"_n,
+				"transfer"_n,
+				std::make_tuple(get_self(), ongamestat_it->player_1, ongamestat_it->game_fee, std::string("transfer game fee to defrayer"))
 			).send();
 
 			// 1-b. transfer deducted money (from the defaulter) from "gpkbattlesco" to "gpkbatincome" account
