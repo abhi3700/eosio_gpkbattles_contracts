@@ -1,6 +1,13 @@
 GPK.Battles Game
 ================
+v0.8.2 - `07-Mar-2021`
+----
+* `compute_gamefee()` utility function has been modified from "5 WAX" to "1 WAX".
+* a table - `configs` in `gpkbattlesco` has been created. Corresponding ACTION(s) created: `setconfig`, `delconfig`, `testrdconft1`, `testrdconft2`
+	- TODO: research more on the table so as to limit the no. of cards so as to iterate less while finding the game_fee for a card_combo.
+
 v0.8.1 - `25-Feb-2021`
+----
 * compute game_fee based on cards type e.g. "exotic | base | A/B", etc.
 * tokens added back for defrayer to their `eosio.token::accounts` TABLE instead of previously into `gpkbattlesco::gfeewallet`.
 

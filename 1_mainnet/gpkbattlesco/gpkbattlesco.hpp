@@ -72,7 +72,69 @@ public:
 				// card_ids_type_2("1a2b"_n)
 				{}
 
-	
+	/**
+	 * @brief set config of cards with corresponding game_fee
+	 * @details set config of cards with corresponding game_fee
+	 * 
+	 * @param asset_contract_ac - asset contract account name: simpleassets, atomicassets
+	 * @param id - card's combo id
+	 * @param author - card's author
+	 * @param category - card's category
+	 * @param variant - card's variant
+	 * @param quality - card's author
+	 * @param game_fee - card's game_fee
+	 */
+	ACTION setconfig( const name& asset_contract_ac,
+						uint64_t id,
+						const name& author, 
+						const name& category,
+						const string& variant,
+						const string& quality,
+						const asset& game_fee );
+
+	// read config table 1: via id
+	ACTION testrdconft1( const name& asset_contract_ac, uint64_t id ) {
+		require_auth(get_self());
+
+		config_index config_table(get_self(), asset_contract_ac.value);
+		auto config_it = config_table.find(id);
+
+		check(config_it != config_table.end(), "the combo id is not found.");
+		
+		print(std::to_string(id));
+		// print(std::to_string(id), config_it->author.to_string(), config_it->category.to_string(), config_it->variant, config_it->quality, config_it->game_fee.to_string());
+		// config_it->game_fee.print();
+
+	}
+
+	// read config table 2: via author
+	ACTION testrdconft2( const name& asset_contract_ac, const name& author ) {
+		require_auth(get_self());
+
+		config_index config_table(get_self(), asset_contract_ac.value);
+		auto author_idx = config_table.get_index<"byauthor"_n>();
+		auto config_it = author_idx.find(author.value);
+
+		check(config_it != author_idx.end(), "the combo id is not found.");
+
+		while(config_it != author_idx.end()) {
+			print(std::to_string(config_it->id), config_it->author.to_string(), config_it->category.to_string(), config_it->variant, config_it->quality, config_it->game_fee.to_string());
+			// config_it->game_fee.print();
+			++config_it;
+		}
+	}
+
+
+	/**
+	 * @brief del config of cards with combo id
+	 * @details del config of cards with combo id
+	 * 
+	 * @param asset_contract_ac - asset contract account name: simpleassets, atomicassets
+	 * @param id - card's combo id
+	 */
+	ACTION delconfig( const name& asset_contract_ac, 
+						uint64_t id );
+
 
 	/**
 	 * @brief - deposit game fee
@@ -82,7 +144,7 @@ public:
 	 * @param contract_ac - contract account name
 	 * @param game_fee - game fee 
 	 * @param memo - memo
-	 */
+	*/
 	[[eosio::on_notify("eosio.token::transfer")]]
 	void depositgfee( const name& player,
 					const name& contract_ac,
@@ -471,15 +533,17 @@ public:
 
 			// type-1
 			if( (idx->category == "exotic"_n)  && (mdata["variant"] == "base") && ( (mdata["quality"] == "a") || (mdata["quality"] == "b") ) ) {
-				game_fee_list.emplace_back(asset(500000000, symbol("WAX", 8)));			// inserts "5.00000000 WAX"
+				game_fee_list.emplace_back(asset(100000000, symbol("WAX", 8)));			// inserts "1.00000000 WAX"
 			}
 			// add other combinations of cards like prism, etc..
 		}
 
 		// check the game_fee_list has to be of size 3 in order to proceed further for playing
-		check(game_fee_list.size() == 3, "the game_fee can\'t be computed because the 3 selected cards by " + player.to_string() + " are of different types, defined for this game.");
+		check(game_fee_list.size() == 3, "the game_fee can\'t be computed because the 3 selected cards by " + player.to_string() + " are of incompatible types than what is defined for this game.");
 
-		if ( std::adjacent_find( game_fee_list.begin(), game_fee_list.end(), std::not_equal_to<>() ) == game_fee_list.end() )
+		// if all the game_fees for the cards are equal
+		// basically, check if the vector has all the elements as same.
+		if ( std::all_of(game_fee_list.begin(), game_fee_list.end(), [&game_fee_list](auto i){return i == game_fee_list[0];}) ) 
 		{
 		    game_fee = game_fee_list.front();
 		}
@@ -614,6 +678,24 @@ public:
 	}
 
 private:
+	// ======================================================================================================================
+	// scope - <asset_contract_name> like simpleassets, atomicassets
+	TABLE config {
+		uint64_t id;
+		name author;
+		name category;
+		string variant;
+		string quality;
+		asset game_fee;
+
+		auto primary_key() const { return id; }
+		uint64_t by_author() const { return author.value; }
+	};
+
+	using config_index = multi_index<"configs"_n, config,
+								indexed_by< "byauthor"_n, const_mem_fun<config, uint64_t, &config::by_author>>
+								>;
+
 	// ======================================================================================================================
 	// scope - self
 	TABLE ongamestat {

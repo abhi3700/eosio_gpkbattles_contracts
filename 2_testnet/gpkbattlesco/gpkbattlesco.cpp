@@ -1,6 +1,52 @@
 #include "gpkbattlesco.hpp"
 
 // --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::setconfig( const name& asset_contract_ac,
+					uint64_t id,
+					const name& author, 
+					const name& category,
+					const string& variant,
+					const string& quality,
+					const asset& game_fee ) 
+{
+	require_auth(get_self());
+
+	config_index config_table(get_self(), asset_contract_ac.value);
+	auto config_it = config_table.find(id);
+
+	if (config_it == config_table.end()) {
+		config_table.emplace(get_self(), [&](auto& row) {
+			row.id = id;
+			row.author = author;
+			row.category = category;
+			row.variant = variant;
+			row.quality = quality;
+			row.game_fee = game_fee;
+		});
+	} else {
+		config_table.modify(config_it, get_self(), [&](auto& row) {
+			row.author = author;
+			row.category = category;
+			row.variant = variant;
+			row.quality = quality;
+			row.game_fee = game_fee;
+		});
+	}
+}
+// --------------------------------------------------------------------------------------------------------------------
+void gpkbattlesco::delconfig( const name& asset_contract_ac, 
+								uint64_t id ) 
+{
+	require_auth(get_self());
+
+	config_index config_table(get_self(), asset_contract_ac.value);
+	auto config_it = config_table.find(id);
+
+	check(config_it != config_table.end(), "the combo id is not found.");
+	config_table.erase(config_it);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 void gpkbattlesco::depositgfee( const name& player,
 							const name& contract_ac,
 							const asset& game_fee,

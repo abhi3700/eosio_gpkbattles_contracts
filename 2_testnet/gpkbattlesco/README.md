@@ -175,6 +175,123 @@ $ cleoswt push action gpkbattlesc1 disndcards '["10001729600833"]' -p gpkbattles
 	- if 2 times draw, then cards are restored & game fee is deducted. Here, another chance to select cards is given to both the players in the same game round.
 	- if 1 Draw & 1 Nodraw, then disburse cards as in 1st step.
 
+### Action - `setconfig`
+* set config of combo_1
+```console
+$ cleoswt push action gpkbattlesc1 setconfig '["simpleassets", "1", "gpkbattlesco", "exotic", "base", "a", "5.00000000 WAX"]' -p gpkbattlesc1@active
+executed transaction: 9748ff0a0b333d6213c24cc85969908ec35a7409289f81e0b4009113a1b8df77  152 bytes  292 us
+#  gpkbattlesc1 <= gpkbattlesc1::setconfig      {"asset_contract_ac":"simpleassets","id":1,"author":"gpkbattlesco","category":"exotic","variant":"ba...
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+```
+	- show configs table
+```console
+$ cleoswt get table gpkbattlesc1 simpleassets configs --show-payer
+
+{
+  "rows": [{
+      "data": {
+        "id": 1,
+        "author": "gpkbattlesco",
+        "category": "exotic",
+        "variant": "base",
+        "quality": "a",
+        "game_fee": "5.00000000 WAX"
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+* set config of combo_2
+```console
+$ cleoswt push action gpkbattlesc1 setconfig '["simpleassets", "2", "gpkbattlesco", "exotic", "base", "b", "5.00000000 WAX"]' -p gpkbattlesc1@active
+executed transaction: 9748ff0a0b333d6213c24cc85969908ec35a7409289f81e0b4009113a1b8df77  152 bytes  292 us
+#  gpkbattlesc1 <= gpkbattlesc1::setconfig      {"asset_contract_ac":"simpleassets","id":1,"author":"gpkbattlesco","category":"exotic","variant":"ba...
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+```
+	- show configs table
+```console
+$ cleoswt get table gpkbattlesc1 simpleassets configs --show-payer
+{
+  "rows": [{
+      "data": {
+        "id": 1,
+        "author": "gpkbattlesco",
+        "category": "exotic",
+        "variant": "base",
+        "quality": "a",
+        "game_fee": "5.00000000 WAX"
+      },
+      "payer": "gpkbattlesc1"
+    },{
+      "data": {
+        "id": 2,
+        "author": "gpkbattlesco",
+        "category": "exotic",
+        "variant": "base",
+        "quality": "b",
+        "game_fee": "5.00000000 WAX"
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+
+### Action - `delconfig`
+* del combo_id 1
+```console
+$ cleoswt push action gpkbattlesc1 delconfig '["simpleassets", "1"]' -p gpkbattlesc1@active
+
+executed transaction: 7a72640d9021551a402645da8a9f263703232cb53463e568383492a5c0b4dc53  112 bytes  193 us
+#  gpkbattlesc1 <= gpkbattlesc1::delconfig      {"asset_contract_ac":"simpleassets","id":1}
+warning: transaction executed locally, but may not be confirmed by the network yet         ]
+```
+	- show configs table
+```console
+$ cleoswt get table gpkbattlesc1 simpleassets configs --show-payer
+{
+  "rows": [{
+      "data": {
+        "id": 2,
+        "author": "gpkbattlesco",
+        "category": "exotic",
+        "variant": "base",
+        "quality": "b",
+        "game_fee": "5.00000000 WAX"
+      },
+      "payer": "gpkbattlesc1"
+    },{
+      "data": {
+        "id": 3,
+        "author": "gpkbattlesco",
+        "category": "exotic",
+        "variant": "prism",
+        "quality": "b",
+        "game_fee": "10.00000000 WAX"
+      },
+      "payer": "gpkbattlesc1"
+    },{
+      "data": {
+        "id": 4,
+        "author": "gpkbattlesco",
+        "category": "exotic",
+        "variant": "prism",
+        "quality": "a",
+        "game_fee": "10.00000000 WAX"
+      },
+      "payer": "gpkbattlesc1"
+    }
+  ],
+  "more": false,
+  "next_key": ""
+}
+```
+
 ### Action - `depositgfee`
 * Player `gbuser111111` wants to deposit game fee for playing game
 ```console

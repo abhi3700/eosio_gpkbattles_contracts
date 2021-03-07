@@ -4,6 +4,36 @@
     "types": [],
     "structs": [
         {
+            "name": "config",
+            "base": "",
+            "fields": [
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "author",
+                    "type": "name"
+                },
+                {
+                    "name": "category",
+                    "type": "name"
+                },
+                {
+                    "name": "variant",
+                    "type": "string"
+                },
+                {
+                    "name": "quality",
+                    "type": "string"
+                },
+                {
+                    "name": "game_fee",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
             "name": "del1drawgame",
             "base": "",
             "fields": [
@@ -14,6 +44,20 @@
                 {
                     "name": "defaulter_pl_list",
                     "type": "name[]"
+                }
+            ]
+        },
+        {
+            "name": "delconfig",
+            "base": "",
+            "fields": [
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "id",
+                    "type": "uint64"
                 }
             ]
         },
@@ -302,6 +346,40 @@
             ]
         },
         {
+            "name": "setconfig",
+            "base": "",
+            "fields": [
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "id",
+                    "type": "uint64"
+                },
+                {
+                    "name": "author",
+                    "type": "name"
+                },
+                {
+                    "name": "category",
+                    "type": "name"
+                },
+                {
+                    "name": "variant",
+                    "type": "string"
+                },
+                {
+                    "name": "quality",
+                    "type": "string"
+                },
+                {
+                    "name": "game_fee",
+                    "type": "asset"
+                }
+            ]
+        },
+        {
             "name": "testaddplayr",
             "base": "",
             "fields": [
@@ -335,6 +413,34 @@
                 },
                 {
                     "name": "asset_contract_ac",
+                    "type": "name"
+                }
+            ]
+        },
+        {
+            "name": "testrdconft1",
+            "base": "",
+            "fields": [
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "id",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "testrdconft2",
+            "base": "",
+            "fields": [
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "author",
                     "type": "name"
                 }
             ]
@@ -409,6 +515,11 @@
             "ricardian_contract": ""
         },
         {
+            "name": "delconfig",
+            "type": "delconfig",
+            "ricardian_contract": ""
+        },
+        {
             "name": "disndcards",
             "type": "disndcards",
             "ricardian_contract": ""
@@ -464,6 +575,11 @@
             "ricardian_contract": ""
         },
         {
+            "name": "setconfig",
+            "type": "setconfig",
+            "ricardian_contract": ""
+        },
+        {
             "name": "testaddplayr",
             "type": "testaddplayr",
             "ricardian_contract": ""
@@ -479,6 +595,16 @@
             "ricardian_contract": ""
         },
         {
+            "name": "testrdconft1",
+            "type": "testrdconft1",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "testrdconft2",
+            "type": "testrdconft2",
+            "ricardian_contract": ""
+        },
+        {
             "name": "testremplayr",
             "type": "testremplayr",
             "ricardian_contract": ""
@@ -490,6 +616,13 @@
         }
     ],
     "tables": [
+        {
+            "name": "configs",
+            "type": "config",
+            "index_type": "i64",
+            "key_names": [],
+            "key_types": []
+        },
         {
             "name": "gfeewallet",
             "type": "gfeewallet",
