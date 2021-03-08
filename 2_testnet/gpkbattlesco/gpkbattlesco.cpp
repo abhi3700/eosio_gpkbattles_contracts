@@ -303,7 +303,8 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 	// check player_1 has deposited game fee
 	// check game_fee balance as "5.00000000 WAX" for player_1
 	// check_gfee_balance(player_1, asset(gamefee_token_amount, gamefee_token_symbol));
-	check_gfee_balance(player_1, compute_gamefee(asset_contract_ac, escrow_contract_ac, player_1, card_ids_p1));
+	auto computed_gfee_p1 = compute_gamefee(asset_contract_ac, escrow_contract_ac, player_1, card_ids_p1);
+	check_gfee_balance(player_1, computed_gfee_p1);
 
 	// Now, check if 3 selected cards are of either (2A,1B) or (1A,2B) with escrow contract as owner.
 	// here check is done after the transfer to the escrow contract
@@ -365,7 +366,11 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 	// check player_2 has deposited game fee
 	// check game_fee balance as "5.00000000 WAX" for player_2
 	// check_gfee_balance(player_2, asset(gamefee_token_amount, gamefee_token_symbol));
-	check_gfee_balance(p2, compute_gamefee(asset_contract_ac, escrow_contract_ac, p2, card_ids_p2));
+	auto computed_gfee_p2 = compute_gamefee(asset_contract_ac, escrow_contract_ac, p2, card_ids_p2);
+	check_gfee_balance(p2, computed_gfee_p2);
+
+	// check that the both the computed game_fee for player_1 & player_2 are same before adding into the ongamestat_table
+	check( computed_gfee_p1 == computed_gfee_p2, "The computed game fees for player_1 and player_2 are different. So, can\'t be added into the ongamestat_table.");
 
 	// Now, check if 3 selected cards are of either (2A,1B) or (1A,2B) with escrow contract as owner.
 	// here check is done after the transfer to the escrow contract
@@ -395,7 +400,7 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 		row.player_1 = p1;
 		row.player_2 = p2;
 		row.asset_contract_ac = asset_contract_ac;
-		row.game_fee = asset(gamefee_token_amount, gamefee_token_symbol);
+		row.game_fee = computed_gfee_p1;
 		row.player1_cards = card_ids_p1;
 		row.player1_cards_combo = card_ids_type_p1;
 		row.player2_cards = card_ids_p2;

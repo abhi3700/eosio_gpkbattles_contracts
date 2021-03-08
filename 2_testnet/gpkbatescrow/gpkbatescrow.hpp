@@ -199,7 +199,7 @@ public:
 
 	// -----------------------------------------------------------------------------------------------------------------------
 	// check if min. gfeewallet's balance is gamefee_value
-	static void check_gfee_balance(const name& player, const asset& game_fee) {
+/*	static void check_gfee_balance(const name& player, const asset& game_fee) {
 		// instantiate the `gfeewallet` table
 		// gfeewallet_index gfeewallet_table("gpkbattlesco"_n, player.value);				// for WAX Mainnet
 		gfeewallet_index gfeewallet_table("gpkbattlesc1"_n, player.value);				// for WAX Testnet
@@ -209,7 +209,7 @@ public:
 		check(gfeewallet_it->balance.amount >= game_fee.amount, "The player has no min. balance i.e. \'" + 
 												game_fee.to_string() + "\' in the gamefee wallet.");
 	}
-
+*/
 private:
 	// -----------------------------------------------------------------------------------------------------------------------
 	// scope - player
