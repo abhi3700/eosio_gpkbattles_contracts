@@ -689,6 +689,8 @@ void gpkbattlesco::play(uint64_t game_id) {
 		check(ongamestat_it->nodraw_count == 0, "This nodraw game can be played only once.");
 		ongamestat_table.modify(ongamestat_it, get_self(), [&](auto& row){
 			row.start_timestamp = now();
+			row.p1_gfee_deducted = "y"_n;
+			row.p2_gfee_deducted = "y"_n;
 			row.result = "nodraw"_n;
 			row.status = "waitforrng"_n;
 		});
