@@ -431,8 +431,8 @@ public:
 		gfeewallet_index gfeewallet_table("gpkbattlesc1"_n, player.value);				// for WAX Testnet
 		auto gfeewallet_it = gfeewallet_table.find(game_fee.symbol.raw());
 
-		check(gfeewallet_it != gfeewallet_table.end(), "the player is not in the gamefee wallet table.");
-		check(gfeewallet_it->balance.amount >= game_fee.amount, "The player has no min. balance i.e. \'" + 
+		check(gfeewallet_it != gfeewallet_table.end(), "the player - " + player.to_string() + " is not in the gamefee wallet table.");
+		check(gfeewallet_it->balance.amount >= game_fee.amount, "The player - " + player.to_string() + " has no min. balance i.e. \'" + 
 												game_fee.to_string() + "\' in the gamefee wallet.");
 	}
 
