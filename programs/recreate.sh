@@ -4,6 +4,7 @@
 # - select cards
 # - pair w player
 # - play
+# - disburse nodraw cards
 
 # token transfer from eosio.token to gpkbatescrow
 cleoswt push action eosio.token transfer '["gbuser111111", "gpkbattlesc1", "1.00000000 WAX", "transfer 1 WAX fee for playing game"]' -p gbuser111111@active
@@ -32,5 +33,8 @@ cleoswt push action gpkbattlesc1 pairwplayer '["gbuser111115", "simpleassets"]' 
 cleoswt push action gpkbattlesc1 pairwplayer '["gbuser111121", "simpleassets"]' -p gbuser111121@active
 cleoswt push action gpkbattlesc1 pairwplayer '["gbuser111122", "simpleassets"]' -p gbuser111122@active
 
-# - play
-cleoswt push action gpkbattlesc1 play '["10001737461645"]' -p gpkbattlesc1@systemkeys
+# play
+cleoswt push action gpkbattlesc1 play '["10001739108425"]' -p gpkbattlesc1@systemkeys
+
+# disburse nodraw cards
+cleoswt push action gpkbattlesc1 disndcards '["10001739108425"]' -p gpkbattlesc1@systemkeys

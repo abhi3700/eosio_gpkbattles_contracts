@@ -6,6 +6,7 @@
 # - remove the row in usergamestat table 
 # - withdraw game fee, if any in the game wallet
 # - clear the players table, if needed
+# - clear the usergamestat table of all players
 
 
 # clear the row in game table
@@ -25,3 +26,6 @@ cleoswt push action gpkbattlesc1 withdrawgfee '["gbuser111111", "25.00000000 WAX
 
 # remove the player from players table
 cleoswt push action gpkbattlesc1 remplayer '["simpleassets", "gbuser111112"]' -p gpkbatescrow@active
+
+# clear the usergamestat table of all players
+cleoswt push action gpkbattlesc1 testdelugame '["gbuser111111", "simpleassets"]' -p gpkbattlesc1@active
