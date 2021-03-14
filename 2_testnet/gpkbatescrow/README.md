@@ -343,6 +343,14 @@ executed transaction: 2513decfa36f2e624d219d37da2fef6c11473fcf5e178ad8ac3baf8a71
 #  gpkbatescrow <= gpkbatescrow::testccwallet   {"player":"gbuser111113","card_ids":["100000000007695","100000000007697","100000000007702","10000000...
 warning: transaction executed locally, but may not be confirmed by the network yet         ]
 ```
+* get card combo of a player for a card type (i.e. asset_contract_ac, category, variant)
+```console
+$ cleoswt push action gpkbatescrow testfcardtyp '{"player": "gbuser111114", "asset_contract_ac": "simpleassets", "card_ids" : ["100000000007691", "100000000007702", "100000000007711"], "category": "exotic", "variant": "base"}' -p gpkbatescrow@active
+Error 3050003: eosio_assert_message assertion failure
+Error Details:
+assertion failure with message: the card type is 2a1b
+pending console output:
+``` 
 
 ## TODO
 * before deploy to MAINNET,

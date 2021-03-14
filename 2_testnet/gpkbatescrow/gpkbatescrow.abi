@@ -64,6 +64,32 @@
             ]
         },
         {
+            "name": "testfcardtyp",
+            "base": "",
+            "fields": [
+                {
+                    "name": "player",
+                    "type": "name"
+                },
+                {
+                    "name": "asset_contract_ac",
+                    "type": "name"
+                },
+                {
+                    "name": "card_ids",
+                    "type": "uint64[]"
+                },
+                {
+                    "name": "category",
+                    "type": "name"
+                },
+                {
+                    "name": "variant",
+                    "type": "string"
+                }
+            ]
+        },
+        {
             "name": "testsetcstat",
             "base": "",
             "fields": [
@@ -114,6 +140,11 @@
         {
             "name": "testccwallet",
             "type": "testccwallet",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "testfcardtyp",
+            "type": "testfcardtyp",
             "ricardian_contract": ""
         },
         {
