@@ -145,11 +145,11 @@ public:
 		}
 	}
 
-	ACTION testfcardtyp( const name& player, const name& asset_contract_ac, 
+	ACTION testfcardtyp( /*const name& player, */ const name& asset_contract_ac, const name& owner,
 							const vector<uint64_t> card_ids, const name& category,
 							const string& variant  ) {
 		require_auth(get_self());
-		auto card_ids_type = checkget_cards_type(asset_contract_ac, get_self(), card_ids, category, variant);
+		auto card_ids_type = checkget_cards_type(asset_contract_ac, owner, card_ids, category, variant);
 
 		check(false, "the card type is " + card_ids_type.to_string());
 

@@ -345,12 +345,14 @@ warning: transaction executed locally, but may not be confirmed by the network y
 ```
 * get card combo of a player for a card type (i.e. asset_contract_ac, category, variant)
 ```console
-$ cleoswt push action gpkbatescrow testfcardtyp '{"player": "gbuser111114", "asset_contract_ac": "simpleassets", "card_ids" : ["100000000007691", "100000000007702", "100000000007711"], "category": "exotic", "variant": "base"}' -p gpkbatescrow@active
+$ cleoswt push action gpkbatescrow testfcardtyp '{"asset_contract_ac": "simpleassets", "owner":"gpkbatescrow", "card_ids" : ["100000000007691", "100000000007702", "100000000007711"], "category": "exotic", "variant": "base"}' -p gpkbatescrow@active
 Error 3050003: eosio_assert_message assertion failure
 Error Details:
 assertion failure with message: the card type is 2a1b
 pending console output:
 ``` 
+  - if the cards are in the `gpkbatescrow::cardwallet`, then the owner is `gpkbatescrow`
+  - else, if the cards are NOT in the `gpkbatescrow::cardwallet`, then the owner is `<player>`.
 
 ## TODO
 * before deploy to MAINNET,

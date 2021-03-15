@@ -68,11 +68,11 @@
             "base": "",
             "fields": [
                 {
-                    "name": "player",
+                    "name": "asset_contract_ac",
                     "type": "name"
                 },
                 {
-                    "name": "asset_contract_ac",
+                    "name": "owner",
                     "type": "name"
                 },
                 {
