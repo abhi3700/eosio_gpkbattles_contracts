@@ -713,7 +713,7 @@ private:
 		vector<uint64_t> winner_transfer_cards;		// of size 4 after the game is nodraw
 		vector<uint64_t> loser_transfer_cards;		// of size 2 after the game is nodraw
 		uint64_t card_won;
-		name status;						// /waitdue1draw/over/waitforrng: waitdue1draw(i.e. wait due to 1 draw), over (i.e. game over) & waitforrng (i.e. waiting for rng)
+		name status;						// paired/waitdue1draw/over/waitforrng: waitdue1draw(i.e. wait due to 1 draw), over (i.e. game over) & waitforrng (i.e. waiting for rng)
 		checksum256 random_value;				// generated from WAX RNG service, if no-draw
 		uint8_t draw_count;				// param to monitor the no. of draws
 		uint8_t nodraw_count;				// param to ensure that the game is not played again if the count = 1.

@@ -405,6 +405,7 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 		row.player1_cards_combo = card_ids_type_p1;
 		row.player2_cards = card_ids_p2;
 		row.player2_cards_combo = card_ids_type_p2;
+		row.status = "paired"_n;
 	});
 
 	// Now, erase p1, p2 from the `players` table's `players_list`
@@ -420,7 +421,7 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 	
 
 	// Send the 2 players an alert that they have paired w/ & the corresponding game_id
-	// send_alert(p1, "You have been paired with game_id: " + std::to_string(game_id));					// NOT needed
+	send_alert(player_1, "You have been paired with a player: "+ ongamestat_it->player_2.to_string() + " in game_id: " + std::to_string(game_id));
 	// send_alert(p2, "You have been paired with game_id: " + std::to_string(game_id));					// NOT needed
 /*	
 * 			NOTE: There is a bug here.
