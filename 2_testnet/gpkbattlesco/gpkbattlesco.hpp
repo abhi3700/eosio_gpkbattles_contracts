@@ -427,8 +427,8 @@ public:
 	// check if min. gfeewallet's balance is gamefee_value
 	static void check_gfee_balance(const name& player, const asset& game_fee) {
 		// instantiate the `gfeewallet` table
-		// gfeewallet_index gfeewallet_table("gpkbattlesco"_n, player.value);				// for WAX Mainnet
-		gfeewallet_index gfeewallet_table("gpkbattlesc1"_n, player.value);				// for WAX Testnet
+		gfeewallet_index gfeewallet_table("gpkbattlesco"_n, player.value);				// for WAX Mainnet
+		// gfeewallet_index gfeewallet_table("gpkbattlesc1"_n, player.value);				// for WAX Testnet
 		auto gfeewallet_it = gfeewallet_table.find(game_fee.symbol.raw());
 
 		check(gfeewallet_it != gfeewallet_table.end(), "the player - " + player.to_string() + " is not in the gamefee wallet table.");
@@ -521,8 +521,8 @@ public:
 			auto idx = assets.find(card_id);
 
 			check(idx != assets.end(), "Asset with id " + std::to_string(card_id) + " not found or not yours");
-			// check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
-			check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
+			check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
+			// check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
 
 			auto mdata = json::parse(idx->mdata);
 
@@ -566,8 +566,8 @@ public:
 			auto idx = assets.find(card_id);
 
 			check(idx != assets.end(), "Asset with id " + std::to_string(card_id) + " not found or not yours");
-			// check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
-			check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
+			check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
+			// check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
 			check(idx->category == category, "The asset id\'s category must be exotic.");
 
 			auto mdata = json::parse(idx->mdata);
@@ -618,8 +618,8 @@ public:
 			auto idx = assets.find(card_id);
 
 			check(idx != assets.end(), "Asset with id " + std::to_string(card_id) + " not found or not yours");
-			// check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
-			check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
+			check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
+			// check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
 			check(idx->category == category, "The asset id\'s category must be exotic.");
 
 			auto mdata = json::parse(idx->mdata);

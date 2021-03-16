@@ -145,6 +145,16 @@ public:
 		}
 	}
 
+	ACTION testfcardtyp( /*const name& player, */ const name& asset_contract_ac, const name& owner,
+							const vector<uint64_t> card_ids, const name& category,
+							const string& variant  ) {
+		require_auth(get_self());
+		auto card_ids_type = checkget_cards_type(asset_contract_ac, owner, card_ids, category, variant);
+
+		check(false, "the card type is " + card_ids_type.to_string());
+
+	}
+
 	using setcstatus_action  = action_wrapper<"setcstatus"_n, &gpkbatescrow::setcstatus>;
 	using disburse_action  = action_wrapper<"disburse"_n, &gpkbatescrow::disburse>;
 
@@ -175,7 +185,39 @@ public:
 
 			// cardtypes.emplace_back(mdata["quality"]);
 		}
-/*
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------------
+	// check cards' category, quality, variant & 2A,1B or 1A,2B before/after the transfer to the contract
+	static name checkget_cards_type( const name& asset_contract_ac,
+								const name& owner,
+								const vector<uint64_t> card_ids,
+								const name& category,
+								const string& variant ) 
+	{
+		// create an empty card_ids_type of eosio::name type
+		name card_ids_type = ""_n;
+
+		check(card_ids.size() == 3, "the card_ids list chosen must be of size 3");
+		vector<string> cardtypes{};
+
+		sassets assets(asset_contract_ac, owner.value);
+
+		for(auto&& card_id : card_ids) {
+			auto idx = assets.find(card_id);
+
+			check(idx != assets.end(), "Asset with id " + std::to_string(card_id) + " not found or not yours");
+			check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
+			// check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
+			check(idx->category == category, "The asset id\'s category must be exotic.");
+
+			auto mdata = json::parse(idx->mdata);
+			check((mdata["quality"] == "a") || (mdata["quality"] == "b"), "The asset id\'s quality must be either \'a\' or \'b\'."); 
+			check(mdata["variant"] == variant, "The asset id\'s variant must be \'base\'.");
+
+			cardtypes.emplace_back(mdata["quality"]);
+		}
+
 		// get the respective card types of the given cards
 		auto cardtype_1 = cardtypes[0];
 		auto cardtype_2 = cardtypes[1];
@@ -190,26 +232,42 @@ public:
 			 // 1A, 2B
 			((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "b")) || 
 			((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
-			((cardtype_1 == "b") && (cardtype_2 == "b") && (cardtype_3 == "a"))
+			((cardtype_1 == "b") && (cardtype_2 == "b") && (cardtype_3 == "a")) 
 			
-			, "the cards chosen are of different combination than (2A,1B) OR (1A,2B)."
+			, "the cards chosen are of different combination than (2A,1B) OR (1A,2B). Please, select again."
 			);
-*/	
+
+		if(	// 2A, 1B
+			((cardtype_1 == "a") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
+			((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "a")) || 
+			((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "a"))
+			) {
+			card_ids_type = "2a1b"_n;
+		}
+		else if (	// 1A, 2B
+			((cardtype_1 == "a") && (cardtype_2 == "b") && (cardtype_3 == "b")) || 
+			((cardtype_1 == "b") && (cardtype_2 == "a") && (cardtype_3 == "b")) || 
+			((cardtype_1 == "b") && (cardtype_2 == "b") && (cardtype_3 == "a")) 
+			){
+			card_ids_type = "1a2b"_n;
+		}
+
+		return card_ids_type;
 	}
 
 	// -----------------------------------------------------------------------------------------------------------------------
 	// check if min. gfeewallet's balance is gamefee_value
-	static void check_gfee_balance(const name& player, const asset& game_fee) {
+/*	static void check_gfee_balance(const name& player, const asset& game_fee) {
 		// instantiate the `gfeewallet` table
-		gfeewallet_index gfeewallet_table("gpkbattlesco"_n, player.value);				// for WAX Mainnet
-		// gfeewallet_index gfeewallet_table("gpkbattlesc1"_n, player.value);				// for WAX Testnet
+		// gfeewallet_index gfeewallet_table("gpkbattlesco"_n, player.value);				// for WAX Mainnet
+		gfeewallet_index gfeewallet_table("gpkbattlesc1"_n, player.value);				// for WAX Testnet
 		auto gfeewallet_it = gfeewallet_table.find(game_fee.symbol.raw());
 
 		check(gfeewallet_it != gfeewallet_table.end(), "the player is not in the gamefee wallet table.");
 		check(gfeewallet_it->balance.amount >= game_fee.amount, "The player has no min. balance i.e. \'" + 
 												game_fee.to_string() + "\' in the gamefee wallet.");
 	}
-
+*/
 private:
 	// -----------------------------------------------------------------------------------------------------------------------
 	// scope - player

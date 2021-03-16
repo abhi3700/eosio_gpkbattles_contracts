@@ -40,14 +40,12 @@ using json = nlohmann::json;
 CONTRACT gpkbattlesco : public contract
 {
 private:
-	const int64_t gamefee_token_amount;
+	// const int64_t gamefee_token_amount;
 	const symbol gamefee_token_symbol;
 	// const asset gamefee_value;
 	// const name asset_contract_ac;
 	const name escrow_contract_ac;
 	const name income_contract_ac;
-	name paired_player2;
-	uint8_t paired_player2_count;
 
 	// 370015336 for "simpleassets", 370015337 for "atomicassets"
 	// const vector<pair<name, uint64_t>> vector_assetcontracts_associds;						// a list of pair of asset contract account names & assoc_ids
@@ -59,15 +57,12 @@ public:
 
 	gpkbattlesco(name receiver, name code, datastream<const char*> ds) : 
 				contract(receiver, code, ds), 
-				gamefee_token_amount(500000000),
+				// gamefee_token_amount(500000000),
 				gamefee_token_symbol("WAX", 8),
 				// gamefee_value(asset(50000, symbol("WAX", 8))),		// "5.00000000 WAX"
 				// asset_contract_ac("simpleassets"_n),
 				escrow_contract_ac("gpkbatescrow"_n),
-				income_contract_ac("gpkbatincome"_n),
-				paired_player2(""_n),
-				paired_player2_count(0)
-				// vector_assetcontracts_associds({{"simpleassets"_n, 370015336}, {"atomicassets"_n, 370015337}}),
+				income_contract_ac("gpkbatincome"_n)
 				// card_ids_type_1("2a1b"_n),
 				// card_ids_type_2("1a2b"_n)
 				{}
@@ -432,12 +427,12 @@ public:
 	// check if min. gfeewallet's balance is gamefee_value
 	static void check_gfee_balance(const name& player, const asset& game_fee) {
 		// instantiate the `gfeewallet` table
-		gfeewallet_index gfeewallet_table("gpkbattlesco"_n, player.value);				// for WAX Mainnet
-		// gfeewallet_index gfeewallet_table("gpkbattlesc1"_n, player.value);				// for WAX Testnet
+		// gfeewallet_index gfeewallet_table("gpkbattlesco"_n, player.value);				// for WAX Mainnet
+		gfeewallet_index gfeewallet_table("gpkbattlesc1"_n, player.value);				// for WAX Testnet
 		auto gfeewallet_it = gfeewallet_table.find(game_fee.symbol.raw());
 
-		check(gfeewallet_it != gfeewallet_table.end(), "the player is not in the gamefee wallet table.");
-		check(gfeewallet_it->balance.amount >= game_fee.amount, "The player has no min. balance i.e. \'" + 
+		check(gfeewallet_it != gfeewallet_table.end(), "the player - " + player.to_string() + " is not in the gamefee wallet table.");
+		check(gfeewallet_it->balance.amount >= game_fee.amount, "The player - " + player.to_string() + " has no min. balance i.e. \'" + 
 												game_fee.to_string() + "\' in the gamefee wallet.");
 	}
 
@@ -526,8 +521,8 @@ public:
 			auto idx = assets.find(card_id);
 
 			check(idx != assets.end(), "Asset with id " + std::to_string(card_id) + " not found or not yours");
-			check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
-			// check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
+			// check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
+			check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
 
 			auto mdata = json::parse(idx->mdata);
 
@@ -571,8 +566,8 @@ public:
 			auto idx = assets.find(card_id);
 
 			check(idx != assets.end(), "Asset with id " + std::to_string(card_id) + " not found or not yours");
-			check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
-			// check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
+			// check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
+			check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
 			check(idx->category == category, "The asset id\'s category must be exotic.");
 
 			auto mdata = json::parse(idx->mdata);
@@ -623,8 +618,8 @@ public:
 			auto idx = assets.find(card_id);
 
 			check(idx != assets.end(), "Asset with id " + std::to_string(card_id) + " not found or not yours");
-			check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
-			// check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
+			// check (idx->author == "gpk.topps"_n, "Asset is not from this author");				// for WAX Mainnet
+			check (idx->author == "gpkbattlesco"_n, "Asset is not from this author");				// for WAX Testnet
 			check(idx->category == category, "The asset id\'s category must be exotic.");
 
 			auto mdata = json::parse(idx->mdata);
@@ -718,7 +713,7 @@ private:
 		vector<uint64_t> winner_transfer_cards;		// of size 4 after the game is nodraw
 		vector<uint64_t> loser_transfer_cards;		// of size 2 after the game is nodraw
 		uint64_t card_won;
-		name status;						// /waitdue1draw/over/waitforrng: waitdue1draw(i.e. wait due to 1 draw), over (i.e. game over) & waitforrng (i.e. waiting for rng)
+		name status;						// paired/waitdue1draw/over/waitforrng: waitdue1draw(i.e. wait due to 1 draw), over (i.e. game over) & waitforrng (i.e. waiting for rng)
 		checksum256 random_value;				// generated from WAX RNG service, if no-draw
 		uint8_t draw_count;				// param to monitor the no. of draws
 		uint8_t nodraw_count;				// param to ensure that the game is not played again if the count = 1.
