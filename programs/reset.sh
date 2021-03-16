@@ -1,6 +1,7 @@
 # RESET 
 # means 
 # - clearing the game table, 
+# - transfer back the deducted game_fee after play ACTION
 # - deselect the cards, if selected (i.e. change the status)
 # - withdraw the cards from gpkbatescrow to simpleassets
 # - remove the row in usergamestat table 
@@ -10,7 +11,11 @@
 
 
 # clear the row in game table
-cleoswt push action gpkbattlesc1 testdelongam '["10001731423393"]' -p gpkbattlesc1@active
+cleoswt push action gpkbattlesc1 testdelongam '["10001739333805"]' -p gpkbattlesc1@active
+
+# transfer back the deducted game_fee after play ACTION: first, transfer from game to token contract & second, token to game contract to/from player
+cleoswt push action eosio.token transfer '["gpkbattlesc1", "gbuser111115", "1.00000000 WAX", "transfer 1 WAX fee for playing game"]' -p gpkbattlesc1@active
+cleoswt push action eosio.token transfer '["gbuser111115", "gpkbattlesc1", "1.00000000 WAX", "transfer 1 WAX fee for playing game"]' -p gbuser111115@active
 
 # change the status of the cards (if selected)
 cleoswt push action gpkbatescrow setcstatus '["gbuser111111", "100000000007692", "available"]' -p gpkbattlesc1@active
