@@ -421,7 +421,7 @@ void gpkbattlesco::pairwplayer(const name& player_1,
 	
 
 	// Send the 2 players an alert that they have paired w/ & the corresponding game_id
-	send_alert(player_1, "You have been paired with a player: "+ ongamestat_it->player_2.to_string() + " in game_id: " + std::to_string(game_id));
+	send_alert(player_1, "You have been paired with a player in game_id: " + std::to_string(game_id));
 	// send_alert(p2, "You have been paired with game_id: " + std::to_string(game_id));					// NOT needed
 /*	
 * 			NOTE: There is a bug here.
@@ -531,8 +531,8 @@ void gpkbattlesco::play(uint64_t game_id) {
 	check( (ongamestat_it->player1_cards.size() == 3) && (ongamestat_it->player1_cards_combo != ""_n),  ongamestat_it->player_1.to_string() + " has not selected the cards after 1 draw.");
 	check( (ongamestat_it->player2_cards.size() == 3) && (ongamestat_it->player2_cards_combo != ""_n),  ongamestat_it->player_2.to_string() + " has not selected the cards after 1 draw.");
 
-	// check game_fee when the game is NEW/Fresh or not played at all 
-	if (ongamestat_it->status == ""_n) {
+	// check game_fee when the game is NEW/Fresh or not played at all i.e. just after pairing
+	if (ongamestat_it->status == "paired"_n) {
 		// check game_fee balance as "5 WAX" for each player
 		check_gfee_balance(ongamestat_it->player_1, ongamestat_it->game_fee);
 		check_gfee_balance(ongamestat_it->player_2, ongamestat_it->game_fee);
@@ -558,7 +558,7 @@ void gpkbattlesco::play(uint64_t game_id) {
 		check((ongamestat_it->draw_count < 2), "this game can't be proceeded further, as this game is draw & already played for min. 2 times.");
 
 		ongamestat_table.modify(ongamestat_it, get_self(), [&](auto& row){
-			if (ongamestat_it->status == ""_n) {		// fresh/new game
+			if (ongamestat_it->status == "paired"_n) {		// fresh/new game i.e. just after pairing
 				row.start_timestamp = now();
 				row.p1_gfee_deducted = "y"_n;
 				row.p2_gfee_deducted = "y"_n;
