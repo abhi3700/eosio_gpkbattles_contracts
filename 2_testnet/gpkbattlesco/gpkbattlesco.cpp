@@ -1069,7 +1069,7 @@ void gpkbattlesco::moergameinfo(uint64_t game_id,
 		}
 		else {
 			usergamestat_table.modify(usergamestat_player_it, get_self(), [&](auto& row) {
-				row.game_ids = vector<uint64_t>{ongamestat_it->game_id};
+				row.game_ids.emplace_back(ongamestat_it->game_id);
 
 				// for wins, loses, draws
 				if ((ongamestat_it->result == "nodraw"_n) && (ongamestat_it->winner == player))
