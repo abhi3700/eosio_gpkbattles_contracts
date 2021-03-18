@@ -1,5 +1,28 @@
 GPK.Battles Game
 ================
+v0.8.5 - `17-Mar-2021`
+----
+* player's name is shown in `check_gfee_balance()` utility in `gpkbattlesco.hpp` file
+* 6 RUNs were done successfully of all possible combination (i.e. [5 cases](./README.md))
+* BUG fixes:
+	- player's game_fee deduction status is set to `"y"` in Nodraw if-else condition in `gpkbattlesco::play` ACTION, like this:
+```cpp
+check(ongamestat_it->nodraw_count == 0, "This nodraw game can be played only once.");
+		ongamestat_table.modify(ongamestat_it, get_self(), [&](auto& row){
+			row.start_timestamp = now();
+			row.p1_gfee_deducted = "y"_n;
+			row.p2_gfee_deducted = "y"_n;
+			row.result = "nodraw"_n;
+			row.status = "waitforrng"_n;
+		});
+```
+	- `gpkbattlesco::moergameinfo` inline ACTION: added game_ids as a list in the `usergamestat` TABLE using `row.game_ids.emplace_back(ongamestat_it->game_id)`
+	- removed `gamefee_value(asset(500000000, symbol("WAX", 8)))` variable, because game_fee is dynamically computed based on the card types using `compute_gamefee()` utility func, defined in `gpkbattlesco` contract header file.
+* `gpkbattlesco::testfcardtyp` ACTION added for getting the card_combo for a card with types i.e. `asset_contract_ac`, `category`, `variant`
+* `gpkbattlesco::pairwplayer` ACTION:
+  - ongamestat_table's status param is set as paired
+  - send_alert to the player_1 to have paired with a player in game_id
+
 v0.8.2 - `07-Mar-2021`
 ----
 * `compute_gamefee()` utility function has been modified from "5 WAX" to "1 WAX".
